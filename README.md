@@ -10,57 +10,39 @@ Index.js
 
 
 1. Controllers: 
-Products: Handling clothes, jewelry, and electronics product listings.
-Users: Managing users registration, login and profile.
-Admin: Managing admin registration, login, profile and roles.
-Orders: Processing customer orders, handling payments, and managing invoices.
-Cart: Allowing customers to add items to their cart, update the quantity, or remove them.
-2. Database:
-Products: Details like name, category for clothes, jewelery, electronics. price, description, stock levels, images.
-Users: User details, shipping addresses, and payment methods.
-Orders: Information about past and current orders, including status and payment.
-Reviews: Customer reviews and ratings for the products.
-3. Middlewares:
-Authentication Middleware: To protect certain routes, ensuring only logged-in users can place orders.
-Admin Middleware: Ensuring only admins can add or update products.
-Validation Middleware: Validating user input such as registration details, product details, and payment info.
-4. Models:
-Product Model: Contains attributes like product name, category, price, stock, etc.
-User Model: Holds details such as username, email, password, address, and orders.
-Admin model: Holds admin details such as username, email, password and address.
-Order Model: Contains order details, including the user, items purchased, and total amount.
-cart Model: Handles the cart for orders
+* Customers will be able to see cool stuff like clothes, jewellery, and gadgets so that customers can be able to pick what they want to buy.
 
-5. Routes: 
-products: Getting a list of products, filtering by category (clothes, jewelry, electronics).
-users: Registering a new user, logging in, updating profile.
-orders: Placing new orders, viewing past orders.
-cart: Managing the shopping cart (adding, removing items).
-reviews: Allowing users to review products they’ve purchased.
-6. Index.js:
-The index.js file is the entry point of my application. It sets up the server, connects to the database, and imports the routes and middleware necessary to handle requests. 
+-When they visit the store, they can see pictures and names of all the things they can buy, like shirts, necklaces, and phones.
 
-Front-end components:
-Navbar
-Product lists
-Product details page
-Cart 
-Checkout Page
-User profile Page
-Login/Registration form
-Search bar 
+* Customers will want to look at more details about things they like, to make it easier to decide if they want to buy it.
 
-Navbar: Provides links to main sections like clothes, jewelry, electronics, cart, profile.
-Product lists: Display products with an image, name, price, rating, and "Add to Cart" button.
-Product details page: When a user clicks on a product, they should be taken to a detailed view where they can see more images, product descriptions, reviews, and the option to add it to their cart.
-Cart: Shows all items added to the shopping cart with quantity and total price, allowing users to update or remove items.
-Checkout page: Collects shipping and payment information and allows users to place their orders.
-User profile page: Displays user information, such as name, address, order history.
-Login/Registration form: Allow users to create an account or log in to an existing one.
-Search bar: Allows users to search for products by category and/or price.
+-When a customer clicks on a product, it shows you more pictures, what it's made of, how much it costs, and what other people think about it.
 
+* Customers will want to put their favorite things in their shopping carts, so that they can save them and buy them later.
 
+-Customers can look in their cart anytime and decide if they want to keep all the things or take some time out
 
+* Customers will want to check out and pay to get the things they like.
 
+-When a customer is ready to buy, they can put in their address and how they want to pay, and then they get their products!
 
+* Customers must make an account, so that they can save their info and look at their past orders.
+
+-Customers can sign up by giving their name and email, so next time it's faster to log in and shop.
+
+* A customer would want to leave a review, so that they can tell others if they liked what they bought.
+
+-A customer can write what they think about the stuff they bought to help other people decide if they want it too.
+
+* An admin can be able to add new things to the store, so that customers can have more options to choose from.
+
+-Admins can put new clothes, jewellery, and electronics in the store with pictures and prices. 
+
+* An admin would want to remove things from the store. So that old and unavailable items are not shown.
+
+-Admins can take things off the shelf if they aren't available anymore.
+
+* An admin would want to see customer orders, so that they can help customers if they need a certain item or if there is a problem with their order.
+
+-Admins can look at what people have bought and help if something goes wrong.
 
