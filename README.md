@@ -12,7 +12,7 @@ Index.js
 1. Controllers: 
 * Customers will be able to see cool stuff like clothes, jewellery, and gadgets so that customers can be able to pick what they want to buy.
 
--When they visit the store, they can see pictures and names of all the things they can buy, like shirts, necklaces, and phones.
+-When they visit the website, they can see pictures and names of all the things they can buy, like shirts, necklaces, and phones.
 
 * Customers will want to look at more details about things they like, to make it easier to decide if they want to buy it.
 
@@ -46,3 +46,27 @@ Index.js
 
 -Admins can look at what people have bought and help if something goes wrong.
 
+2. Database
+* Customers would want to see the name, picture, and price of of the things I want to buy, so that they know what they are and how much they cost.
+
+-The database shows you the name of the product, a picture of a product and how much it costs.
+
+* Customers would want to see more details about the things they want to buy, so that they can decide if they want to buy it.
+
+-There will be a description to see how many products are left in stock, and more details about how some products work, like electronics.
+
+* Customers would want the website to remember their details like their name,address and ways on how to pay, so that they don't have to type it in every time.
+
+-When customers buy a product, the database will remember their name, where to send the package, and how they like to pay. If they paid before, their payment details will remain.
+
+* Customers would want to see all the things they purchased before, so that they can remember what they ordered.
+
+-The database keeps a list of everyting a customer purchased, to see their past orders.
+
+* Customers would want to leave reviews about the things they purchased, to let others know how good or bad the products are.
+
+-After purchasing a product, a customer can give stars and write what they think about the product.
+
+* Customers would want to see what other people think about the items in the website.
+
+-Customers can read what other people's views about the items in the store and see the stars they gave.
