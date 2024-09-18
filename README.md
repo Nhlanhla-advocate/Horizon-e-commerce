@@ -70,3 +70,16 @@ Index.js
 * Customers would want to see what other people think about the items in the website.
 
 -Customers can read what other people's views about the items in the store and see the stars they gave.
+
+3. Middleware
+* Customers will need to be logged in to be able to place their orders and purchase items.
+
+-Customers will input their username and password to log in.
+
+* Admins will special permission to add or change things.
+
+-Only admins can access to add new items or change what's already in store.
+
+*Customers may need the website to check if they are typing the right information, like their username, email and payment details.
+
+-The website will ensure a customer types their details correctly.
