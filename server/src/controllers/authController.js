@@ -69,6 +69,26 @@ exports.signIn = async (req, res) => {
 };
 
 // Customer sign-out
-exports.signOut = (req, res) => {
-    res.status(200).send('Signed out successfully');
+exports.signOut = async (req, res) => {
+    try {
+        // Assuming you're using middleware to attach the user to the request
+        const user = req.user;
+
+        // Add the current token to a blacklist in the user document
+        user.tokenBlacklist = user.tokenBlacklist || [];
+        user.tokenBlacklist.push(req.token);
+
+        // Optional: Remove old tokens from the blacklist (e.g., tokens older than 1 hour)
+        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+        user.tokenBlacklist = user.tokenBlacklist.filter(token => {
+            const payload = jwt.decode(token);
+            return payload.exp * 1000 > oneHourAgo.getTime();
+        });
+
+        await user.save();
+
+        res.status(200).send('Signed out successfully');
+    } catch (error) {
+        res.status(500).json({ error: 'Sign out failed' });
+    }
 };
