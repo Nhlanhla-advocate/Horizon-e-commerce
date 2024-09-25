@@ -18,7 +18,7 @@ const authMiddleware = (role) => async (req, res, next) => {
             const admin = await Admin.findById(decoded._id);
             if (!admin) throw new Error('Admin not found');
             req.admin = admin;
-        } else if (role === 'customer') {
+        } else if (role === 'user') {
             const user = await User.findById(decoded._id);
             if (!user) throw new Error('Access denied. User not found');
             req.user = user;
