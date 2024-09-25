@@ -13,7 +13,7 @@ const validateSignUp = [
 
 // Validation middleware for sign-in
 const validateSignIn = [
-    check('email').trim().isEmail().withMessge('Valid email is required'),
+    check('email').trim().isEmail().withMessage('Valid email is required'),
     check('password').not().isEmpty().withMessage('Password is required'),
 ];
 
@@ -88,12 +88,6 @@ exports.signUp = async (req, res) => {
              if (!isMatch) {
                  return res.status(400).json({ error: 'Invalid login credentials' });
              }
-
-            //  Compare passwords
-            const isMatch = await bcrypt.compare(password, user.password);
-            if (!isMatch) {
-                return res.status(400).json({ error: 'Invalid login credentials' });
-            }
 
             // Generate JWT token
             const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
