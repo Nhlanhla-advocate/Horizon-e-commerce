@@ -13,7 +13,7 @@ const validateSignUp = [
 
 // Validation middleware for sign-in
 const validateSignIn = [
-    check('email').trim().isEmail().withMessge('Valid email is required'),
+    check('email').trim().isEmail().withMessage('Valid email is required'),
     check('password').not().isEmpty().withMessage('Password is required'),
 ];
 
