@@ -4,7 +4,6 @@ const bcrypt = require('bcrypt');
 const adminSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true},
     password: { type: String, required: true },
-    password: { type: String, required: true }
 });
 
 adminSchema.pre('save', async function (next) {
