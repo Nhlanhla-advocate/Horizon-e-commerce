@@ -3,29 +3,18 @@ const { check, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
-// authMiddleware for registration
-const validateSignUp = [
-    check('username').trim().isEmpty().withMessage('Username is required')
-    .isLength({ min: 3 }).withMessage('Username must be at least 3 characters long'),
-    check('email').trim().isEmail().withMessage( 'Valid email is required'),
-    check('password').isLength({ min: 6}).withMessage('Password must be at least 6 characters long'),
-];
-
-// Validation middleware for sign-in
-const validateSignIn = [
-    check('email').trim().isEmail().withMessage('Valid email is required'),
-    check('password').not().isEmpty().withMessage('Password is required'),
-];
-
 // User sign-up
 exports.signUp = async (req, res) => {
     try {
 
         // Check for validation errors
+        exports.handleValidationErrors = (req, res) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
         }
+        return null;
+    }
 
         const { username, email, password, ...rest } = req.body;
 
@@ -67,10 +56,13 @@ exports.signUp = async (req, res) => {
         exports.signIn = async (req, res) => {
          try {
             // Check for validation errors
+            exports.handleValidationErrors = (req, res) => {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 return res.status(400).json({ errors: errors.array() });
             }
+            return null
+        }
 
             const { username, email, password } = req.body;
 
