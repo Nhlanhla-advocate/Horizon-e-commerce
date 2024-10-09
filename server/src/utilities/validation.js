@@ -25,7 +25,28 @@ const validateSignIn = [
         .not().isEmpty().withMessage('Password is required')
 ];
 
+// Update Profile
+exports.updateProfile = [
+    validateInput([
+    body('name')
+    .trim()
+    .notEmpty()
+    .withMessage('Name is required'),
+
+    body('email')
+    .isEmail()
+    .withMessage('Invalid email format'),
+
+    body('address')
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage('Address cannot be empty')
+    ]),
+];
+
 module.exports = {
     validateSignUp,
-    validateSignIn
+    validateSignIn,
+    validateProfile
 };
