@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     name: { type: String, required: true },
-    cart: { type: mongoose.Schema.Types.ObjectId, ref: 'Cart' }
+    cart: { type: mongoose.Schema.Types.ObjectId, ref: 'Cart' },
 });
 
 userSchema.pre('save', async function (next) {
@@ -13,7 +13,7 @@ userSchema.pre('save', async function (next) {
         return next();
     }
     try {
-        const salt = await bcrypt.gensalt(10);
+        const salt = await bcrypt.genSalt(10);
         this.password = await bcrypt.hash(this.password, salt);
         next();
     } catch (error) {
