@@ -7,15 +7,15 @@ const authMiddleware = require('../middleware/authMiddleware');
 // Admin-only route to get all users
 router.get("/users",
   authMiddleware,
-  getAllUsers);
+  );
 
-router.get("/users/posts", authMiddleware, getAllRecipes)
+router.get("/users/posts", authMiddleware)
 
 // Admin-only route to delete a list of users
-router.delete("/users/delete", authMiddleware, deleteUsers);
+router.delete("/users/delete", authMiddleware);
 
 //Admin route to delete user Posts
-router.delete("/users/posts/delete", authMiddleware, deletePosts);
+router.delete("/users/posts/delete", authMiddleware);
 
 
 

@@ -115,11 +115,3 @@ exports.signUp = async (req, res) => {
              res.status(500).json({ error: 'Sign out failed' });
             }
         };
-
-        module.exports = {
-            validateSignUp,
-            validateSignIn,
-            signUp: [validateSignUp, exports.signUp],
-            signIn: [validateSignIn, exports.signIn],
-            signOut: exports.signOut
-        };

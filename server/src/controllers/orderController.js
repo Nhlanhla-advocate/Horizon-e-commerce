@@ -1,19 +1,16 @@
+const  validate  = require('../utilities/validation');
 const { validationResult } = require('express-validator');
 const Order = require('../models/order');
 const Product = require('../models/product');
 const User = require('../models/user');
-const stripe = require('stripe');
+// const stripe = require('stripe');
+require('dotenv').config();
 
-const stripeClient = new stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2023-10-16',
-});
+// const stripeClient = new stripe(process.env.NHLANHLA_ADVOCATE_KEY, {
+//   apiVersion: '2023-10-16',
+// });
 
 const createOrder = async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
   try {
     const { items, shippingAddress, paymentMethod, paymentToken } = req.body;
     const userId = req.user?.id;
@@ -111,12 +108,7 @@ const getOrder = async (req, res, next) => {
   }
 };
 
-const updateOrderStatus = async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
+const updateOrderStatus = [validate, async (req, res, next) => {
   try {
     const { status } = req.body;
     const order = await Order.findById(req.params.id);
@@ -129,7 +121,7 @@ const updateOrderStatus = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-};
+}];
 
 const cancelOrder = async (req, res, next) => {
   try {
@@ -289,7 +281,7 @@ const getOrderAnalytics = async (req, res, next) => {
   }
 };
 
-const createGuestOrder = async (req, res, next) => {
+const createGuestOrder = [validate, async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
@@ -345,7 +337,7 @@ const createGuestOrder = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-};
+}];
 
 module.exports = {
   createOrder,

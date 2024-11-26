@@ -1,4 +1,4 @@
-const { check } = require('express-validator');
+const { check, body, validationResult } = require('express-validator');
 
 // Validation middleware for registration (sign-up)
 const validateSignUp = [
@@ -27,7 +27,6 @@ const validateSignIn = [
 
 // Update Profile
 exports.updateProfile = [
-    validateInput([
     body('name')
     .trim()
     .notEmpty()
@@ -42,11 +41,20 @@ exports.updateProfile = [
     .trim()
     .notEmpty()
     .withMessage('Address cannot be empty')
-    ]),
 ];
+
+// catch express-validator errors
+const validate = (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    next();
+};
+
 
 module.exports = {
     validateSignUp,
     validateSignIn,
-    validateProfile
+    validate
 };

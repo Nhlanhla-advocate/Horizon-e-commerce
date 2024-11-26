@@ -72,15 +72,9 @@ exports.updateAdminProfile = async (req, res, next) => {
     }
 };
 
-// Error handling middleware
-const handleErrors = (err, req, res, next) => {
-    console.error(err);
-    res.status(500).json({ message: 'An unexpected error occurred', error: err.message });
-};
-
-module.exports = {
-    registerAdmin,
-    loginAdmin,
-    updateAdminProfile,
-    handleErrors,
-};
+// module.exports = {
+//     registerAdmin,
+//     loginAdmin,
+//     updateAdminProfile,
+//     handleErrors,
+// };

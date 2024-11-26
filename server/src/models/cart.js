@@ -1,7 +1,7 @@
-const mongoose = required('mongoose');
-const ItemSchema = require('./ItemSchema');
+const mongoose = require('mongoose');
+const ItemSchema = require('./Items');
 
-const cartSchema = new mongoose.schema({
+const cartSchema = new mongoose.Schema({
     customerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer', required: true },
     items: [ItemSchema],
     totalPrice: { type: Number, required: true },

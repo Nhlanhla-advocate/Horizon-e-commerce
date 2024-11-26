@@ -5,7 +5,7 @@ const User = require('../models/user');
 
 
 // Add item to the cart
-exports. addToCart = async (req, res) => {
+exports.addToCart = async (req, res) => {
     const { userId, productId, quantity } = req.body;
     try {
         const product = await Product.findById(productId);
@@ -125,12 +125,12 @@ exports.removeMultipleItems = async (req, res) => {
     };
 
     // Convert cart items to an order
-const createOrderFromCart = async (userId) => {
+exports.createOrderFromCart = async (userId) => {
     try {
       const userCart = await Cart.findOne({ userId: userId });
   
       if (!userCart) {
-        throw new Error('Cart not found for this user');
+        // throw new Error('Cart not found for this user');
       }
   
    
@@ -151,23 +151,23 @@ const createOrderFromCart = async (userId) => {
       return newOrder;
     } catch (error) {
       console.error(error);
-      throw new Error('Error creating order from cart');
+    //   throw new Error('Error creating order from cart');
     }
   };
   
   // Get user details
-  const getUserDetails = async (userId) => {
+  exports.getUserDetails = async (userId) => {
     try {
       const user = await User.findById(userId);
       return user;
     } catch (error) {
       console.error(error);
-      throw new Error('Error retrieving user details');
+    //   throw new Error('Error retrieving user details');
     }
   };
   
   // Update the cart (add an item)
-  const addItemToCart = async (userId, item) => {
+  exports.addItemToCart = async (userId, item) => {
     try {
       const userCart = await Cart.findOne({ userId: userId });
   
@@ -187,18 +187,7 @@ const createOrderFromCart = async (userId) => {
       }
     } catch (error) {
       console.error(error);
-      throw new Error('Error adding item to cart');
+    //   throw new Error('Error adding item to cart');
     }
   };
   
-  
-  module.exports = {
-    addToCart,
-    removeFromCart,
-    removeMultipleItems,
-    clearCart,
-    getCart,
-    createOrderFromCart,
-    getUserDetails,
-    addItemToCart,
-  };

@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const ProductController = require('../controllers/ProductController');
-const { authenticateUser, isAdmin } = require('../middlewares/authMiddleware');  // Example middlewares for auth
-
+const { authenticateUser, isAdmin } = require('../middleware/authMiddleware');  
 // Create a new product (Admin only)
 router.post('/products', authenticateUser, isAdmin, ProductController.createProduct);
 

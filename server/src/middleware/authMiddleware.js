@@ -16,11 +16,11 @@ const authMiddleware = (role) => async (req, res, next) => {
         // Fetch user based on the role
         if (role === 'admin') {
             const admin = await Admin.findById(decoded._id);
-            if (!admin) throw new Error('Admin not found');
+            // if (!admin) throw new Error('Admin not found');
             req.admin = admin;
         } else if (role === 'customer') {
             const user = await User.findById(decoded._id);
-            if (!user) throw new Error('Access denied. User not found');
+            // if (!user) throw new Error('Access denied. User not found');
             req.user = user;
         } else {
             return res.status(400).json({error: 'Invalid role'});

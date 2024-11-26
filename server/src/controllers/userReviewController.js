@@ -2,10 +2,10 @@ const mongoose = require('mongoose');
 const Review = require('../models/review');  
 const Product = require('../models/product');  
 
-// Review Controller
-exports.reviewController = {
+
   // Get User Reviews
-  getUserReviews: async (req, res, next) => {
+  exports.getUserReviews = async (req, res, next) => {
+    
     try {
       // Pagination parameters
       const page = parseInt(req.query.page) || 1;
@@ -14,10 +14,10 @@ exports.reviewController = {
 
       // Find reviews of the logged-in user
       const reviews = await Review.find({ user: req.user._id })
-        .populate('product', 'name')  // Populate the 'product' field with just the product name
-        .sort({ createdAt: -1 })      // Sort reviews by creation date with the most recent first
-        .skip(skip)                   // skip the previous pages' reviews
-        .limit(limit);                // Limit the number of reviews per page
+        .populate('product', 'name')  
+        .sort({ createdAt: -1 })      
+        .skip(skip)                
+        .limit(limit);                
 
       // Count total reviews for the user
       const total = await Review.countDocuments({ user: req.user._id });
@@ -33,10 +33,10 @@ exports.reviewController = {
     } catch (error) {
       next(error);
     }
-  },
+  };
 
   // Edit Review
-  editReview: async (req, res, next) => {
+  exports.editReview = async (req, res, next) => {
     const session = await mongoose.startSession();
     session.startTransaction();
     try {
@@ -46,7 +46,7 @@ exports.reviewController = {
       // Find the review by ID and the logged-in user
       const review = await Review.findOne({ _id: reviewId, user: req.user._id }).session(session);
       if (!review) {
-        throw new Error('Review not found or you are not authorized to edit this review');
+        // throw new Error('Review not found or you are not authorized to edit this review');
       }
 
       const oldRating = review.rating;
@@ -59,7 +59,7 @@ exports.reviewController = {
       // Find the associated product to update its rating
       const product = await Product.findById(review.product).session(session);
       if (!product) {
-        throw new Error('Product not found');
+        // throw new Error('Product not found');
       }
 
       // Update product's sum of ratings and average rating
@@ -81,10 +81,10 @@ exports.reviewController = {
       session.endSession();
       next(error);
     }
-  },
+  };
 
   // Delete Review
-  deleteReview: async (req, res, next) => {
+  exports.deleteReview = async (req, res, next) => {
     const session = await mongoose.startSession();
     session.startTransaction();
     try {
@@ -93,13 +93,13 @@ exports.reviewController = {
       // Find and delete the review based on the reviewId and the user
       const review = await Review.findOneAndDelete({ _id: reviewId, user: req.user._id }).session(session);
       if (!review) {
-        throw new Error('Review not found or you are not authorized to delete this review');
+        // throw new Error('Review not found or you are not authorized to delete this review');
       }
 
       // Find the associated product to update its ratings
       const product = await Product.findById(review.product).session(session);
       if (!product) {
-        throw new Error('Product not found');
+        // throw new Error('Product not found');
       }
 
       // Update product's total ratings and average rating
@@ -122,7 +122,5 @@ exports.reviewController = {
       session.endSession();
       next(error);
     }
-  }
-};
-
-module.exports = new userReviewController();
+    
+  };
