@@ -1,5 +1,4 @@
 const Admin = require('../models/admin'); 
-const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
@@ -71,10 +70,3 @@ exports.updateAdminProfile = async (req, res, next) => {
         next(error);
     }
 };
-
-// module.exports = {
-//     registerAdmin,
-//     loginAdmin,
-//     updateAdminProfile,
-//     handleErrors,
-// };

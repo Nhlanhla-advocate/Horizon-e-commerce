@@ -4,6 +4,7 @@ const Order = require('../models/order');
 const User = require('../models/user');
 
 
+
 // Add item to the cart
 exports.addToCart = async (req, res) => {
     const { userId, productId, quantity } = req.body;

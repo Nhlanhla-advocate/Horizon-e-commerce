@@ -10,7 +10,7 @@ require('dotenv').config();
 //   apiVersion: '2023-10-16',
 // });
 
-const createOrder = async (req, res, next) => {
+exports.createOrder = async (req, res, next) => {
   try {
     const { items, shippingAddress, paymentMethod, paymentToken } = req.body;
     const userId = req.user?.id;
@@ -71,7 +71,7 @@ const createOrder = async (req, res, next) => {
   }
 };
 
-const getOrderHistory = async (req, res, next) => {
+exports.getOrderHistory = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -96,7 +96,7 @@ const getOrderHistory = async (req, res, next) => {
   }
 };
 
-const getOrder = async (req, res, next) => {
+exports.getOrder = async (req, res, next) => {
   try {
     const order = await Order.findById(req.params.id).populate('user', 'name email');
     if (!order) {
@@ -108,7 +108,7 @@ const getOrder = async (req, res, next) => {
   }
 };
 
-const updateOrderStatus = [validate, async (req, res, next) => {
+exports.updateOrderStatus = [validate, async (req, res, next) => {
   try {
     const { status } = req.body;
     const order = await Order.findById(req.params.id);
@@ -123,7 +123,7 @@ const updateOrderStatus = [validate, async (req, res, next) => {
   }
 }];
 
-const cancelOrder = async (req, res, next) => {
+exports.cancelOrder = async (req, res, next) => {
   try {
     const order = await Order.findById(req.params.id);
     if (!order) {
@@ -155,7 +155,7 @@ const cancelOrder = async (req, res, next) => {
   }
 };
 
-const createBulkOrder = async (req, res, next) => {
+exports.createBulkOrder = async (req, res, next) => {
   try {
     const { items, shippingAddress, paymentMethod, paymentToken } = req.body;
     const userId = req.user?.id;
@@ -219,7 +219,7 @@ const createBulkOrder = async (req, res, next) => {
   }
 };
 
-const getOrderAnalytics = async (req, res, next) => {
+exports.getOrderAnalytics = async (req, res, next) => {
   try {
     const startDate = new Date(req.query.startDate);
     const endDate = new Date(req.query.endDate);
@@ -281,7 +281,7 @@ const getOrderAnalytics = async (req, res, next) => {
   }
 };
 
-const createGuestOrder = [validate, async (req, res, next) => {
+exports.createGuestOrder = [validate, async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
@@ -339,13 +339,3 @@ const createGuestOrder = [validate, async (req, res, next) => {
   }
 }];
 
-module.exports = {
-  createOrder,
-  getOrderHistory,
-  getOrder,
-  updateOrderStatus,
-  cancelOrder,
-  createBulkOrder,
-  getOrderAnalytics,
-  createGuestOrder
-};
