@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const { body, validationResult } = require("express-validator");
+const { body } = require("express-validator");
+const { validateGuestOrder, validateNewOrder } = require('../utilities/validation');
+
 const {
   createOrder,
   getOrderHistory,
@@ -11,76 +13,30 @@ const {
   getOrderAnalytics,
   createGuestOrder,
 } = require("../controllers/orderController");
+
 // const { authMiddleware } = require("../middleware/authMiddleware");
-const authMiddleware = require('../middleware/authMiddleware');
 
-const user = require("../models/user");
-
-
-router.post(
-    '/create', authMiddleware(user),
-    [
-        body('items').isArray().notEmpty().withMessage("Items must be an array and not empty"),
-        // body('paymentMethod').notEmpty(),
-        // body('paymentToken').notEmpty()
-    ]
-    ,
-    (req, res, next) => {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
-        next();
-    },
-    createOrder
-);
+// Route to create an order
+router.post("/", validateNewOrder, createOrder);
 
 // Route to get order history for the authenticated user
-router.get("/history", authMiddleware(user), getOrderHistory);
+router.get("/history", getOrderHistory);
 
 // Route to get a specific order by its ID
-router.get("/:id", authMiddleware(user), getOrder);
+router.get("/:id", getOrder);
 
 // Route to get order analytics
-router.get("/analytics", authMiddleware(user),getOrderAnalytics);
+router.get("/analytics", getOrderAnalytics);
 
 // Route to update the status of an order
-router.patch(
-  "/:id/update-status",
-  authMiddleware,
-  [body("status").isString().notEmpty().withMessage("Status is required.")],
-  (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-    next();
-  },
-  updateOrderStatus
-);
+router.patch("/:orderId", updateOrderStatus);
 
 // Route to cancel an order
-router.delete("/:id/cancel", authMiddleware(user), cancelOrder);
+router.delete("/:id/cancel", cancelOrder);
 
 // Route to create a bulk order
-router.post("/bulk", authMiddleware(user), createBulkOrder);
+router.post("/bulk", createBulkOrder);
 
-router.post(
-  "/guest",
-  [
-    body("items").isArray().notEmpty().withMessage("Items must be an array and not empty."),
-    body("paymentMethod").notEmpty().withMessage("Payment method is required."),
-    body("paymentToken").notEmpty().withMessage("Payment token is required."),
-    body("guestEmail").isEmail().withMessage("A valid guest email is required."),
-  ],
-  (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-    next();
-  },
-  createGuestOrder
-);
+router.post("/create-guest-order", validateGuestOrder, createGuestOrder);
 
 module.exports = router;

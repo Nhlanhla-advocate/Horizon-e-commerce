@@ -27,12 +27,11 @@ const authMiddleware = (role) => async (req, res, next) => {
         }
 
         // Route handler
+        next();
     } catch (error) {
-        if (error.message === 'No token provided') {
-            return res.status(401).json({ error: 'No token provided'});
-        } else if (error.message === 'jwt malformed'){
+        if (error.message === 'JsonWebTokenError') {
             return res.status(401).json({ error: 'Invalid token'});
-        } else if (error.message === 'Admin not found' || error.message === 'User not found') {
+        } else if (error.message === 'Admin not found' || error.message === 'User not found'){
             return res.status(401).json({ error: 'Authentication failed'});
         }
             return res.status(500).json({ error: 'Internal server error'});

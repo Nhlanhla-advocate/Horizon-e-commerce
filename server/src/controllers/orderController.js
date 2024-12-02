@@ -21,6 +21,9 @@ exports.createOrder = async (req, res, next) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
+    if (!req.user?.id) {
+      return res.status(400).json({ message: 'User not authenticated' });
+    }
 
     let totalPrice = 0;
     for (let item of items) {
@@ -108,7 +111,7 @@ exports.getOrder = async (req, res, next) => {
   }
 };
 
-exports.updateOrderStatus = [validate, async (req, res, next) => {
+exports.updateOrderStatus = async (req, res, next) => {
   try {
     const { status } = req.body;
     const order = await Order.findById(req.params.id);
@@ -121,7 +124,7 @@ exports.updateOrderStatus = [validate, async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-}];
+};
 
 exports.cancelOrder = async (req, res, next) => {
   try {
@@ -281,7 +284,7 @@ exports.getOrderAnalytics = async (req, res, next) => {
   }
 };
 
-exports.createGuestOrder = [validate, async (req, res, next) => {
+exports.createGuestOrder = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
@@ -337,5 +340,5 @@ exports.createGuestOrder = [validate, async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-}];
+};
 

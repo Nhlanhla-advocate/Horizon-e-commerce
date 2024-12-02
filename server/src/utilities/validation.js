@@ -52,9 +52,36 @@ const validate = (req, res, next) => {
     next();
 };
 
+const validateGuestOrder = [
+    body("items").isArray().notEmpty().withMessage("Items must be an array and not empty."),
+    body("paymentMethod").notEmpty().withMessage("Payment method is required."),
+    body("paymentToken").notEmpty().withMessage("Payment token is required."),
+    body("guestEmail").isEmail().withMessage("A valid guest email is required."),
+  ];
+
+  const validateNewOrder = [
+    body("customerId").isMongoId().withMessage("Invalid customer ID."),
+    body("items")
+      .isArray()
+      .withMessage("Items must be an array.")
+      .custom((value) => value.length > 0)
+      .withMessage("Items cannot be empty."),
+    body("items.*.productId")
+      .isMongoId()
+      .withMessage("Each item must have a valid product ID."),
+    body("items.*.quantity")
+      .isInt({ gt: 0 })
+      .withMessage("Each item must have a valid quantity greater than 0."),
+    body("items.*.price")
+      .isFloat({ gt: 0 })
+      .withMessage("Each item must have a valid price."),
+  ];
+
 
 module.exports = {
     validateSignUp,
     validateSignIn,
-    validate
+    validate,
+    validateGuestOrder,
+    validateNewOrder
 };
