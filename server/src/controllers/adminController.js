@@ -1,5 +1,4 @@
 const Admin = require('../models/admin'); 
-const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
@@ -70,17 +69,4 @@ exports.updateAdminProfile = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
-};
-
-// Error handling middleware
-const handleErrors = (err, req, res, next) => {
-    console.error(err);
-    res.status(500).json({ message: 'An unexpected error occurred', error: err.message });
-};
-
-module.exports = {
-    registerAdmin,
-    loginAdmin,
-    updateAdminProfile,
-    handleErrors,
 };

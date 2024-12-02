@@ -1,34 +1,44 @@
 const express = require('express');
 const router = express.Router();
-const userController = require('../controllers/userController');
-const { authenticateUser } = require('../middlewares/authMiddleware');
-const { body } = require('express-validator');
+const { authMiddleware } = require('../middleware/authMiddleware');
+const {
+  validateSignUp,
+  validateSignIn
+} = require('../utilities/validation');
+const {
+  signUp,
+  signIn,
+  signOut
+} = require('../controllers/authController');
+const {
+  getProfile,
+  updateProfile,
+  postReview,
+  handleErrors
+} = require('../controllers/userController');
 
-// Get User Profile
-router.get('/profile', authenticateUser, userController.getProfile);
+// Route to sign up a new user
+router.post('/signup', validateSignUp, signUp);
 
-// Update User Profile
+// Route to log a user in (signin)
+router.post('/signin', validateSignIn, signIn);
+
+// User signout
+router.post("/signout", signOut);
+
+// Route to get the user's profile (Protected route)
+router.get('/profile', getProfile);
+
+// Route to update user profile (Protected route)
 router.put(
   '/profile',
-  authenticateUser,
-  userController.validateInput([
-    body('username')
-    .optional()
-    .isString()
-    .withMessage('Username must be a string'),
-    body('email')
-    .optional()
-    .isEmail()
-    .withMessage('Please enter a valid email'),
-    body('address')
-    .optional()
-    .isString()
-    .withMessage('Address must be a string')
-  ]),
-  userController.updateProfile
+ updateProfile
 );
 
-// Post a Review (placeholder route)
-router.post('/review', authenticateUser, userController.postReview);
+// Route to post a review (Protected route)
+router.post('/review', postReview);
+
+// Global error handling middleware
+router.use(handleErrors);
 
 module.exports = router;

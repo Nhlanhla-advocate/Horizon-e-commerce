@@ -16,23 +16,22 @@ const authMiddleware = (role) => async (req, res, next) => {
         // Fetch user based on the role
         if (role === 'admin') {
             const admin = await Admin.findById(decoded._id);
-            if (!admin) throw new Error('Admin not found');
+            // if (!admin) throw new Error('Admin not found');
             req.admin = admin;
-        } else if (role === 'customer') {
+        } else if (role === 'user') {
             const user = await User.findById(decoded._id);
-            if (!user) throw new Error('Access denied. User not found');
+            // if (!user) throw new Error('Access denied. User not found');
             req.user = user;
         } else {
             return res.status(400).json({error: 'Invalid role'});
         }
 
         // Route handler
+        next();
     } catch (error) {
-        if (error.message === 'No token provided') {
-            return res.status(401).json({ error: 'No token provided'});
-        } else if (error.message === 'jwt malformed'){
+        if (error.message === 'JsonWebTokenError') {
             return res.status(401).json({ error: 'Invalid token'});
-        } else if (error.message === 'Admin not found' || error.message === 'User not found') {
+        } else if (error.message === 'Admin not found' || error.message === 'User not found'){
             return res.status(401).json({ error: 'Authentication failed'});
         }
             return res.status(500).json({ error: 'Internal server error'});

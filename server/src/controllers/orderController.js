@@ -1,19 +1,16 @@
+const  validate  = require('../utilities/validation');
 const { validationResult } = require('express-validator');
 const Order = require('../models/order');
 const Product = require('../models/product');
 const User = require('../models/user');
-const stripe = require('stripe');
+// const stripe = require('stripe');
+require('dotenv').config();
 
-const stripeClient = new stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2023-10-16',
-});
+// const stripeClient = new stripe(process.env.NHLANHLA_ADVOCATE_KEY, {
+//   apiVersion: '2023-10-16',
+// });
 
-const createOrder = async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
+exports.createOrder = async (req, res, next) => {
   try {
     const { items, shippingAddress, paymentMethod, paymentToken } = req.body;
     const userId = req.user?.id;
@@ -23,6 +20,9 @@ const createOrder = async (req, res, next) => {
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
+    }
+    if (!req.user?.id) {
+      return res.status(400).json({ message: 'User not authenticated' });
     }
 
     let totalPrice = 0;
@@ -74,7 +74,7 @@ const createOrder = async (req, res, next) => {
   }
 };
 
-const getOrderHistory = async (req, res, next) => {
+exports.getOrderHistory = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -99,7 +99,7 @@ const getOrderHistory = async (req, res, next) => {
   }
 };
 
-const getOrder = async (req, res, next) => {
+exports.getOrder = async (req, res, next) => {
   try {
     const order = await Order.findById(req.params.id).populate('user', 'name email');
     if (!order) {
@@ -111,12 +111,7 @@ const getOrder = async (req, res, next) => {
   }
 };
 
-const updateOrderStatus = async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
+exports.updateOrderStatus = async (req, res, next) => {
   try {
     const { status } = req.body;
     const order = await Order.findById(req.params.id);
@@ -131,7 +126,7 @@ const updateOrderStatus = async (req, res, next) => {
   }
 };
 
-const cancelOrder = async (req, res, next) => {
+exports.cancelOrder = async (req, res, next) => {
   try {
     const order = await Order.findById(req.params.id);
     if (!order) {
@@ -163,7 +158,7 @@ const cancelOrder = async (req, res, next) => {
   }
 };
 
-const createBulkOrder = async (req, res, next) => {
+exports.createBulkOrder = async (req, res, next) => {
   try {
     const { items, shippingAddress, paymentMethod, paymentToken } = req.body;
     const userId = req.user?.id;
@@ -227,7 +222,7 @@ const createBulkOrder = async (req, res, next) => {
   }
 };
 
-const getOrderAnalytics = async (req, res, next) => {
+exports.getOrderAnalytics = async (req, res, next) => {
   try {
     const startDate = new Date(req.query.startDate);
     const endDate = new Date(req.query.endDate);
@@ -289,7 +284,7 @@ const getOrderAnalytics = async (req, res, next) => {
   }
 };
 
-const createGuestOrder = async (req, res, next) => {
+exports.createGuestOrder = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
@@ -347,13 +342,3 @@ const createGuestOrder = async (req, res, next) => {
   }
 };
 
-module.exports = {
-  createOrder,
-  getOrderHistory,
-  getOrder,
-  updateOrderStatus,
-  cancelOrder,
-  createBulkOrder,
-  getOrderAnalytics,
-  createGuestOrder
-};

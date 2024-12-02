@@ -1,5 +1,4 @@
-const { body } = require('express-validator');
-const User = require('../models/user'); // Adjust the path as necessary
+const User = require('../models/wishList'); 
 
 // Get Wishlist
 exports.getWishlist = async (req, res, next) => {
@@ -35,18 +34,8 @@ exports.addToWishlist = async (req, res, next) => {
     }
 };
 
-// Export both functions
-module.exports = {
-    getWishlist: exports.getWishlist,
-    addToWishlist: exports.addToWishlist,
-};
-
 // Remove from wishlist
-exports.removeFromWishlist = [
-    validateInput([
-        body('productId').isMongoId().withMessage('Invalid product ID')
-    ]),
-    async (req, res, next) => {
+exports.removeFromWishlist = async (req, res, next) => {
         try {
             const { productId } = req.body;
 
@@ -63,7 +52,4 @@ exports.removeFromWishlist = [
         } catch (error) {
             next(error);
         }
-    }
-];
-
-module.exports = new wishlistController();
+    };
