@@ -5,7 +5,7 @@ const validateSignUp = [
     check('username')
         .trim()
         .not().isEmpty().withMessage('Username is required')
-        .isLength({ min: 3 }).withMessage('Username must be at least 3 characters long'),
+        .isLength({ min: 3 }).withMessage('Username must be at least 6 characters long'),
 
     check('email')
         .trim()
@@ -14,6 +14,15 @@ const validateSignUp = [
     check('password')
         .isLength({ min: 6 }).withMessage('Password must be at least 6 characters long')
 ];
+
+// Middleware for handling validation errors
+const handleValidationErrors = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!error.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  next();
+};
 
 // Validation middleware for sign-in
 const validateSignIn = [
@@ -81,6 +90,7 @@ const validateGuestOrder = [
 module.exports = {
     validateSignUp,
     validateSignIn,
+    handleValidationErrors,
     validate,
     validateGuestOrder,
     validateNewOrder

@@ -2,29 +2,11 @@ const express = require('express');
 const router = express.Router();
 const { authMiddleware } = require('../middleware/authMiddleware');
 const {
-  validateSignUp,
-  validateSignIn
-} = require('../utilities/validation');
-const {
-  signUp,
-  signIn,
-  signOut
-} = require('../controllers/authController');
-const {
   getProfile,
   updateProfile,
   postReview,
   handleErrors
 } = require('../controllers/userController');
-
-// Route to sign up a new user
-router.post('/signup', validateSignUp, signUp);
-
-// Route to log a user in (signin)
-router.post('/signin', validateSignIn, signIn);
-
-// User signout
-router.post("/signout", signOut);
 
 // Route to get the user's profile (Protected route)
 router.get('/profile', getProfile);

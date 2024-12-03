@@ -1,13 +1,24 @@
 const express = require('express');
 const router = express.Router();
-const authController = require('../controllers/authController');
-// const { validateSignIn, validateSignUp, validate } = require('../utilities/validation')
+const {
+    validateSignUp,
+    validateSignIn,
+    handleValidationErrors
+  } = require('../utilities/validation');
+  const {
+    signUp,
+    signIn,
+    signOut
+  } = require('../controllers/authController');
 
-router.post('/signup', authController.signUp);
+  // Route to sign up a new user
+router.post('/signup', validateSignUp, signUp);
 
-router.post('/signin', authController.signIn);
+// Route to log a user in (signin)
+router.post('/signin', validateSignIn, handleValidationErrors, signIn);
 
+// User signout
+router.post("/signout", signOut);
 
-router.post('/signout', authController.signOut);
 
 module.exports = router;
