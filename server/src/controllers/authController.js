@@ -1,5 +1,5 @@
 const User = require('../models/user');
-const { check, validationResult } = require('express-validator');
+const { validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
@@ -55,16 +55,12 @@ exports.signUp = async (req, res) => {
         // User sign-in
         exports.signIn = async (req, res) => {
          try {
-            // Check for validation errors
-            exports.handleValidationErrors = (req, res) => {
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                return res.status(400).json({ errors: errors.array() });
-            }
-            return null
-        }
-
+            // Extract the username, email, and password from the request body
             const { username, email, password } = req.body;
+
+            if (!username && !email) {
+                return res.status(400).json({ error: "Please provide a username or email."});
+            }
 
             // Check if user exists
              const user = username 
