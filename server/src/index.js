@@ -1,5 +1,7 @@
 const express = require('express');
 const app = express();
+const { connectToMongoDB } = require('./db/connection');
+
 
 // Import route modules
 const authRoutes = require('./routes/auth');
@@ -38,4 +40,17 @@ app.use('/wishList', wishListRoutes);
 
 // Set the server to listen on the specified port
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+// app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+
+async function startServer() {
+    try {
+        await connectToMongoDB();
+        app.listen(PORT, () => {
+            console.log(`server is running on port ${PORT}`);
+        });
+    } catch (error) {
+        console.error("An error occured while trying to start the server:", error);
+        process.exit(1);
+    }
+}
+startServer();
