@@ -13,19 +13,23 @@ exports.signUp = async (req, res) => {
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
         }
-        return null;
+
     }
 
         const { username, email, password, ...rest } = req.body;
 
+
         // Check for existing user with the same email
         const existingEmailUser = await User.findOne({ email });
+        console.log(existingEmailUser);
         if (existingEmailUser) {
             return res.status(400).json({ error: 'Email already in use' });
+            
         }
 
         // Check for existing user with the same username
         const existingUsernameUser = await User.findOne({ username });
+        console.log(existingUsernameUser);
         if (existingUsernameUser) {
             return res.status(400).json({ error: 'Username already in use' });
         }
@@ -45,6 +49,14 @@ exports.signUp = async (req, res) => {
         // Generate JWT token
         const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
+        // Set cookies
+        res.cookie("auth-token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            maxAge: 1000 * 60 * 60 * 24,
+        });
+
         res.status(201).json({ token, message: 'User registered successfully' });
     } catch (error) {
         console.error('Sign up error:', error);
@@ -55,12 +67,13 @@ exports.signUp = async (req, res) => {
         // User sign-in
         exports.signIn = async (req, res) => {
          try {
+            // Check for validate errors
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
             // Extract the username, email, and password from the request body
             const { username, email, password } = req.body;
-
-            if (!username && !email) {
-                return res.status(400).json({ error: "Please provide a username or email."});
-            }
 
             // Check if user exists
              const user = username 
@@ -79,6 +92,14 @@ exports.signUp = async (req, res) => {
 
             // Generate JWT token
             const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+            
+            // Set the cookie
+            res.cookie("auth-token", token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "strict",
+                maxAge: 1000 * 60 * 60 * 24,
+            });
 
             res.status(200).json({ token, message: 'Signed in successfully' });
             } catch (error) {

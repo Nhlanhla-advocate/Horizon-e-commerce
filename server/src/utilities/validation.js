@@ -11,14 +11,17 @@ const validateSignUp = [
         .trim()
         .isEmail().withMessage('A valid email is required'),
 
-    check('password')
-        .isLength({ min: 6 }).withMessage('Password must be at least 6 characters long')
+    body('password')
+        .isLength({ min: 6 })
+        .withMessage('Password must be at least 6 characters long')
+        .matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[A-Z])(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{6,}$/)
+        .withMessage("Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"),
 ];
 
 // Middleware for handling validation errors
 const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
-  if (!error.isEmpty()) {
+  if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
   next();
