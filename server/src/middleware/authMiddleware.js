@@ -1,41 +1,47 @@
-const jwt = require('jsonwebtoken');
-const Admin = require('../models/admin');
-const User = require('../models/user');
+const { verify } = require("jsonwebtoken");
 
-const authMiddleware = (role) => async (req, res, next) => {
+const secret = process.env.JWT_SECRET;
+
+const authMiddleware = async (req, res, next) => {
     try {
-        // Authorization header
-        const token = req.header('Authorization').replace('Bearer ', '');
-        if (!token) {
-            return res.status(401).json({ error: 'Access denied. No token provided.' });
+        // Extract token from authorization header
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return res.status(401).json({ message: "Authorization token is required" });
         }
+
+        const token = authHeader.split(" ")[1];
 
         // Verify token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = verify(token, secret);
 
         // Fetch user based on the role
-        if (role === 'admin') {
-            const admin = await Admin.findById(decoded._id);
-            // if (!admin) throw new Error('Admin not found');
-            req.admin = admin;
-        } else if (role === 'user') {
-            const user = await User.findById(decoded._id);
-            // if (!user) throw new Error('Access denied. User not found');
+        let user;
+        if (decoded.role === "admin") {
+            user = await Admin.findById(decoded._id);
+            if (!user) return res.status(401).json({ message: "Admin not found" });
+            req.admin = user;
+        } else if (decoded.role === "user") {
+            user = await User.findById(decoded._id);
+            if (!user) return res.status(401).json({ message: "User not found" });
             req.user = user;
+        } else if (decoded.status === "inactive") {
+            return res.status(401).json({ message: "Account has been suspended, please contact support" });
         } else {
-            return res.status(400).json({error: 'Invalid role'});
+            return res.status(401).json({ message: "Invalid role, authentication failed" });
         }
 
-        // Route handler
+        // Proceed to the next middleware
         next();
     } catch (error) {
-        if (error.message === 'JsonWebTokenError') {
-            return res.status(401).json({ error: 'Invalid token'});
-        } else if (error.message === 'Admin not found' || error.message === 'User not found'){
-            return res.status(401).json({ error: 'Authentication failed'});
+        if (error.name === "JsonWebTokenError") {
+            return res.status(401).json({ error: "Invalid token" });
+        } else if (error.name === "TokenExpiredError") {
+            return res.status(401).json({ error: "Token has expired" });
         }
-            return res.status(500).json({ error: 'Internal server error'});
+        console.error(error);
+        return res.status(500).json({ error: "Internal server error" });
     }
 };
 
-module.exports = authMiddleware
+module.exports = authMiddleware;
