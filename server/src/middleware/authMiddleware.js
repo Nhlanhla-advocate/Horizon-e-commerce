@@ -1,27 +1,38 @@
+const { verify } = require("jsonwebtoken");
 
+    //Middleware function to check if user is authenticated
+    const secret = process.env.JWT_SECRET;
+    const authMiddleware = (req, res, next) => {
 
-const jwt = require('jsonwebtoken');
-const User = require('../models/user');
-
-const authMiddleware = async (req, res, next) => {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    // const token = req.cookies.auth_token;
-
-    if (!token) {
-        return res.status(401).json({ error: 'Authorization token is required' });
+    //Extract token from authorization header
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer")) {
+        return res
+         .status(401)
+         .json({ message: "Authorization token is required" });
     }
-
+    const token = authHeader.split(" ")[1];
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = await User.findById(decoded.id);  // Use decoded.id instead of decoded._id
-        if (!req.user) {
-            return res.status(404).json({ error: 'User not found' });
+        //Verify token
+        const decoded = verify(token, secret);
+
+        //Verify user role and set user ID in request object
+        if (decoded.role === "administrator") {
+            req.userID = decoded.id;
+        } else if (decoded.role === "user") {
+            req.userID = decoded.id;
+        } else if (decoded.status === "inactive") {
+            return res.status(401).json({ message: "Account has been suspended, please contact support" });
+        } else {
+            return res.status(401).json({ message: "Unable to verify this account, please contact support" });
         }
         next();
     } catch (error) {
-        console.error('Token verification error:', error);  // Log the error for debugging
-        return res.status(401).json({ error: 'Invalid token' });
+    console.error(error);
+    return res.status(401).json({ message: "Invalid token" });    
     }
 };
 
+
 module.exports = authMiddleware;
+
