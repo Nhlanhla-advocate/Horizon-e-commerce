@@ -14,6 +14,7 @@ services:
       - db:/data/db
       - ./dbseed.gz:/dbseed.gz
       - ./dbseed.sh:/docker-entrypoint-initdb.d/mongorestore.sh
+
   mongodb-e-commerce-test:
     container_name: mongodb-e-commerce-test
     restart: unless-stopped
@@ -27,6 +28,7 @@ services:
     volumes:
       - ./dbseed.gz:/dbseed.gz
       - ./dbseed.sh:/docker-entrypoint-initdb.d/mongorestore.sh
+
   app:
     depends_on:
       - mongodb-e-commerce
@@ -52,8 +54,7 @@ services:
       - IS_DOCKER=true
     stdin_open: true
     tty: true
-    links:
-      - mongodb-e-commerce
+
 volumes:
   db:
   avatars:
