@@ -1,8 +1,5 @@
 const Product = require('../models/product');
-const Category = require('../models/Category');
 const Review = require('../models/review');
-const ApiError = require('../utils/ApiError');
-const { uploadToCloud } = require('../utils/cloudinaryService');
 const mongoose = require('mongoose');
 
 class ProductController {

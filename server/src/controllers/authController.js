@@ -1,21 +1,10 @@
 const User = require('../models/user');
-const { validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
 // User sign-up
 exports.signUp = async (req, res) => {
     try {
-
-        // Check for validation errors
-        exports.handleValidationErrors = (req, res) => {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
-
-    }
-
         const { username, email, password, ...rest } = req.body;
 
 
@@ -67,11 +56,6 @@ exports.signUp = async (req, res) => {
         // User sign-in
         exports.signIn = async (req, res) => {
          try {
-            // Check for validate errors
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                return res.status(400).json({ errors: errors.array() });
-            }
             // Extract the username, email, and password from the request body
             const { username, email, password } = req.body;
 
