@@ -1,4 +1,38 @@
 const { check, body, validationResult } = require('express-validator');
+const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
+
+// Inputting validation middleware
+const validateInput = (validations) => async (req, res, next) => {
+  try {
+    await Promise.all(validations.map((validation) => validation.run(req)));
+    const errors = validationResult(req);
+
+       // If there are validation errors, return a 400 response
+       if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    // Proceed to the next middleware
+    next();
+} catch (err) {
+    next(err);
+}
+};
+
+// Error handling middleware
+const handleErrors = (err, req, res, next) => {
+console.error(err.message);
+
+if (err instanceof mongoose.Error.CastError) {
+    return res.status(404).json({ message: 'Resource not found' });
+}
+if (err instanceof jwt.JsonWebTokenError) {
+    return res.status(401).json({ error: 'Invalid token' });
+}
+
+res.status(500).json({ message: 'An unexpected error occurred', error: err.message });
+};
 
 // Validation middleware for registration (sign-up)
 const validateSignUp = [
@@ -6,10 +40,6 @@ const validateSignUp = [
         .trim()
         .not().isEmpty().withMessage('Username is required')
         .isLength({ min: 3 }).withMessage('Username must be at least 6 characters long'),
-
-    check('email')
-        .trim()
-        .isEmail().withMessage('A valid email is required'),
 
     body('password')
         .isLength({ min: 6 })
@@ -91,6 +121,7 @@ const validateGuestOrder = [
 
 
 module.exports = {
+    handleErrors,
     validateSignUp,
     validateSignIn,
     handleValidationErrors,

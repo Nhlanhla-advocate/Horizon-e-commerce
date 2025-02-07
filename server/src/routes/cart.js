@@ -14,7 +14,6 @@ router.get('/:userId', cartController.getCart);
 router.post('/:userId/checkout', async (req, res) => {
     try {
         const { userId } = req.params;
-        // const order = await cartController.createOrderFromCart(userId);
         const order = await cartController.createOrderFromCart(userId);
         res.status(200).json({ message: 'Order created successfully', order });
     } catch (error) {

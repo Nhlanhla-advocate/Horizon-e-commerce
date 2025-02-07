@@ -14,10 +14,8 @@ const {
   createGuestOrder,
 } = require("../controllers/orderController");
 
-// const { authMiddleware } = require("../middleware/authMiddleware");
-
 // Route to create an order
-router.post("/", validateNewOrder, createOrder);
+router.post("/create", validateNewOrder, createOrder);
 
 // Route to get order history for the authenticated user
 router.get("/history", getOrderHistory);

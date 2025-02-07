@@ -1,12 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const ProductController = require('../controllers/ProductController');
 const { authenticateUser, isAdmin } = require('../middleware/authMiddleware');  
 // Create a new product (Admin only)
 router.post('/products', authenticateUser, isAdmin, ProductController.createProduct);
-
-// Post a review for a product (authenticated users)
-router.post('/products/:id/review', authenticateUser, ProductController.postReview);
 
 // List products with filtering, sorting, and pagination
 router.get('/products', ProductController.listProducts);

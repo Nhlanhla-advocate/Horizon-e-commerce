@@ -1,4 +1,6 @@
 const { verify } = require("jsonwebtoken");
+const mongoose = require("mongoose");
+const User = require("../models/user");
 
 const secret = process.env.JWT_SECRET;
 
@@ -15,22 +17,20 @@ const authMiddleware = async (req, res, next) => {
         // Verify token
         const decoded = verify(token, secret);
 
-        // Fetch user based on the role
-        let user;
-        if (decoded.role === "admin") {
-            user = await Admin.findById(decoded._id);
-            if (!user) return res.status(401).json({ message: "Admin not found" });
-            req.admin = user;
-        } else if (decoded.role === "user") {
-            user = await User.findById(decoded._id);
-            if (!user) return res.status(401).json({ message: "User not found" });
-            req.user = user;
-        } else if (decoded.status === "inactive") {
-            return res.status(401).json({ message: "Account has been suspended, please contact support" });
-        } else {
-            return res.status(401).json({ message: "Invalid role, authentication failed" });
+        // Find user
+        const user = await User.findById(decoded._id);
+        if (!user) {
+            return res.status(401).json({ message: "User not found" });
         }
 
+        // Check user status
+        if (user.status === "inactive") {
+            return res.status(401).json({ message: "Account has been suspended, please contact support" });
+        }
+
+        // Add user to request object
+        req.user = user;
+        
         // Proceed to the next middleware
         next();
     } catch (error) {
@@ -44,4 +44,13 @@ const authMiddleware = async (req, res, next) => {
     }
 };
 
-module.exports = authMiddleware;
+// Middleware to check if user is admin
+const isAdmin = (req, res, next) => {
+    if (req.user && (req.user.role === 'admin' || req.user.role === 'super_admin')) {
+        next();
+    } else {
+        res.status(403).json({ message: "Access denied. Admin privileges required." });
+    }
+};
+
+module.exports = { authMiddleware, isAdmin };

@@ -1,27 +1,4 @@
 const User = require('../models/user');
-const { validationResult } = require('express-validator');
-const mongoose = require('mongoose');
-
-// Input validation middleware
-const validateInput = (validations) => {
-    return async (req, res, next) => {
-        await Promise.all(validations.map(validation => validation.run(req)));
-        const errors = validationResult(req);
-        if (errors.isEmpty()) {
-            return next();
-        }
-        res.status(400).json({ errors: errors.array() });
-    };
-};
-
-// Error handling middleware
-const handleErrors = (err, req, res, next) => {
-    console.error(err);
-    if (err instanceof mongoose.Error.CastError) {
-        return res.status(404).json({ message: 'Resource not found' });
-    }
-    res.status(500).json({ message: 'An unexpected error occurred', error: err.message });
-};
 
 // Getting the user profile
 const getProfile = async (req, res, next) => {
@@ -62,16 +39,7 @@ const updateProfile = async (req, res, next) => {
     }
 };
 
-// Posting a review (placeholder function)
-const postReview = async (req, res, next) => {
-    // Implement review posting logic here
-    res.status(501).json({ message: 'Review posting not implemented yet' });
-};
-
 module.exports = {
-    validateInput,
-    handleErrors,
     getProfile,
-    updateProfile,
-    postReview
+    updateProfile
 };
