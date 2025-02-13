@@ -125,47 +125,6 @@ exports.removeMultipleItems = async (req, res) => {
         }
     };
 
-    // Convert cart items to an order
-exports.createOrderFromCart = async (userId) => {
-    try {
-      const userCart = await Cart.findOne({ userId: userId });
-  
-      if (!userCart) {
-        // throw new Error('Cart not found for this user');
-      }
-  
-   
-      const newOrder = new Order({
-        userId: userId,
-        items: userCart.items,
-        totalPrice: userCart.totalPrice,
-        status: 'pending',
-        createdAt: new Date(),
-      });
-  
-      // Save the order to the database
-      await newOrder.save();
-  
-      // Optionally, clear the cart after order creation
-      await Cart.deleteOne({ userId: userId });
-  
-      return newOrder;
-    } catch (error) {
-      console.error(error);
-    //   throw new Error('Error creating order from cart');
-    }
-  };
-  
-  // Get user details
-  exports.getUserDetails = async (userId) => {
-    try {
-      const user = await User.findById(userId);
-      return user;
-    } catch (error) {
-      console.error(error);
-    //   throw new Error('Error retrieving user details');
-    }
-  };
   
   // Update the cart (add an item)
   exports.addItemToCart = async (userId, item) => {
@@ -188,7 +147,6 @@ exports.createOrderFromCart = async (userId) => {
       }
     } catch (error) {
       console.error(error);
-    //   throw new Error('Error adding item to cart');
     }
   };
   

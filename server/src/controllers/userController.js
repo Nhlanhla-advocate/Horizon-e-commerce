@@ -1,7 +1,7 @@
 const User = require('../models/user');
 
 // Getting the user profile
-const getProfile = async (req, res, next) => {
+const getUser = async (req, res, next) => {
     try {
         const user = await User.findById(req.user._id).select('-password');
         if (!user) {
@@ -14,7 +14,7 @@ const getProfile = async (req, res, next) => {
 };
 
 // Updating the user profile
-const updateProfile = async (req, res, next) => {
+const updateUser = async (req, res, next) => {
     const { username, email, address } = req.body;
 
     try {
@@ -39,7 +39,17 @@ const updateProfile = async (req, res, next) => {
     }
 };
 
+// New function to get user details
+exports.getUserDetails = async (userId) => {
+    try {
+        const user = await User.findById(userId);
+        return user;
+    } catch (error) {
+        console.error(error);
+    }
+};
+
 module.exports = {
-    getProfile,
-    updateProfile
+    getUser,
+    updateUser
 };

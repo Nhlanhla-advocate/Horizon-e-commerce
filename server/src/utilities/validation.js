@@ -2,6 +2,7 @@ const { check, body, validationResult } = require('express-validator');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 
+
 // Inputting validation middleware
 const validateInput = (validations) => async (req, res, next) => {
   try {

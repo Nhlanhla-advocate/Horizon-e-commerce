@@ -3,16 +3,15 @@ const router = express.Router();
 const { handleErrors } = require('../utilities/validation'); 
 const { authMiddleware } = require('../middleware/authMiddleware');
 const {
-  getProfile,
-  updateProfile
+  getUser,
+  updateUser
 } = require('../controllers/userController');
 
 // Route to get the user's profile (Protected route)
-router.get('/profile', authMiddleware, getProfile);
+router.get('/profile', authMiddleware, getUser);
 
 // Route to update user profile (Protected route)
-router.put(
-  '/profile',authMiddleware, updateProfile);
+router.put('/profile',authMiddleware, updateUser);
 
 // Global error handling middleware
 router.use(handleErrors);

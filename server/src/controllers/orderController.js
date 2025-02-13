@@ -1,8 +1,8 @@
-const  validate  = require('../utilities/validation');
 const { validationResult } = require('express-validator');
 const Order = require('../models/order');
 const Product = require('../models/product');
 const User = require('../models/user');
+const { calculateTotalPriceAndValidateStock, updateProductStock } = require('../utilities/stock');
 // const stripe = require('stripe');
 require('dotenv').config();
 
@@ -163,26 +163,7 @@ exports.createBulkOrder = async (req, res, next) => {
     const { items, shippingAddress, paymentMethod, paymentToken } = req.body;
     const userId = req.user?.id;
 
-    let totalPrice = 0;
-    const processedItems = [];
-
-    for (let item of items) {
-      const product = await Product.findById(item.productId);
-      if (!product) {
-        return res.status(404).json({ message: `Product ${item.productId} not found` });
-      }
-      if (product.stock < item.quantity) {
-        return res.status(400).json({ message: `Insufficient stock for product ${item.productId}` });
-      }
-      
-      const price = item.quantity >= 10 ? product.wholesalePrice : product.price;
-      totalPrice += price * item.quantity;
-      processedItems.push({
-        product: item.productId,
-        quantity: item.quantity,
-        price: price
-      });
-    }
+    const { totalPrice, processedItems } = await calculateTotalPriceAndValidateStock(items);
 
     const paymentIntent = await stripeClient.paymentIntents.create({
       amount: Math.round(totalPrice * 100),
@@ -206,12 +187,7 @@ exports.createBulkOrder = async (req, res, next) => {
       });
 
       const savedOrder = await newOrder.save();
-
-      for (let item of processedItems) {
-        await Product.findByIdAndUpdate(item.product, {
-          $inc: { stock: -item.quantity }
-        });
-      }
+      await updateProductStock(processedItems);
 
       res.status(201).json(savedOrder);
     } else {
@@ -293,17 +269,7 @@ exports.createGuestOrder = async (req, res, next) => {
   try {
     const { items, shippingAddress, paymentMethod, paymentToken, guestEmail } = req.body;
 
-    let totalPrice = 0;
-    for (let item of items) {
-      const product = await Product.findById(item.productId);
-      if (!product) {
-        return res.status(404).json({ message: `Product ${item.productId} not found` });
-      }
-      if (product.stock < item.quantity) {
-        return res.status(400).json({ message: `Insufficient stock for product ${item.productId}` });
-      }
-      totalPrice += product.price * item.quantity;
-    }
+    const { totalPrice, processedItems } = await calculateTotalPriceAndValidateStock(items);
 
     const paymentIntent = await stripeClient.paymentIntents.create({
       amount: Math.round(totalPrice * 100),
@@ -316,7 +282,7 @@ exports.createGuestOrder = async (req, res, next) => {
     if (paymentIntent.status === 'succeeded') {
       const newOrder = new Order({
         user: null, // No user ID for guest
-        items,
+        items: processedItems,
         totalPrice,
         shippingAddress,
         paymentMethod,
@@ -326,12 +292,7 @@ exports.createGuestOrder = async (req, res, next) => {
       });
 
       const savedOrder = await newOrder.save();
-
-      for (let item of items) {
-        await Product.findByIdAndUpdate(item.productId, {
-          $inc: { stock: -item.quantity }
-        });
-      }
+      await updateProductStock(processedItems);
 
       res.status(201).json(savedOrder);
     } else {
