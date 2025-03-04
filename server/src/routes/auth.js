@@ -10,6 +10,7 @@ const {
     signIn,
     signOut
   } = require('../controllers/authController');
+const { authMiddleware } = require('../middleware/authMiddleware');
 
   // Route to sign up a new user
 router.post('/signup', validateSignUp, signUp);
@@ -18,7 +19,7 @@ router.post('/signup', validateSignUp, signUp);
 router.post('/signin', validateSignIn, handleValidationErrors, signIn);
 
 // User signout
-router.post("/signout", signOut);
+router.post("/signout", authMiddleware, signOut);
 
 
 module.exports = router;

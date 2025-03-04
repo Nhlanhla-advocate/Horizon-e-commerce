@@ -14,13 +14,12 @@ class ProductController {
         category,
         minPrice,
         maxPrice,
-        search,
         inStock
       } = req.query;
 
-      const query = {};
+      const query = { status: 'active' };
 
-      // Build filter conditions
+      // Apply filters
       if (category) query.category = category;
       if (minPrice || maxPrice) {
         query.price = {};
@@ -36,8 +35,7 @@ class ProductController {
       }
 
       const products = await Product.find(query)
-        .populate('category', 'name')
-        .sort({ [sort]: order })
+        .sort({ [sort]: order === 'desc' ? -1 : 1 })
         .skip((page - 1) * limit)
         .limit(parseInt(limit));
 
@@ -54,7 +52,10 @@ class ProductController {
         }
       });
     } catch (error) {
-      throw new ApiError(500, 'Error fetching products', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
     }
   }
 
@@ -90,7 +91,7 @@ class ProductController {
         description,
         price,
         category,
-        stockQuantity,
+        stock,
         specifications,
         metadata
       } = req.body;
@@ -108,7 +109,7 @@ class ProductController {
         description,
         price,
         category,
-        stockQuantity,
+        stock,
         specifications,
         metadata,
         images: productImages,
@@ -120,7 +121,10 @@ class ProductController {
         data: product
       });
     } catch (error) {
-      throw new ApiError(500, 'Error creating product', error);
+      res.status(500).json({
+        success: false,
+        error: `Error creating product: ${error}`
+      });
     }
   }
 
@@ -132,7 +136,7 @@ class ProductController {
         description,
         price,
         category,
-        stockQuantity,
+        stock,
         specifications,
         metadata,
         status
@@ -141,7 +145,10 @@ class ProductController {
       const product = await Product.findById(req.params.id);
 
       if (!product) {
-        throw new ApiError(404, 'Product not found');
+        res.status(404).json({
+          success: false,
+          error: `Product not found: ${error}`
+        });
       }
 
       // Handle image updates
@@ -161,7 +168,7 @@ class ProductController {
           description,
           price,
           category,
-          stockQuantity,
+          stock,
           specifications,
           metadata,
           status,
@@ -176,7 +183,10 @@ class ProductController {
         data: updatedProduct
       });
     } catch (error) {
-      throw new ApiError(500, 'Error updating product', error);
+      res.status(500).json({
+        success: false,
+        error: `Error updating product: ${error}`
+      });
     }
   }
 
@@ -186,7 +196,10 @@ class ProductController {
       const product = await Product.findById(req.params.id);
 
       if (!product) {
-        throw new ApiError(404, 'Product not found');
+        res.status(404).json({
+          success: false,
+          error: `Product not found: ${error}`
+        });
       }
 
       // Soft delete by updating status
@@ -200,7 +213,10 @@ class ProductController {
         message: 'Product deleted successfully'
       });
     } catch (error) {
-      throw new ApiError(500, 'Error deleting product', error);
+      res.status(500).json({
+        success: false,
+        error: `Error deleting product: ${error}`
+      });
     }
   }
 
@@ -210,7 +226,10 @@ class ProductController {
       const product = await Product.findById(req.params.id);
 
       if (!product) {
-        throw new ApiError(404, 'Product not found');
+        res.status(404).json({
+          success: false,
+          error: `Product not found: ${error}`
+        });
       }
 
       const relatedProducts = await Product.find({
@@ -226,7 +245,10 @@ class ProductController {
         data: relatedProducts
       });
     } catch (error) {
-      throw new ApiError(500, 'Error fetching related products', error);
+      res.status(500).json({
+        success: false,
+        error: `Error fetching related products: ${error}`
+      });
     }
   }
 
@@ -246,44 +268,31 @@ class ProductController {
         data: featuredProducts
       });
     } catch (error) {
-      throw new ApiError(500, 'Error fetching featured products', error);
+      res.status(500).json({
+        success: false,
+        error: `Error fetching related products: ${error}`
+      });
     }
   }
 
   // Search products
   async searchProducts(req, res) {
     try {
-      const { query, category, priceRange } = req.body;
-
-      const searchQuery = {
-        status: 'active',
-        $or: [
-          { name: { $regex: query, $options: 'i' } },
-          { description: { $regex: query, $options: 'i' } }
-        ]
-      };
-
-      if (category) {
-        searchQuery.category = category;
-      }
-
-      if (priceRange) {
-        searchQuery.price = {
-          $gte: priceRange.min,
-          $lte: priceRange.max
-        };
-      }
-
-      const products = await Product.find(searchQuery)
-        .populate('category', 'name')
-        .limit(20);
+      const { query } = req.query;
+      const products = await Product.find({
+        $text: { $search: query },
+        status: 'active'
+      });
 
       res.json({
         success: true,
         data: products
       });
     } catch (error) {
-      throw new ApiError(500, 'Error searching products', error);
+      res.status(500).json({
+        success: false,
+        error: `Error searching product: ${error}`
+      });
     }
   }
 
@@ -308,7 +317,10 @@ class ProductController {
         data: updatedProducts
       });
     } catch (error) {
-      throw new ApiError(500, 'Error bulk updating products', error);
+      res.status(500).json({
+        success: false,
+        error: `Error bulk updating products: ${error}`
+      });
     }
   }
 
@@ -332,7 +344,10 @@ class ProductController {
       // Update the product with new review details
       const product = await Product.findById(productId).session(session);
       if (!product) {
-        throw new ApiError(404, 'Product not found');
+        res.status(404).json({
+          success: false,
+          error: `Product not found: ${error}`
+        });
       }
 
       // Update product's review count and average rating
@@ -352,6 +367,27 @@ class ProductController {
       await session.abortTransaction();
       session.endSession();
       next(error);
+    }
+  }
+
+  // Get products by category
+  async getProductsByCategory(req, res) {
+    try {
+      const { category } = req.params;
+      const products = await Product.find({
+        category,
+        status: 'active'
+      });
+
+      res.json({
+        success: true,
+        data: products
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: `Get products by category: ${error}`
+      });
     }
   }
 }

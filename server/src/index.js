@@ -1,6 +1,15 @@
+// Load environment variables first, before any other imports
+require('dotenv').config({ path: './server/.env' });
+
 const express = require('express');
 const app = express();
 const { connectToMongoDB } = require('./db/connection');
+
+// Verify environment variables are loaded
+if (!process.env.JWT_SECRET) {
+    console.error('JWT_SECRET is missing from environment variables');
+    process.exit(1);
+}
 
 // Import route modules
 const authRoutes = require('./routes/auth');
@@ -9,7 +18,7 @@ const cartRoutes = require('./routes/cart');
 const orderRoutes = require('./routes/order');
 const reviewRoutes = require('./routes/review');
 const wishListRoutes = require('./routes/wishList');
-
+const products = require("./routes/product")
 // Middleware to parse JSON
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -27,6 +36,7 @@ app.use('/cart', cartRoutes);
 app.use('/orders', orderRoutes);
 app.use('/reviews', reviewRoutes); 
 app.use('/wishlist', wishListRoutes); 
+app.use('/products', products);
 
 // Set the server to listen on the specified port
 const PORT = process.env.PORT || 5000;
