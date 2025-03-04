@@ -1,118 +1,175 @@
-const User = require('../models/user');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
+const User = require("../models/user");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 
 // User sign-up
 exports.signUp = async (req, res) => {
-    try {
-        const { username, email, password, ...rest } = req.body;
-
-
-        // Check for existing user with the same email
-        const existingEmailUser = await User.findOne({ email });
-        console.log(existingEmailUser);
-        if (existingEmailUser) {
-            return res.status(400).json({ error: 'Email already in use' });
-            
-        }
-
-        // Check for existing user with the same username
-        const existingUsernameUser = await User.findOne({ username });
-        console.log(existingUsernameUser);
-        if (existingUsernameUser) {
-            return res.status(400).json({ error: 'Username already in use' });
-        }
-
-        // Salt and Hash password before saving
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-        const user = new User({
-            email,
-            username,
-            password: hashedPassword,
-            ...rest
-        });
-
-        await user.save();
-
-        // Generate JWT token
-        const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-        // Set cookies
-        res.cookie("auth-token", token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
-            maxAge: 1000 * 60 * 60 * 24,
-        });
-
-        res.status(201).json({ token, message: 'User registered successfully' });
-    } catch (error) {
-        console.error('Sign up error:', error);
-        res.status(400).json({ error: 'Failed to create user' });
+  try {
+    if (!process.env.JWT_SECRET) {
+      console.error('JWT_SECRET is missing');
+      return res.status(500).json({ 
+        success: false,
+        error: "Server configuration error" 
+      });
     }
+
+    const { username, email, password, ...rest } = req.body;
+    console.log('Sign-up attempt with:', { email });
+
+    // Check for existing user with the same email
+    const existingEmailUser = await User.findOne({ email });
+    if (existingEmailUser) {
+      return res.status(400).json({ error: "Email already in use" });
+    }
+
+    // Check for existing user with the same username
+    const existingUsernameUser = await User.findOne({ username });
+    if (existingUsernameUser) {
+      return res.status(400).json({ error: "Username already in use" });
+    }
+    
+    // Create new user - password will be hashed by the pre-save middleware
+    const user = new User({
+      email,
+      username,
+      password, // Plain password - will be hashed by middleware
+      ...rest,
+    });
+
+    // Save user to database
+    const savedUser = await user.save();
+    console.log('User saved successfully with ID:', savedUser._id);
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { 
+        _id: savedUser._id,
+        username: savedUser.username,
+        email: savedUser.email,
+        role: savedUser.role 
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "24h" }
+    );
+
+    // Send response
+    res.status(201).json({ 
+      success: true,
+      token, 
+      user: {
+        _id: savedUser._id,
+        username: savedUser.username,
+        email: savedUser.email,
+        role: savedUser.role
+      },
+      message: "User registered successfully" 
+    });
+  } catch (error) {
+    console.error("Sign up error:", error);
+    res.status(500).json({ 
+      success: false,
+      error: error.message || "Failed to create user" 
+    });
+  }
 };
 
-        // User sign-in
-        exports.signIn = async (req, res) => {
-         try {
-            // Extract the username, email, and password from the request body
-            const { username, email, password } = req.body;
+// User sign-in
+exports.signIn = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    console.log('Sign-in attempt with:', { email });
 
-            // Check if user exists
-             const user = username 
-                 ? await User.findOne({ username }) 
-                 : await User.findOne({ email });
+    // Find user by email
+    const user = await User.findOne({ email });
+    console.log('User found:', user ? 'Yes' : 'No');
 
-             if (!user) {
-                 return res.status(400).json({ error: 'Invalid login credentials' });
-             }
+    if (!user) {
+      return res.status(400).json({ error: "Invalid login credentials" });
+    }
 
-            // Compare passwords
-             const isMatch = await bcrypt.compare(password, user.password);
-             if (!isMatch) {
-                 return res.status(400).json({ error: 'Invalid login credentials' });
-             }
+    // Compare passwords using the method from the user model
+    const isMatch = await user.comparePassword(password);
+    console.log('Password match:', isMatch ? 'Yes' : 'No');
 
-            // Generate JWT token
-            const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-            
-            // Set the cookie
-            res.cookie("auth-token", token, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === "production",
-                sameSite: "strict",
-                maxAge: 1000 * 60 * 60 * 24,
-            });
+    if (!isMatch) {
+      return res.status(400).json({ error: "Invalid login credentials" });
+    }
 
-            res.status(200).json({ token, message: 'Signed in successfully' });
-            } catch (error) {
-            console.error('Sign in error:', error)
-            res.status(400).json({ error: 'Sign in failed' });
-            }
-        };
+    // Generate JWT token
+    const token = jwt.sign(
+      { 
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role 
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "24h" }
+    );
 
-             // Customer sign-out
-            exports.signOut = async (req, res) => {
-            try {
-            // Assuming you're using middleware to attach the user to the request
-            const user = req.user;
+    // Send response
+    res.status(200).json({ 
+      success: true,
+      token, 
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role
+      },
+      message: "Signed in successfully" 
+    });
+  } catch (error) {
+    console.error("Sign in error:", error);
+    res.status(400).json({ error: "Sign in failed" });
+  }
+};
 
-            // Add the current token to a blacklist in the user document
-            user.tokenBlacklist = user.tokenBlacklist || [];
-            user.tokenBlacklist.push(req.token);
+// Customer sign-out
+exports.signOut = async (req, res) => {
+  try {
+    // Get token from authorization header
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "No token provided" });
+    }
 
-            // Optional: Remove old tokens from the blacklist (e.g., tokens older than 1 hour)
-            const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-            user.tokenBlacklist = user.tokenBlacklist.filter(token => {
-                 const payload = jwt.decode(token);
-                 return payload.exp * 1000 > oneHourAgo.getTime();
-            });
+    const token = authHeader.split(" ")[1];
+    
+    // Get user from middleware
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({ message: "User not found" });
+    }
 
-            await user.save();
+    // Add token to blacklist
+    if (!user.tokenBlacklist) {
+      user.tokenBlacklist = [];
+    }
+    user.tokenBlacklist.push(token);
 
-            res.status(200).send('Signed out successfully');
-            } catch (error) {
-             res.status(500).json({ error: 'Sign out failed' });
-            }
-        };
+    // Clean up old tokens (optional)
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    user.tokenBlacklist = user.tokenBlacklist.filter((blacklistedToken) => {
+      try {
+        const decoded = jwt.decode(blacklistedToken);
+        return decoded && decoded.exp * 1000 > oneHourAgo.getTime();
+      } catch (error) {
+        return false;
+      }
+    });
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Signed out successfully"
+    });
+  } catch (error) {
+    console.error("Sign out error:", error);
+    res.status(500).json({ 
+      success: false,
+      error: error.message || "Sign out failed" 
+    });
+  }
+};

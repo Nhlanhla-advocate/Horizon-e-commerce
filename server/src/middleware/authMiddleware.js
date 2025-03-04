@@ -1,8 +1,7 @@
 const { verify } = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const User = require("../models/user");
-
-const secret = process.env.JWT_SECRET;
+require('dotenv').config();
 
 const authMiddleware = async (req, res, next) => {
     try {
@@ -14,8 +13,13 @@ const authMiddleware = async (req, res, next) => {
 
         const token = authHeader.split(" ")[1];
 
+        // Check if JWT_SECRET exists
+        if (!process.env.JWT_SECRET) {
+            throw new Error("JWT_SECRET is not defined");
+        }
+
         // Verify token
-        const decoded = verify(token, secret);
+        const decoded = verify(token, process.env.JWT_SECRET);
 
         // Find user
         const user = await User.findById(decoded._id);
@@ -40,7 +44,7 @@ const authMiddleware = async (req, res, next) => {
             return res.status(401).json({ error: "Token has expired" });
         }
         console.error(error);
-        return res.status(500).json({ error: "Internal server error" });
+        return res.status(500).json({ error: error.message || "Internal server error" });
     }
 };
 
