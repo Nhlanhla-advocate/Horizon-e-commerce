@@ -4,14 +4,14 @@ const productController = require('../controllers/productController');
 const { authMiddleware, isAdmin } = require('../middleware/authMiddleware');
 
 // Public routes
-router.get('/products', productController.listProducts);
+router.get('/search', productController.searchProducts);
 router.get('/featured', productController.getFeaturedProducts);
 router.get('/category/:category', productController.getProductsByCategory);
+router.get('/', productController.listProducts);
 router.get('/:id', productController.getProduct);
-router.get('/search', productController.searchProducts);
 
 // Admin only routes
-router.post('/products', authMiddleware, isAdmin, productController.createProduct);
+router.post('/', authMiddleware, isAdmin, productController.createProduct);
 router.put('/:id', authMiddleware, isAdmin, productController.updateProduct);
 router.delete('/:id', authMiddleware, isAdmin, productController.deleteProduct);
 // router.post('/products/bulk', authMiddleware, isAdmin, productController.bulkCreateProducts);

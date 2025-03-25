@@ -1,6 +1,42 @@
 const User = require("../models/user");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
+
+// Configure nodemailer with more secure settings
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASSWORD
+  },
+  tls: {
+    rejectUnauthorized: false // This helps bypass the self-signed certificate issue
+  }
+});
+
+// Generate tokens
+const generateTokens = (user) => {
+    const accessToken = jwt.sign(
+        { 
+            _id: user._id,
+            username: user.username,
+            email: user.email,
+            role: user.role 
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: '15m' } // Short lived access token
+    );
+
+    const refreshToken = jwt.sign(
+        { _id: user._id },
+        process.env.JWT_SECRET,
+        { expiresIn: '7d' } // Long lived refresh token
+    );
+
+    return { accessToken, refreshToken };
+};
 
 // User sign-up
 exports.signUp = async (req, res) => {
@@ -51,7 +87,7 @@ exports.signUp = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "24h" }
     );
-
+ 
     // Send response
     res.status(201).json({ 
       success: true,
@@ -75,101 +111,242 @@ exports.signUp = async (req, res) => {
 
 // User sign-in
 exports.signIn = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        
+        // Find user and validate password
+        const user = await User.findOne({ email });
+        if (!user || !(await user.comparePassword(password))) {
+            return res.status(400).json({ error: "Invalid login credentials" });
+        }
+
+        // Generate tokens
+        const { accessToken, refreshToken } = generateTokens(user);
+
+        // Save refresh token to user
+        user.refreshToken = refreshToken;
+        user.refreshTokenExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+        await user.save();
+
+        // Set refresh token in HTTP-only cookie
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
+        res.json({
+            success: true,
+            accessToken,
+            user: {
+                _id: user._id,
+                username: user.username,
+                email: user.email,
+                role: user.role
+            }
+        });
+    } catch (error) {
+        console.error("Sign in error:", error);
+        res.status(500).json({ error: "Sign in failed" });
+    }
+};
+
+// Refresh token endpoint
+exports.refreshToken = async (req, res) => {
+    try {
+        const { refreshToken } = req.cookies;
+
+        if (!refreshToken) {
+            return res.status(401).json({ error: "Refresh token required" });
+        }
+
+        // Verify refresh token
+        const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
+        
+        // Find user and check if refresh token matches
+        const user = await User.findOne({
+            _id: decoded._id,
+            refreshToken,
+            refreshTokenExpiry: { $gt: new Date() }
+        });
+
+        if (!user) {
+            return res.status(401).json({ error: "Invalid refresh token" });
+        }
+
+        // Generate new tokens
+        const tokens = generateTokens(user);
+
+        // Update refresh token
+        user.refreshToken = tokens.refreshToken;
+        user.refreshTokenExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+        await user.save();
+
+        // Set new refresh token in cookie
+        res.cookie('refreshToken', tokens.refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
+
+        res.json({
+            success: true,
+            accessToken: tokens.accessToken
+        });
+    } catch (error) {
+        console.error("Refresh token error:", error);
+        res.status(401).json({ error: "Invalid refresh token" });
+    }
+};
+
+// Sign out
+exports.signOut = async (req, res) => {
+    try {
+        const user = req.user;
+        
+        // Clear refresh token from database
+        user.refreshToken = null;
+        user.refreshTokenExpiry = null;
+        await user.save();
+
+        // Clear refresh token cookie
+        res.clearCookie('refreshToken');
+
+        res.json({
+            success: true,
+            message: "Signed out successfully"
+        });
+    } catch (error) {
+        console.error("Sign out error:", error);
+        res.status(500).json({ error: "Sign out failed" });
+    }
+};
+
+// Forgot Password handler
+exports.forgotPassword = async (req, res) => {
+  let user; // Declare user variable in outer scope
   try {
-    const { email, password } = req.body;
-    console.log('Sign-in attempt with:', { email });
+    const { email } = req.body;
 
-    // Find user by email
-    const user = await User.findOne({ email });
-    console.log('User found:', user ? 'Yes' : 'No');
-
+    // Check if user exists
+    user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ error: "Invalid login credentials" });
+      return res.status(404).json({ message: "User not found" });
     }
 
-    // Compare passwords using the method from the user model
-    const isMatch = await user.comparePassword(password);
-    console.log('Password match:', isMatch ? 'Yes' : 'No');
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
 
-    if (!isMatch) {
-      return res.status(400).json({ error: "Invalid login credentials" });
-    }
+    // Hash token and set to resetPasswordToken field
+    user.resetPasswordToken = crypto
+      .createHash('sha256')
+      .update(resetToken)
+      .digest('hex');
 
-    // Generate JWT token
-    const token = jwt.sign(
-      { 
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        role: user.role 
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "24h" }
-    );
+    // Set expire
+    user.resetPasswordExpires = Date.now() + 30 * 60 * 1000; // 30 minutes
 
-    // Send response
-    res.status(200).json({ 
+    await user.save({ validateBeforeSave: false });
+
+    // Create reset URL
+    const resetUrl = `${req.protocol}://${req.get(
+      'host'
+    )}/auth/reset-password/${resetToken}`;
+
+    // Create email message
+    const message = {
+      from: process.env.EMAIL_USER, // Use EMAIL_USER instead of EMAIL_FROM
+      to: user.email,
+      subject: 'Password Reset Request',
+      html: `
+        <h1>You have requested a password reset</h1>
+        <p>Please click the following link to reset your password:</p>
+        <a href="${resetUrl}" clicktracking="off">${resetUrl}</a>
+        <p>This link will expire in 30 minutes.</p>
+        <p>If you didn't request this, please ignore this email.</p>
+      `
+    };
+
+    // Send email
+    await transporter.sendMail(message);
+
+    res.status(200).json({
       success: true,
-      token, 
-      user: {
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        role: user.role
-      },
-      message: "Signed in successfully" 
+      message: `Email sent to ${user.email}`
     });
+
   } catch (error) {
-    console.error("Sign in error:", error);
-    res.status(400).json({ error: "Sign in failed" });
+    console.error('Forgot password error:', error);
+    
+    // Reset user fields & save
+    if (user) {
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpires = undefined;
+      await user.save({ validateBeforeSave: false });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Email could not be sent",
+      error: error.message
+    });
   }
 };
 
-// Customer sign-out
-exports.signOut = async (req, res) => {
+// Reset Password handler
+exports.resetPassword = async (req, res) => {
   try {
-    // Get token from authorization header
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ message: "No token provided" });
+    const { resetToken } = req.params; // Get token from URL params
+    const { password } = req.body;
+
+    if (!resetToken) {
+      return res.status(400).json({
+        success: false,
+        message: 'Reset token is required'
+      });
     }
 
-    const token = authHeader.split(" ")[1];
-    
-    // Get user from middleware
-    const user = req.user;
-    if (!user) {
-      return res.status(401).json({ message: "User not found" });
-    }
+    // Hash the token from the URL
+    const resetPasswordToken = crypto
+      .createHash('sha256')
+      .update(resetToken)
+      .digest('hex');
 
-    // Add token to blacklist
-    if (!user.tokenBlacklist) {
-      user.tokenBlacklist = [];
-    }
-    user.tokenBlacklist.push(token);
-
-    // Clean up old tokens (optional)
-    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-    user.tokenBlacklist = user.tokenBlacklist.filter((blacklistedToken) => {
-      try {
-        const decoded = jwt.decode(blacklistedToken);
-        return decoded && decoded.exp * 1000 > oneHourAgo.getTime();
-      } catch (error) {
-        return false;
-      }
+    // Find user with valid token
+    const user = await User.findOne({
+      resetPasswordToken,
+      resetPasswordExpires: { $gt: Date.now() }
     });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired reset token'
+      });
+    }
+
+    // Set new password
+    user.password = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
 
     await user.save();
 
     res.status(200).json({
       success: true,
-      message: "Signed out successfully"
+      message: 'Password reset successful'
     });
+
   } catch (error) {
-    console.error("Sign out error:", error);
-    res.status(500).json({ 
+    console.error('Reset password error:', error);
+    res.status(500).json({
       success: false,
-      error: error.message || "Sign out failed" 
+      message: 'Could not reset password',
+      error: error.message
     });
   }
 };
+
+

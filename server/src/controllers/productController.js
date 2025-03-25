@@ -14,7 +14,8 @@ class ProductController {
         category,
         minPrice,
         maxPrice,
-        inStock
+        inStock,
+        search  // Added missing search parameter declaration
       } = req.query;
 
       const query = { status: 'active' };
@@ -41,7 +42,7 @@ class ProductController {
 
       const total = await Product.countDocuments(query);
 
-      res.json({
+      return res.json({
         success: true,
         data: products,
         pagination: {
@@ -52,7 +53,7 @@ class ProductController {
         }
       });
     } catch (error) {
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         error: error.message
       });
@@ -62,24 +63,25 @@ class ProductController {
   // Get single product details
   async getProduct(req, res) {
     try {
-      const product = await Product.findById(req.params.id)
-        .populate('category', 'name')
-        .populate('reviews.user', 'name email');
-
+      const { id } = req.params;
+      const product = await Product.findById(id);
+      
       if (!product) {
-        throw new ApiError(404, 'Product not found');
+        return res.status(404).json({
+          success: false,
+          error: 'Product not found'
+        });
       }
 
-      // Increment view count
-      product.viewCount += 1;
-      await product.save();
-
-      res.json({
+      return res.json({
         success: true,
         data: product
       });
     } catch (error) {
-      throw new ApiError(500, 'Error fetching product', error);
+      return res.status(500).json({
+        success: false,
+        error: `Error fetching product: ${error}`
+      });
     }
   }
 
@@ -91,6 +93,7 @@ class ProductController {
         description,
         price,
         category,
+        featured,
         stock,
         specifications,
         metadata
@@ -109,6 +112,7 @@ class ProductController {
         description,
         price,
         category,
+        featured,
         stock,
         specifications,
         metadata,
@@ -116,12 +120,12 @@ class ProductController {
         createdBy: req.user._id
       });
 
-      res.status(201).json({
+      return res.status(201).json({
         success: true,
         data: product
       });
     } catch (error) {
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         error: `Error creating product: ${error}`
       });
@@ -136,6 +140,7 @@ class ProductController {
         description,
         price,
         category,
+        featured,
         stock,
         specifications,
         metadata,
@@ -145,7 +150,7 @@ class ProductController {
       const product = await Product.findById(req.params.id);
 
       if (!product) {
-        res.status(404).json({
+        return res.status(404).json({
           success: false,
           error: `Product not found: ${error}`
         });
@@ -168,6 +173,7 @@ class ProductController {
           description,
           price,
           category,
+          featured,
           stock,
           specifications,
           metadata,
@@ -178,12 +184,12 @@ class ProductController {
         { new: true, runValidators: true }
       );
 
-      res.json({
+      return res.json({
         success: true,
         data: updatedProduct
       });
     } catch (error) {
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         error: `Error updating product: ${error}`
       });
@@ -196,7 +202,7 @@ class ProductController {
       const product = await Product.findById(req.params.id);
 
       if (!product) {
-        res.status(404).json({
+        return res.status(404).json({
           success: false,
           error: `Product not found: ${error}`
         });
@@ -208,12 +214,12 @@ class ProductController {
       product.deletedBy = req.user._id;
       await product.save();
 
-      res.json({
+      return res.json({
         success: true,
         message: 'Product deleted successfully'
       });
     } catch (error) {
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         error: `Error deleting product: ${error}`
       });
@@ -226,7 +232,7 @@ class ProductController {
       const product = await Product.findById(req.params.id);
 
       if (!product) {
-        res.status(404).json({
+        return res.status(404).json({
           success: false,
           error: `Product not found: ${error}`
         });
@@ -240,12 +246,12 @@ class ProductController {
         .limit(4)
         .populate('category', 'name');
 
-      res.json({
+      return res.json({
         success: true,
         data: relatedProducts
       });
     } catch (error) {
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         error: `Error fetching related products: ${error}`
       });
@@ -263,12 +269,12 @@ class ProductController {
         .populate('category', 'name')
         .limit(8);
 
-      res.json({
+      return res.json({
         success: true,
         data: featuredProducts
       });
     } catch (error) {
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         error: `Error fetching related products: ${error}`
       });
@@ -284,12 +290,12 @@ class ProductController {
         status: 'active'
       });
 
-      res.json({
+      return res.json({
         success: true,
         data: products
       });
     } catch (error) {
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         error: `Error searching product: ${error}`
       });
@@ -312,12 +318,12 @@ class ProductController {
         })
       );
 
-      res.json({
+      return res.json({
         success: true,
         data: updatedProducts
       });
     } catch (error) {
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         error: `Error bulk updating products: ${error}`
       });
@@ -344,7 +350,7 @@ class ProductController {
       // Update the product with new review details
       const product = await Product.findById(productId).session(session);
       if (!product) {
-        res.status(404).json({
+        return res.status(404).json({
           success: false,
           error: `Product not found: ${error}`
         });
@@ -361,7 +367,7 @@ class ProductController {
       session.endSession();
 
       // Send response
-      res.status(201).json({ success: true, message: 'Review added successfully' });
+      return res.status(201).json({ success: true, message: 'Review added successfully' });
     } catch (error) {
       // Abort transaction in case of any errors
       await session.abortTransaction();
@@ -375,18 +381,18 @@ class ProductController {
     try {
       const { category } = req.params;
       const products = await Product.find({
-        category,
+        category: category,
         status: 'active'
       });
 
-      res.json({
+      return res.json({
         success: true,
         data: products
       });
     } catch (error) {
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
-        error: `Get products by category: ${error}`
+        error: `Error fetching products by category: ${error}`
       });
     }
   }

@@ -16,7 +16,11 @@ const userSchema = new mongoose.Schema({
         default: 'active'
     },
     cart: { type: mongoose.Schema.Types.ObjectId, ref: 'Cart' },
-    tokenBlacklist: [{ type: String }]
+    refreshToken: { type: String },
+    refreshTokenExpiry: { type: Date },
+    tokenBlacklist: [{ type: String }],
+    resetPasswordToken: String,
+    resetPasswordExpires: Date
 }, {
     timestamps: true
 });
