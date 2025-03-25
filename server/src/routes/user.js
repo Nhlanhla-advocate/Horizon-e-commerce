@@ -16,4 +16,5 @@ router.put('/profile',authMiddleware, updateUser);
 // Global error handling middleware
 router.use(handleErrors);
 
+
 module.exports = router;
