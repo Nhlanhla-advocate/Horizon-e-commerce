@@ -2,6 +2,7 @@ const { validationResult } = require('express-validator');
 const Order = require('../models/order');
 const Product = require('../models/product');
 const User = require('../models/user');
+const mongoose = require("mongoose");
 const { calculateTotalPriceAndValidateStock, updateProductStock } = require('../utilities/stock');
 // const stripe = require('stripe');
 require('dotenv').config();
@@ -12,20 +13,25 @@ require('dotenv').config();
 
 exports.createOrder = async (req, res, next) => {
   try {
-    const { items, shippingAddress, paymentMethod, paymentToken } = req.body;
-    const userId = req.user?.id;
+    const { items, customerId } = req.body;
 
-    // Fetch user details
-    const user = await User.findById(userId).select('name email');
+    console.log("Received customerId:", customerId);
+    
+    if (!customerId) {
+      return res.status(400).json({ message: "customerId is required" });
+    }
+
+    const user = await User.findById(customerId).select("name email");
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    if (!req.user?.id) {
-      return res.status(400).json({ message: 'User not authenticated' });
+      return res.status(404).json({ message: "User not found" });
     }
 
+    console.log(`Creating order for user ${user.name} (${user.email})`);
+
     let totalPrice = 0;
+    let formattedItems = [];
+
     for (let item of items) {
       const product = await Product.findById(item.productId);
       if (!product) {
@@ -34,127 +40,172 @@ exports.createOrder = async (req, res, next) => {
       if (product.stock < item.quantity) {
         return res.status(400).json({ message: `Insufficient stock for product ${item.productId}` });
       }
+
       totalPrice += product.price * item.quantity;
+
+      formattedItems.push({
+        productId: item.productId,
+        name: product.name,
+        price: product.price,
+        quantity: item.quantity
+      });
     }
 
-    const paymentIntent = await stripeClient.paymentIntents.create({
-      amount: Math.round(totalPrice * 100),
-      currency: 'zar',
-      payment_method: paymentToken,
-      confirm: true,
-      description: `Order for user ${user.name} (${user.email})`,
+    const newOrder = new Order({
+      customerId, 
+      items: formattedItems, 
+      totalPrice,
+      status: "pending",
     });
 
-    if (paymentIntent.status === 'succeeded') {
-      const newOrder = new Order({
-        user: userId,
-        items,
-        totalPrice,
-        shippingAddress,
-        paymentMethod,
-        paymentId: paymentIntent.id,
-        status: 'paid',
-        currency: 'ZAR'
+    const savedOrder = await newOrder.save();
+
+    for (let item of formattedItems) {
+      await Product.findByIdAndUpdate(item.productId, {
+        $inc: { stock: -item.quantity },
       });
-
-      const savedOrder = await newOrder.save();
-
-      for (let item of items) {
-        await Product.findByIdAndUpdate(item.productId, {
-          $inc: { stock: -item.quantity }
-        });
-      }
-
-      res.status(201).json(savedOrder);
-    } else {
-      res.status(400).json({ message: 'Payment not successful' });
     }
+
+    res.status(201).json(savedOrder);
   } catch (error) {
+    console.error("Order creation error:", error);
     next(error);
   }
 };
 
-exports.getOrderHistory = async (req, res, next) => {
+
+exports.getOrderHistory = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
+    const customerId = req.user?._id;
 
-    const orders = await Order.find({ user: req.user?.id })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .populate('items.product', 'name price');
+    if (!customerId) {
+      return res.status(400).json({ message: "Customer ID is required" });
+    }
 
-    const total = await Order.countDocuments({ user: req.user?.id });
+    console.log("Fetching order history for customer:", customerId);
 
-    res.json({
-      orders,
-      currentPage: page,
-      totalPages: Math.ceil(total / limit),
-      totalOrders: total
-    });
+    const orders = await Order.find({ customerId })
+      .populate("items.productId", "name price") 
+      .sort({ createdAt: -1 });
+
+    if (!orders.length) {
+      return res.status(404).json({ message: "No orders found for this customer" });
+    }
+
+    res.status(200).json(orders);
   } catch (error) {
-    next(error);
+    console.error("Error fetching order history:", error.message); 
+    console.error(error.stack); 
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
 exports.getOrder = async (req, res, next) => {
   try {
-    const order = await Order.findById(req.params.id).populate('user', 'name email');
-    if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
+    const { id } = req.params;
+    console.log(id);
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid Order ID" });
     }
+
+    // const allOrders = await Order.find();
+    // console.log("All Orders:", allOrders); 
+
+    const order = await Order.findById(id).populate("customerId", "name email");
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
     res.json(order);
   } catch (error) {
-    next(error);
+    console.error("Error fetching order:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
+
+
 exports.updateOrderStatus = async (req, res, next) => {
   try {
+    const { orderId } = req.params;
     const { status } = req.body;
-    const order = await Order.findById(req.params.id);
+
+    console.log("Received orderId:", orderId); // Debug log
+
+    // Clean the orderId string
+    const cleanOrderId = orderId.trim();
+
+    // Validate orderId format
+    if (!mongoose.Types.ObjectId.isValid(cleanOrderId)) {
+      return res.status(400).json({ 
+        message: 'Invalid order ID format',
+        receivedId: cleanOrderId
+      });
+    }
+
+    // Validate status
+    const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+    if (!status || !validStatuses.includes(status)) {
+      return res.status(400).json({ 
+        message: 'Invalid status',
+        validStatuses
+      });
+    }
+
+    const order = await Order.findById(cleanOrderId);
+    
     if (!order) {
       return res.status(404).json({ message: 'Order not found' });
     }
+
     order.status = status;
     const updatedOrder = await order.save();
-    res.json(updatedOrder);
+
+    res.status(200).json({
+      message: 'Order status updated successfully',
+      order: updatedOrder
+    });
   } catch (error) {
-    next(error);
+    console.error('Error updating order status:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
 exports.cancelOrder = async (req, res, next) => {
   try {
-    const order = await Order.findById(req.params.id);
+    const { id } = req.params;
+    
+    // Validate order ID format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid order ID format' });
+    }
+
+    const order = await Order.findById(id);
+    
     if (!order) {
       return res.status(404).json({ message: 'Order not found' });
     }
-    if (order.status !== 'paid') {
-      return res.status(400).json({ message: 'Cannot cancel order that is not in paid status' });
+
+    // Check if order can be cancelled
+    if (order.status === 'delivered' || order.status === 'cancelled') {
+      return res.status(400).json({ 
+        message: `Cannot cancel order that is already ${order.status}` 
+      });
     }
 
-    const refund = await stripeClient.refunds.create({
-      payment_intent: order.paymentId,
+    // Update order status to cancelled
+    order.status = 'cancelled';
+    await order.save();
+
+    res.status(200).json({
+      message: 'Order cancelled successfully',
+      order
     });
-
-    if (refund.status === 'succeeded') {
-      for (let item of order.items) {
-        await Product.findByIdAndUpdate(item.product, {
-          $inc: { stock: item.quantity }
-        });
-      }
-
-      order.status = 'refunded';
-      const updatedOrder = await order.save();
-      res.json(updatedOrder);
-    } else {
-      res.status(400).json({ message: 'Refund not successful' });
-    }
   } catch (error) {
-    next(error);
+    console.error('Error cancelling order:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
@@ -200,14 +251,29 @@ exports.createBulkOrder = async (req, res, next) => {
 
 exports.getOrderAnalytics = async (req, res, next) => {
   try {
-    const startDate = new Date(req.query.startDate);
-    const endDate = new Date(req.query.endDate);
+    // Get dates from either query params or request body
+    const startDate = req.query.startDate || req.body.startDate;
+    const endDate = req.query.endDate || req.body.endDate;
+
+    let matchStage = {};
+    
+    // Only apply date filtering if both dates are provided
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+
+      if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
+        matchStage.createdAt = { $gte: start, $lte: end };
+      }
+    }
+
+    // Debug: Count total orders in the system
+    const totalOrdersInSystem = await Order.countDocuments();
+    console.log('Total orders in system:', totalOrdersInSystem);
 
     const orderAnalytics = await Order.aggregate([
       {
-        $match: {
-          createdAt: { $gte: startDate, $lte: endDate }
-        }
+        $match: matchStage
       },
       {
         $group: {
@@ -219,16 +285,17 @@ exports.getOrderAnalytics = async (req, res, next) => {
       }
     ]);
 
+    console.log('Match stage:', matchStage);
+    console.log('Analytics results:', orderAnalytics);
+
     const popularProducts = await Order.aggregate([
       {
-        $match: {
-          createdAt: { $gte: startDate, $lte: endDate }
-        }
+        $match: matchStage
       },
       { $unwind: "$items" },
       {
         $group: {
-          _id: "$items.product",
+          _id: "$items.productId",
           totalQuantity: { $sum: "$items.quantity" }
         }
       },
@@ -251,55 +318,92 @@ exports.getOrderAnalytics = async (req, res, next) => {
       }
     ]);
 
-    res.json({
-      analytics: orderAnalytics[0],
+    // If no analytics found, return zeros but with actual orders count
+    if (!orderAnalytics.length) {
+      return res.status(200).json({
+        analytics: {
+          totalOrders: totalOrdersInSystem,
+          totalRevenue: 0,
+          averageOrderValue: 0
+        },
+        popularProducts: []
+      });
+    }
+
+    res.status(200).json({
+      analytics: {
+        ...orderAnalytics[0],
+        totalOrdersInSystem 
+      },
       popularProducts
     });
   } catch (error) {
-    next(error);
+    console.error("Error in getOrderAnalytics:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
+
 exports.createGuestOrder = async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
   try {
-    const { items, shippingAddress, paymentMethod, paymentToken, guestEmail } = req.body;
+    const { items, customerDetails } = req.body;
 
-    const { totalPrice, processedItems } = await calculateTotalPriceAndValidateStock(items);
+    if (!customerDetails || !customerDetails.email || !customerDetails.name || !customerDetails.address) {
+      return res.status(400).json({ 
+        message: "Customer details (name, email, and address) are required" 
+      });
+    }
 
-    const paymentIntent = await stripeClient.paymentIntents.create({
-      amount: Math.round(totalPrice * 100),
-      currency: 'zar',
-      payment_method: paymentToken,
-      confirm: true,
-      description: `Guest order for email ${guestEmail}`,
+    let totalPrice = 0;
+    let formattedItems = [];
+
+    for (let item of items) {
+      const product = await Product.findById(item.productId);
+      if (!product) {
+        return res.status(404).json({ message: `Product ${item.productId} not found` });
+      }
+      if (product.stock < item.quantity) {
+        return res.status(400).json({ message: `Insufficient stock for product ${item.productId}` });
+      }
+
+      totalPrice += product.price * item.quantity;
+
+      formattedItems.push({
+        productId: item.productId,
+        name: product.name,
+        price: product.price,
+        quantity: item.quantity
+      });
+    }
+
+    // Create a temporary guest user ID
+    const guestId = new mongoose.Types.ObjectId();
+
+    const newOrder = new Order({
+      customerId: guestId, 
+      items: formattedItems,
+      totalPrice,
+      status: "pending",
+      isGuestOrder: true,
+      guestDetails: customerDetails 
     });
 
-    if (paymentIntent.status === 'succeeded') {
-      const newOrder = new Order({
-        user: null, // No user ID for guest
-        items: processedItems,
-        totalPrice,
-        shippingAddress,
-        paymentMethod,
-        paymentId: paymentIntent.id,
-        status: 'paid',
-        currency: 'ZAR'
+    const savedOrder = await newOrder.save();
+
+    // Update product stock
+    for (let item of formattedItems) {
+      await Product.findByIdAndUpdate(item.productId, {
+        $inc: { stock: -item.quantity }
       });
-
-      const savedOrder = await newOrder.save();
-      await updateProductStock(processedItems);
-
-      res.status(201).json(savedOrder);
-    } else {
-      res.status(400).json({ message: 'Payment not successful' });
     }
+
+    res.status(201).json({
+      message: "Guest order created successfully",
+      order: savedOrder
+    });
   } catch (error) {
-    next(error);
+    console.error("Guest order creation error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
