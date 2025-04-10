@@ -74,7 +74,7 @@ const validateSignIn = [
 ];
 
 // Update Profile
-exports.updateProfile = [
+const updateProfile = [
   body("name").trim().notEmpty().withMessage("Name is required"),
 
   body("email").isEmail().withMessage("Invalid email format"),
@@ -96,13 +96,13 @@ const validate = (req, res, next) => {
 };
 
 const validateGuestOrder = [
-  body("items")
-    .isArray()
-    .notEmpty()
-    .withMessage("Items must be an array and not empty."),
-  body("paymentMethod").notEmpty().withMessage("Payment method is required."),
-  body("paymentToken").notEmpty().withMessage("Payment token is required."),
-  body("guestEmail").isEmail().withMessage("A valid guest email is required."),
+  body('items').isArray().withMessage('Items must be an array'),
+  body('items.*.productId').isString().notEmpty().withMessage('Product ID is required for each item'),
+  body('items.*.quantity').isInt({ min: 1 }).withMessage('Quantity must be at least 1'),
+  body('customerDetails').isObject().withMessage('Customer details are required'),
+  body('customerDetails.name').isString().notEmpty().withMessage('Customer name is required'),
+  body('customerDetails.email').isEmail().withMessage('Valid email is required'),
+  body('customerDetails.address').isString().notEmpty().withMessage('Shipping address is required'),
 ];
 
 const validateNewOrder = [
@@ -118,9 +118,6 @@ const validateNewOrder = [
   body("items.*.quantity")
     .isInt({ gt: 0 })
     .withMessage("Each item must have a valid quantity greater than 0."),
-  body("items.*.price")
-    .isFloat({ gt: 0 })
-    .withMessage("Each item must have a valid price."),
 ];
 
 // Validation middleware for resetting the password
@@ -131,13 +128,13 @@ const validateResetPassword = [
   body("confirmPassword")
     .not()
     .isEmpty()
-    .withMessage("Confirm password is required"),
-  body("confirmPassword").custom((value, { req }) => {
-    if (value !== req.body.password) {
-      throw new Error("Passwords do not match");
-    }
-    return true;
-  }),
+    .withMessage("Confirm password is required")
+    .custom((value, { req }) => {
+      if (value !== req.body.password) {
+        throw new Error("Passwords do not match");
+      }
+      return true;
+    }),
 ];
 
 // Validation for forgot password
@@ -145,6 +142,7 @@ const validateForgotPassword = [
   body("email").trim().isEmail().withMessage("Valid email is required"),
 ];
 
+// Single export statement for all validators and handlers
 module.exports = {
   handleErrors,
   validateSignUp,
@@ -155,4 +153,5 @@ module.exports = {
   validateNewOrder,
   validateResetPassword,
   validateForgotPassword,
+  updateProfile,
 };

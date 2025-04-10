@@ -13,28 +13,20 @@ const {
   getOrderAnalytics,
   createGuestOrder,
 } = require("../controllers/orderController");
+const { authMiddleware } = require("../middleware/authMiddleware");
 
-// Route to create an order
+// Route for creating orders
 router.post("/create", validateNewOrder, createOrder);
-
-// Route to get order history for the authenticated user
-router.get("/history", getOrderHistory);
-
-// Route to get a specific order by its ID
-router.get("/:id", getOrder);
-
-// Route to get order analytics
-router.get("/analytics", getOrderAnalytics);
-
-// Route to update the status of an order
-router.patch("/:orderId", updateOrderStatus);
-
-// Route to cancel an order
-router.delete("/:id/cancel", cancelOrder);
-
-// Route to create a bulk order
 router.post("/bulk", createBulkOrder);
-
 router.post("/create-guest-order", validateGuestOrder, createGuestOrder);
+
+// Routes for information
+router.get("/analytics/all", authMiddleware, getOrderAnalytics);
+router.get("/history", authMiddleware, getOrderHistory);
+
+// Parameter routes last
+router.get("/:id", authMiddleware, getOrder);
+router.patch("/update/:orderId", updateOrderStatus);
+router.delete("/:id/cancel", cancelOrder);
 
 module.exports = router;
