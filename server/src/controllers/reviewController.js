@@ -84,13 +84,13 @@ const getUserReviews = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
 
-    const reviews = await Review.find({ userId })
+    const reviews = await Review.find({ user: userId })
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
-      .populate('productId', 'name price'); 
+      .populate('product', 'name price'); 
 
-    const total = await Review.countDocuments({ userId });
+    const total = await Review.countDocuments({ user: userId });
 
     res.json({
       success: true,
@@ -128,7 +128,7 @@ const editReview = async (req, res) => {
       return res.status(404).json({ message: 'Review not found' });
     }
 
-    if (review.userId.toString() !== userId) {
+    if (review.user.toString() !== userId) {
       return res.status(403).json({ message: 'Not authorized to edit this review' });
     }
 
@@ -175,7 +175,7 @@ const deleteReview = async (req, res) => {
       return res.status(404).json({ message: 'Review not found' });
     }
 
-    if (review.userId.toString() !== userId) {
+    if (review.user.toString() !== userId) {
       return res.status(403).json({ message: 'Not authorized to delete this review' });
     }
 
