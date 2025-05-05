@@ -11,13 +11,18 @@ router.post('/remove', cartController.removeFromCart);
 router.get('/:userId', cartController.getCart);
 
 // Convert cart items to an order
-router.post('/:userId/checkout', async (req, res) => {
+router.post('/checkout/:userId', async (req, res) => {
+    console.log('Checkout route hit with userId:', req.params.userId);
     try {
         const { userId } = req.params;
         const order = await cartController.createOrderFromCart(userId);
         res.status(200).json({ message: 'Order created successfully', order });
     } catch (error) {
-        res.status(500).json({ message: 'Error creating order from cart', error });
+        console.error('Checkout error:', error);
+        res.status(500).json({ 
+            message: 'Error creating order from cart', 
+            error: error.message 
+        });
     }
 });
 

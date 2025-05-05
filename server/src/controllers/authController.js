@@ -68,7 +68,7 @@ exports.signUp = async (req, res) => {
     const user = new User({
       email,
       username,
-      password, // Plain password - will be hashed by middleware
+      password, // Plain password - will be hashed by middleware 
       ...rest,
     });
 

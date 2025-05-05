@@ -10,6 +10,10 @@ const userSchema = new mongoose.Schema({
         enum: ['user', 'admin', 'super_admin'],
         default: 'user'
     },
+    wishlist: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Wishlist'
+      }, 
     status: {
         type: String,
         enum: ['active', 'inactive'],
