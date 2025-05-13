@@ -56,6 +56,7 @@ const SignUp = () => {
           <input
             type="text"
             id="username"
+            placeholder="Enter your username"
             className={styles.input}
             value={username}
             onChange={(e) => setUsername(e.target.value)}
@@ -67,6 +68,7 @@ const SignUp = () => {
           <input
             type="email"
             id="email"
+            placeholder="Enter your email"
             className={styles.input}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -78,6 +80,7 @@ const SignUp = () => {
           <input
             type="password"
             id="password"
+            placeholder="Enter your password"
             className={styles.input}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
