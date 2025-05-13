@@ -71,3 +71,22 @@
     background-color: #cccccc;
     cursor: not-allowed;
   }
+  
+  .input::placeholder {
+    color: #999;
+    opacity: 0.5;
+  }
+  
+  .forgotPassword {
+    display: block;
+    text-align: center;
+    color: #007bff;
+    text-decoration: none;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .forgotPassword:hover {
+    text-decoration: underline;
+    color: #0056b3;
+  }
