@@ -88,7 +88,7 @@ const SignUp = () => {
           {loading ? "Signing Up..." : "Sign Up"}
         </button>
         <p className={styles.loginRedirect}>
-            already have an account? <a href="/auth/login">Login</a>
+            already have an account? <a href="/auth/signin">Sign in</a>
         </p>
       </form>
     </div>
