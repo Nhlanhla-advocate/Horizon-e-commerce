@@ -8,4 +8,4 @@ const ResetPasswordPage = () => {
   return <ResetPassword params={{ token }} />
 }
 
-export default ResetPasswordPage
+export default ResetPasswordPage 
