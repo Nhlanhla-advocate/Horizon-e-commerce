@@ -20,7 +20,26 @@ const Navbar = () => {
                   <link to="/categories" className="navbar-link">Categories</link>
                   <link to="/deals" className="navbar-link">Deals</link>  
                 </div>
+            </div>
+
+            {/* Search bar */}
+            <div className="navbar-search-container">
+              <div className="navbar-search-wrapper">
+                <div className="navbar-search-relative">
+                  <div className="navbar-search-icon">
+                    <FaSearch />
+                  </div>
+                  <input className="navbar-search-input"
+                  placeholder="Search products..."
+                  type="search"
+                  />
+                </div>
+              </div>
+
+              {/* Right side icons */}
+              <div className="navbar-icons">
                 
+              </div>
             </div>
           </div>
         </nav>
