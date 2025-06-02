@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { faShoppingCart, FaUser, FaSearch } from 'react-icons/fa';
+import { FaShoppingCart, FaUser, FaSearch } from 'react-icons/fa';
 
 const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -38,7 +38,12 @@ const Navbar = () => {
 
               {/* Right side icons */}
               <div className="navbar-icons">
-                
+                <link to ="/cart" className="navbar-icon-link">
+                  <FaShoppingCart />
+                </link>
+                <link to="/account" className="navbar-icon-link">
+                  <FaUser />
+                </link>
               </div>
             </div>
           </div>
