@@ -24,6 +24,24 @@ const Products = () => {
             name: 'PlayStation 4',
             price: 3000.00,
             image: '/Pictures/Playstation 4.jpg'
+        },
+        {
+            id: 4,
+            name: 'PlayStation 5 Disk',
+            price: 16500.00,
+            image: '/Pictures/Playstation 5 disk.jpg'
+        },
+        {
+            id: 5,
+            name: 'PlayStation 5 Pro',
+            price: 19500.00,
+            image: '/Pictures/Playstation 5 pro.jpg'
+        },
+        {
+            id: 6,
+            name: 'PlayStation 4 Pro',
+            price: 12000.00,
+            image: '/Pictures/Playstation 4 pro.jpg'
         }
     ];
 
