@@ -1,13 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { FaShoppingCart, FaUser, FaSearch } from 'react-icons/fa';
 import '../globals.css';
 
 const Navbar = () => {
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-
     return (
         <nav className="navbar">
             <div className="navbar-container">
@@ -47,34 +45,6 @@ const Navbar = () => {
                         <Link href="/account" className="navbar-icon-link">
                             <FaUser />
                         </Link>
-                    </div>
-
-                    {/* Mobile menu button */}
-                    <div className="navbar-mobile-button-container">
-                        <button
-                            onClick={() => setIsMenuOpen(!isMenuOpen)}
-                            className="navbar-mobile-button"
-                        >
-                            <span className="sr-only">Open main menu</span>
-                            <svg
-                                className={isMenuOpen ? 'hidden' : 'block'}
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                            </svg>
-                            <svg
-                                className={isMenuOpen ? 'block' : 'hidden'}
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
                     </div>
                 </div>
             </div>
