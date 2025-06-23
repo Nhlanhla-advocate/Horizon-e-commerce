@@ -1,4 +1,5 @@
-import './globals.css'
+
+import './assets/css/navbar.css';
 
 export const metadata = {
   title: 'Horizon E-commerce',
