@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { FaShoppingCart, FaUser, FaSearch } from 'react-icons/fa';
 import '../globals.css';
+import '../assets/css/navbar.css';
 
 const Navbar = () => {
     return (
