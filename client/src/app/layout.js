@@ -1,5 +1,8 @@
 
+import './assets/css/style.css';
 import './assets/css/navbar.css';
+import './assets/css/buttons.css';
+import './assets/css/product.css';
 
 export const metadata = {
   title: 'Horizon E-commerce',
@@ -7,11 +10,5 @@ export const metadata = {
 }
 
 export default function RootLayout({ children }) {
-  return (
-    <html lang="en">
-      <body>
-        {children}
-      </body>
-    </html>
-  )
-} 
+  return <>{children}</>;
+  }
