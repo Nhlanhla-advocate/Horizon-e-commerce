@@ -1,0 +1,116 @@
+.footer {
+  background: #2563eb; /* Blue */
+  color: #fff;
+  font-size: 0.95rem;
+  margin-top: 2rem;
+  border-top: 1px solid #e5e7eb;
+}
+.footer-main {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 2rem 1rem 1rem 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.footer-columns {
+  display: flex;
+  flex: 2;
+  gap: 2rem;
+}
+.footer-col h4 {
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+  color: #fff;
+}
+.footer-col ul {
+  list-style: none;
+  padding: 0;
+}
+.footer-col ul li {
+  margin-bottom: 0.5rem;
+}
+.footer-col ul li a {
+  color: #fff;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.footer-col ul li a:hover {
+  color: #b3c6ff;
+}
+.footer-apps-social {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1.5rem;
+}
+.footer-apps span,
+.footer-social span {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+.app-buttons img,
+.social-icons img {
+  height: 32px;
+  margin-right: 0.5rem;
+}
+.footer-bottom {
+  background: #e5e7eb;
+  padding: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+}
+.footer-links {
+  flex: 2;
+  color: #666;
+}
+.footer-links a {
+  color: #b3f9ff;
+  text-decoration: none;
+  margin-right: 0.5rem;
+}
+.footer-payments img {
+  height: 24px;
+  margin-right: 0.5rem;
+}
+.social-icons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+.social-icons a {
+  color: #fff;
+  font-size: 1.5rem;
+  transition: color 0.2s;
+}
+.social-icons a:hover {
+  color: #b3c6ff;
+}
+.footer-sponsors {
+  background: #b3c6ff; /* Powder blue */
+  min-height: 48px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+@media (max-width: 900px) {
+  .footer-main {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .footer-apps-social {
+    align-items: flex-start;
+    margin-top: 2rem;
+  }
+  .footer-columns {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+}
+
