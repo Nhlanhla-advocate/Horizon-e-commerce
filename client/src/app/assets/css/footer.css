@@ -91,6 +91,17 @@
 .social-icons a:hover {
   color: #b3c6ff;
 }
+
+/* SMALL FOOTER */
+.footer-small {
+  background: #b3c6ff; /* Powder blue */
+  color: #222;
+  text-align: center;
+  font-size: 0.9rem;
+  padding: 0.5rem 0;
+  width: 100%;
+}
+
 .footer-sponsors {
   background: #b3c6ff; /* Powder blue */
   min-height: 48px;
@@ -99,6 +110,7 @@
   align-items: center;
   justify-content: center;
 }
+/* RESPONSIVENESS */
 @media (max-width: 900px) {
   .footer-main {
     flex-direction: column;
@@ -113,4 +125,6 @@
     gap: 1.5rem;
   }
 }
+
+
 

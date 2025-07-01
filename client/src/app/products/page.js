@@ -2,7 +2,9 @@
 import Navbar from '../components/Navbar';
 import Products from '../components/Products';
 
-export default function ProductsPage() {
+
+
+export default function Home() {
   return (
     <main>
       <Navbar />
