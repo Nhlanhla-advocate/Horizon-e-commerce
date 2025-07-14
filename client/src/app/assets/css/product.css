@@ -29,6 +29,8 @@
     flex-direction: column;
     height: 100%;
     position: relative;
+    pointer-events: auto;
+    cursor: pointer;
 }
 
 .product-card:hover {
@@ -41,6 +43,7 @@
     width: 100%;
     height: 300px;
     overflow: hidden;
+    pointer-events: auto;
 }
 
 .product-image {
@@ -194,4 +197,139 @@
         font-size: 1.1rem;
         margin-bottom: 0.75rem;
     }
+}
+
+.container {
+  max-width: 1100px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.09);
+}
+
+.mainContent {
+  display: flex;
+  flex-direction: row;
+  gap: 2.5rem;
+  align-items: flex-start;
+}
+
+.leftImages {
+  min-width: 340px;
+}
+
+@media (max-width: 900px) {
+  .mainContent {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .leftImages {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .container {
+    padding: 0.5rem;
+    margin: 0.5rem;
+  }
+  .mainContent {
+    gap: 1rem;
+  }
+}
+
+/* Desktop (default) styles */
+.you-might-like-slider {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: unset;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+}
+.hide-on-mobile {
+  display: block;
+}
+
+@media (max-width: 600px) {
+  .hide-on-mobile {
+    display: none !important;
+  }
+  .you-might-like-slider {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    gap: 1rem;
+    padding: 0;
+    margin: 0;
+    justify-content: flex-start;
+  }
+  .you-might-like-slider > div {
+    scroll-snap-align: start;
+    min-width: 80vw;
+    max-width: 90vw;
+    margin-right: 0.5rem;
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 600px) {
+  .image-modal {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999; /* Ensure modal overlays all content */
+  }
+  .image-modal img {
+    max-width: 90vw;
+    max-height: 80vh;
+    border-radius: 8px;
+  }
+}
+
+/* --- Thumbnails vertical sidebar next to main image --- */
+.imageFlexRow {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.thumbnails {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 70px;
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.mainImageContainer {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Mobile adjustments */
+@media (max-width: 600px) {
+  .imageFlexRow {
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+  .thumbnails {
+    width: 50px;
+    max-height: 180px;
+    gap: 0.3rem;
+  }
+  .mainImageContainer {
+    min-width: 0;
+  }
 }
