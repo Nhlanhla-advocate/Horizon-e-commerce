@@ -3,10 +3,12 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { FaShoppingCart, FaUser, FaSearch, FaBars, FaTimes } from 'react-icons/fa';
+import { useCart } from './Cart';
 
 const Navbar = () => {
     const [menuOpen, setMenuOpen] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false);
+    const { cartCount } = useCart();
 
     // Close menu/search on navigation (optional improvement)
     const handleNavClick = () => {
@@ -105,6 +107,14 @@ const Navbar = () => {
                                 <FaUser />
                             </Link>
                         </div>
+                    </div>
+                    <div className="navbar-cart">
+                        <a href="/cart" className="cart-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24"><path d="M7 18c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2zm10 0c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2zm-12.293-2.707l1.414 1.414c.39.39 1.024.39 1.414 0l12.293-12.293c.39-.39.39-1.024 0-1.414l-1.414-1.414c-.39-.39-1.024-.39-1.414 0l-12.293 12.293c-.39.39-.39 1.024 0 1.414zm13.293-10.293l-1.293 1.293-10.293 10.293-1.293-1.293 10.293-10.293 1.293-1.293zm-13.293 13.293l1.293 1.293 10.293-10.293 1.293 1.293-10.293 10.293-1.293-1.293z"/></svg>
+                            {cartCount > 0 && (
+                                <span className="cart-badge">{cartCount}</span>
+                            )}
+                        </a>
                     </div>
                 </div>
             </div>
