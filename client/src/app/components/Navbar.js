@@ -1,125 +1,116 @@
 'use client';
 
-import React, { useState } from 'react';
+
+import React from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
-import { FaShoppingCart, FaUser, FaSearch, FaBars, FaTimes } from 'react-icons/fa';
-import { useCart } from './Cart';
+import { useCart } from '../cart/Cart';
 
-const Navbar = () => {
-    const [menuOpen, setMenuOpen] = useState(false);
-    const [searchOpen, setSearchOpen] = useState(false);
-    const { cartCount } = useCart();
 
-    // Close menu/search on navigation (optional improvement)
-    const handleNavClick = () => {
-        setMenuOpen(false);
-        setSearchOpen(false);
-    };
+const Products = () => {
+    const { addToCart } = useCart();
+    const products = [
+        {
+            id: 1,
+            name: 'PlayStation 5 Digital',
+            dbId: '687758601f8fda62d2898c43',
+            price: 12000.00,
+            image: '/Pictures/Playstation 5 Digital.jpg',
+            slug: 'playstation-5-digital'
+        },
+        {
+            id: 2,
+            name: 'PlayStation 4 Slim',
+            price: 4000.00,
+            image: '/Pictures/Playstation 4 Slim.jpg',
+            slug: 'playstation-4-slim'
+        },
+        {
+            id: 3,
+            name: 'PlayStation 4',
+            price: 3000.00,
+            image: '/Pictures/Playstation 4.jpg',
+            slug: 'playstation-4'
+        },
+        {
+            id: 4,
+            name: 'PlayStation 5 Disk',
+            price: 16500.00,
+            image: '/Pictures/Playstation 5 disk.jpg',
+            slug: 'playstation-5-disk'
+        },
+        {
+            id: 5,
+            name: 'PlayStation 5 Pro',
+            price: 19500.00,
+            image: '/Pictures/Playstation 5 pro.jpg',
+            slug: 'playstation-5-pro'
+        },
+        {
+            id: 6,
+            name: 'PlayStation 4 Pro',
+            price: 12000.00,
+            image: '/Pictures/Playstation 4 pro.jpg',
+            slug: 'playstation-4-pro'
+        }
+    ];
+
 
     return (
-        <nav className="navbar">
-            <div className="navbar-container">
-                {/* Mobile Layout */}
-                <div className="navbar-mobile-row">
-                    <Link href="/" className="navbar-logo" onClick={handleNavClick}>
-                        <h1>Horizon</h1>
-                    </Link>
-                    <button
-                        className="navbar-burger"
-                        aria-label="Toggle menu"
-                        onClick={() => setMenuOpen((v) => !v)}
-                    >
-                        {menuOpen ? <FaTimes /> : <FaBars />}
-                    </button>
-                    <div className="navbar-mobile-icons">
-                        <button
-                            className="navbar-mobile-icon-btn"
-                            aria-label="Search"
-                            onClick={() => setSearchOpen((v) => !v)}
-                        >
-                            <FaSearch />
-                        </button>
-                        <Link href="/cart" className="navbar-icon-link" onClick={handleNavClick}>
-                            <FaShoppingCart />
-                        </Link>
-                        <Link href="/account" className="navbar-icon-link" onClick={handleNavClick}>
-                            <FaUser />
-                        </Link>
-                    </div>
-                </div>
-
-                {/* Mobile Search Input Overlay */}
-                {searchOpen && (
-                    <div className="navbar-mobile-search-overlay">
-                        <div className="navbar-search-relative">
-                            <div className="navbar-search-icon">
-                                <FaSearch />
+        <div className="products-container">
+            <h2 className="products-title">Featured Products</h2>
+            <div className="products-grid">
+                {products.map((product) => {
+                    const isPS5Digital = product.name === 'PlayStation 5 Digital';
+                    const cardContent = (
+                        <div className="product-card">
+                            <div className="product-image-container">
+                                <Link href={`/products/${product.slug}`}>
+                                    <Image
+                                        src={product.image}
+                                        alt={product.name}
+                                        className="product-image"
+                                        width={250}
+                                        height={250}
+                                        style={{ objectFit: 'cover' }}
+                                    />
+                                </Link>
                             </div>
-                            <input
-                                className="navbar-search-input"
-                                placeholder="Search products..."
-                                type="search"
-                                autoFocus
-                            />
-                        </div>
-                    </div>
-                )}
-
-                {/* Mobile Dropdown Menu */}
-                {menuOpen && (
-                    <div className="navbar-mobile-menu">
-                        <Link href="/" className="navbar-link" onClick={handleNavClick}>Home</Link>
-                        <Link href="/products" className="navbar-link" onClick={handleNavClick}>Products</Link>
-                        <Link href="/categories" className="navbar-link" onClick={handleNavClick}>Categories</Link>
-                        <Link href="/deals" className="navbar-link" onClick={handleNavClick}>Deals</Link>
-                    </div>
-                )}
-
-                {/* Desktop Layout */}
-                <div className="navbar-flex">
-                    <Link href="/" className="navbar-logo">
-                        <h1>Horizon</h1>
-                    </Link>
-                    <div className="navbar-nav">
-                        <Link href="/" className="navbar-link">Home</Link>
-                        <Link href="/products" className="navbar-link">Products</Link>
-                        <Link href="/categories" className="navbar-link">Categories</Link>
-                        <Link href="/deals" className="navbar-link">Deals</Link>
-                    </div>
-                    <div className="navbar-search-container">
-                        <div className="navbar-search-wrapper">
-                            <div className="navbar-search-relative">
-                                <div className="navbar-search-icon">
-                                    <FaSearch />
-                                </div>
-                                <input
-                                    className="navbar-search-input"
-                                    placeholder="Search products..."
-                                    type="search"
-                                />
+                            <div className="product-info">
+                                <Link href={`/products/${product.slug}`}>
+                                    <h3 className="product-name" style={{ textDecoration: 'none' }}>{product.name}</h3>
+                                </Link>
+                                <div className="product-price">R {product.price.toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                                <button
+                                    className="add-to-cart-button"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        addToCart(product.dbId || product.name, 1);
+                                    }}
+                                >
+                                    <span className="button-content">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="cart-icon" width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
+                                            <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+                                        </svg>
+                                        <span>Add to Cart</span>
+                                    </span>
+                                </button>
                             </div>
                         </div>
-                        <div className="navbar-icons">
-                            <Link href="/cart" className="navbar-icon-link">
-                                <FaShoppingCart />
-                            </Link>
-                            <Link href="/account" className="navbar-icon-link">
-                                <FaUser />
-                            </Link>
-                        </div>
-                    </div>
-                    <div className="navbar-cart">
-                        <a href="/cart" className="cart-icon">
-                            <svg width="24" height="24" viewBox="0 0 24 24"><path d="M7 18c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2zm10 0c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2zm-12.293-2.707l1.414 1.414c.39.39 1.024.39 1.414 0l12.293-12.293c.39-.39.39-1.024 0-1.414l-1.414-1.414c-.39-.39-1.024-.39-1.414 0l-12.293 12.293c-.39.39-.39 1.024 0 1.414zm13.293-10.293l-1.293 1.293-10.293 10.293-1.293-1.293 10.293-10.293 1.293-1.293zm-13.293 13.293l1.293 1.293 10.293-10.293 1.293 1.293-10.293 10.293-1.293-1.293z"/></svg>
-                            {cartCount > 0 && (
-                                <span className="cart-badge">{cartCount}</span>
-                            )}
-                        </a>
-                    </div>
-                </div>
+                    );
+                    return isPS5Digital ? (
+                        <Link key={product.id} href={`/products/${product.slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                            {cardContent}
+                        </Link>
+                    ) : (
+                        <div key={product.id}>{cardContent}</div>
+                    );
+                })}
             </div>
-        </nav>
+        </div>
     );
 };
 
-export default Navbar; 
+
+export default Products;
