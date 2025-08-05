@@ -1,139 +1,3 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-.navbar {
-    background-color: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-}
-
-.navbar-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 1rem;
-}
-
-.navbar-flex {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    height: 4rem;
-}
-
-.navbar-logo {
-    text-decoration: none;
-    color: #333;
-}
-
-.navbar-logo h1 {
-    font-size: 1.5rem;
-    font-weight: bold;
-    margin: 0;
-}
-
-.navbar-nav {
-    display: flex;
-    gap: 2rem;
-}
-
-.navbar-link {
-    text-decoration: none;
-    color: #666;
-    font-weight: 500;
-    transition: color 0.2s;
-}
-
-.navbar-link:hover {
-    color: #333;
-}
-
-.navbar-search-container {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.navbar-search-wrapper {
-    position: relative;
-    width: 300px;
-}
-
-.navbar-search-relative {
-    position: relative;
-}
-
-.navbar-search-icon {
-    position: absolute;
-    left: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #666;
-}
-
-.navbar-search-input {
-    width: 100%;
-    padding: 0.5rem 0.5rem 0.5rem 2.5rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 0.875rem;
-}
-
-.navbar-search-input:focus {
-    outline: none;
-    border-color: #666;
-}
-
-.navbar-icons {
-    display: flex;
-    gap: 1rem;
-}
-
-.navbar-icon-link {
-    color: #666;
-    font-size: 1.25rem;
-    transition: color 0.2s;
-}
-
-.navbar-icon-link:hover {
-    color: #333;
-}
-
-.navbar-mobile-button-container {
-    display: none;
-}
-
-.navbar-mobile-button {
-    background: none;
-    border: none;
-    padding: 0.5rem;
-    cursor: pointer;
-}
-
-.navbar-mobile-button svg {
-    width: 1.5rem;
-    height: 1.5rem;
-    color: #666;
-}
-
-@media (max-width: 768px) {
-    .navbar-nav {
-        display: none;
-    }
-
-    .navbar-mobile-button-container {
-        display: block;
-    }
-
-    .navbar-search-wrapper {
-        width: 200px;
-    }
-}
-
 /* Products Section Styles */
 .products-container {
     max-width: 1200px;
@@ -255,6 +119,10 @@
     z-index: 2;
 }
 
+.add-to-cart-button:hover {
+    background-color: #1d4ed8;
+}
+
 .button-content {
     display: flex;
     align-items: center;
@@ -268,17 +136,89 @@
     flex-shrink: 0;
 }
 
-.add-to-cart-button:hover {
-    background-color: #1d4ed8;
+/* Responsive Styles */
+@media (max-width: 1024px) {
+    .products-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .product-image-container {
+        height: 280px;
+    }
 }
 
 @media (max-width: 768px) {
+    .products-container {
+        margin: 1rem auto;
+    }
+
+    .products-title {
+        font-size: 1.75rem;
+        margin-bottom: 1.5rem;
+    }
+
     .products-grid {
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
         gap: 1rem;
+        padding: 0.5rem;
     }
     
     .product-image-container {
         height: 250px;
     }
-} 
+
+    .product-info {
+        padding: 1rem;
+    }
+
+    .product-name {
+        font-size: 1.1rem;
+    }
+
+    .product-price {
+        font-size: 1.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .products-container {
+        padding: 0 0.5rem;
+    }
+
+    .products-title {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .products-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+
+    .product-image-container {
+        height: 220px;
+    }
+
+    .product-info {
+        padding: 0.75rem;
+    }
+
+    .product-name {
+        font-size: 0.95rem;
+        word-break: break-word;
+        white-space: normal;
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .product-price {
+        font-size: 1.1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .add-to-cart-button {
+        padding: 0.6rem;
+        font-size: 0.9rem;
+    }
+}
