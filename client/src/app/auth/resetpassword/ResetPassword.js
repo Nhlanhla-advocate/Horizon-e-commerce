@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useRouter} from "next/router";
-import styles from '../../app/Styles/auth.module.css';
+import styles from '../../assets/css/auth.module.css';
 import Link from 'next/link';
 
 export default function ResetPassword({ params }) {

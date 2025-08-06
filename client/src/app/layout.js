@@ -1,12 +1,12 @@
 import { Inter } from 'next/font/google';
-import './Styles/style.css';
-import './Styles/navbar.css';
-import './Styles/buttons.css';
-import './Styles/product.css';
-import './Styles/footer.css';
+import './assets/css/navbar.css';
+import './assets/css/buttons.css';
+import './assets/css/product.css';
+import './assets/css/footer.css';
+
 import { CartProvider } from './cart/Cart';
-import Footer from './components/Footer';
-import { FaShoppingCart } from 'react-icons/fa';
+import Navbar from './components/Navbar';
+import Footer from './auth/footer/Footer';
 
 
 const inter = Inter({ subsets: ['latin'] });
@@ -23,6 +23,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body>
         <CartProvider>
+          <Navbar />
           {children}
           <Footer />
         </CartProvider>
