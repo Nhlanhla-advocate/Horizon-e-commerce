@@ -5,7 +5,7 @@ import './assets/css/product.css';
 import './assets/css/footer.css';
 
 import { CartProvider } from './cart/Cart';
-import Navbar from './components/Navbar';
+import Navbar from "./components/navbar/Navbar";
 import Footer from './auth/footer/Footer';
 
 
