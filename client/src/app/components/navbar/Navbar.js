@@ -1,36 +1,36 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link  from 'next/link';
+import React from 'react';
+import Link from 'next/link';
 import { FaShoppingCart, FaUser, FaSearch } from 'react-icons/fa';
 import "../../assets/css/navbar.css";
 
 const Navbar = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
   return (
     <nav className="navbar">
       <div className="navbar-container">
         <div className="navbar-flex">
-          {/* Logo and main navigation */}
+          {/* Logo on the left */}
           <div className="navbar-left">
             <Link href="/" className="navbar-logo">
               <h1>Horizon</h1>
             </Link>
-            <div className="navbar-nav">
-              <Link href="/" className="navbar-link">
-                Home
-              </Link>
-              <Link href="/products" className="navbar-link">
-                Products
-              </Link>
-              <Link href="/categories" className="navbar-link">
-                Categories
-              </Link>
-              <Link href="/deals" className="navbar-link">
-                Deals
-              </Link>
-            </div>
+          </div>
+
+          {/* Nav links on the right */}
+          <div className="navbar-nav navbar-nav-right">
+            <Link href="/" className="navbar-link">
+              Home
+            </Link>
+            <Link href="/products" className="navbar-link">
+              Products
+            </Link>
+            <Link href="/categories" className="navbar-link">
+              Categories
+            </Link>
+            <Link href="/deals" className="navbar-link">
+              Deals
+            </Link>
           </div>
 
           {/* Search bar */}
@@ -58,55 +58,9 @@ const Navbar = () => {
               <FaUser />
             </Link>
           </div>
-
-          {/* Mobile menu button */}
-          <div className="navbar-mobile-button-container">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="navbar-mobile-button"
-            >
-              <span className="sr-only">Open main menu</span>
-              <svg
-                className={isMenuOpen ? 'hidden' : 'block'}
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-              <svg
-                className={isMenuOpen ? 'block' : 'hidden'}
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
         </div>
       </div>
-
-      {/* Mobile menu */}
-      <div className={`navbar-mobile-menu ${isMenuOpen ? 'open' : ''}`}>
-        <div className="navbar-mobile-menu-container">
-          <Link href="/" className="navbar-mobile-link">
-            Home
-          </Link>
-          <Link href="/products" className="navbar-mobile-link">
-            Products
-          </Link>
-          <Link href="/categories" className="navbar-mobile-link">
-            Categories
-          </Link>
-          <Link href="/deals" className="navbar-mobile-link">
-            Deals
-          </Link>
-        </div>
-      </div>
-    </nav>  
+    </nav>
   );
 };
 

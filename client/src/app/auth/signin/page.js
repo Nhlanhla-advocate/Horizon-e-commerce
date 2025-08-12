@@ -1,7 +1,7 @@
 
 
-import Footer from '@/components/Home/Footer';
+import Signin from '@/components/Home/Signin';
 
-export default function FooterPage() {
-  return <Footer />;
+export default function SigninPage() {
+  return <Signin />;
 }
