@@ -1,14 +1,13 @@
 import { Inter } from 'next/font/google';
-import './assets/css/style.css';
 import './assets/css/navbar.css';
 import './assets/css/buttons.css';
 import './assets/css/product.css';
 import './assets/css/footer.css';
-// import '../assets/css/navbar.css';
-import { CartProvider } from './cart/Cart';
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
 
+import { CartProvider } from './components/cart/Cart';
+import Navbar from "./components/navbar/Navbar";
+import Footer from "./components/footer/Footer";
+// import './footer/Footer';
 
 const inter = Inter({ subsets: ['latin'] });
 

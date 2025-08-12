@@ -1,12 +1,9 @@
-'use client';
-import Navbar from '../components/Navbar';
-import Products from '../components/Products';
+import Products from './products';
 
-export default function Home() {
+export default function ProductsPage() {
   return (
-    <main>
-      <Navbar />
+    <div className="container">
       <Products />
-    </main>
+    </div>
   );
 } 
