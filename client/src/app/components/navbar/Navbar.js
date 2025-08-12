@@ -3,9 +3,12 @@
 import React from 'react';
 import Link from 'next/link';
 import { FaShoppingCart, FaUser, FaSearch } from 'react-icons/fa';
+import { useCart } from '../cart/Cart';
 import "../../assets/css/navbar.css";
 
 const Navbar = () => {
+  const { cartCount } = useCart();
+
   return (
     <nav className="navbar">
       <div className="navbar-container">
@@ -51,8 +54,15 @@ const Navbar = () => {
 
           {/* Right side icons */}
           <div className="navbar-icons">
-            <Link href="/cart" className="navbar-icon-link">
-              <FaShoppingCart />
+            <Link href="/cart" className="navbar-icon-link cart-link">
+              <div className="cart-icon-container">
+                <FaShoppingCart />
+                {cartCount > 0 && (
+                  <span className="cart-badge">
+                    {cartCount > 99 ? '99+' : cartCount}
+                  </span>
+                )}
+              </div>
             </Link>
             <Link href="/account" className="navbar-icon-link">
               <FaUser />
