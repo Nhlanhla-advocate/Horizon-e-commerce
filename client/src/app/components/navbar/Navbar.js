@@ -1,13 +1,20 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { FaShoppingCart, FaUser, FaSearch } from 'react-icons/fa';
-import { useCart } from '../cart/Cart';
+import { FaShoppingCart, FaUser, FaSearch, FaSpinner } from 'react-icons/fa';
+import { useCart } from '../cart/CartContext';
 import "../../assets/css/navbar.css";
 
 const Navbar = () => {
-  const { cartCount } = useCart();
+  const { cartCount, isLoading } = useCart();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    // Implement search functionality
+    console.log('Searching for:', searchQuery);
+  };
 
   return (
     <nav className="navbar">
@@ -38,7 +45,7 @@ const Navbar = () => {
 
           {/* Search bar */}
           <div className="navbar-search-container">
-            <div className="navbar-search-wrapper">
+            <form onSubmit={handleSearch} className="navbar-search-wrapper">
               <div className="navbar-search-relative">
                 <div className="navbar-search-icon">
                   <FaSearch />
@@ -47,20 +54,28 @@ const Navbar = () => {
                   className="navbar-search-input"
                   placeholder="Search products..."
                   type="search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-            </div>
+            </form>
           </div>
 
           {/* Right side icons */}
           <div className="navbar-icons">
             <Link href="/cart" className="navbar-icon-link cart-link">
               <div className="cart-icon-container">
-                <FaShoppingCart />
-                {cartCount > 0 && (
-                  <span className="cart-badge">
-                    {cartCount > 99 ? '99+' : cartCount}
-                  </span>
+                {isLoading ? (
+                  <FaSpinner className="animate-spin" />
+                ) : (
+                  <>
+                    <FaShoppingCart />
+                    {cartCount > 0 && (
+                      <span className="cart-badge">
+                        {cartCount > 99 ? '99+' : cartCount}
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
             </Link>
