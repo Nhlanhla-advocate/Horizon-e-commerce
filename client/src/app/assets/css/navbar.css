@@ -181,6 +181,75 @@ html, body {
     animation: fadeIn 0.2s;
 }
 
+/* --- CART BADGE STYLES --- */
+
+/* Animation for spinner */
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Cart badge styles */
+.cart-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: #ff4444;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: bold;
+    z-index: 1001;
+}
+
+.cart-icon-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Ensure the navbar links have proper spacing */
+.navbar-nav {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.navbar-link {
+    transition: color 0.2s ease;
+}
+
+.navbar-link:hover {
+    color: #007bff;
+}
+
+/* Cart icon specific styles */
+.cart-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* Loading state for cart */
+.cart-loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
 /* --- RESPONSIVE OVERRIDES --- */
 @media (max-width: 900px) {
     .navbar-flex {
@@ -210,6 +279,15 @@ html, body {
         top: 60px;
         border-radius: 0;
         margin: 0;
+    }
+    
+    /* Mobile cart badge adjustments */
+    .cart-badge {
+        top: -6px;
+        right: -6px;
+        width: 18px;
+        height: 18px;
+        font-size: 0.7rem;
     }
 }
 
@@ -261,4 +339,35 @@ html, body {
     .navbar-mobile-search-overlay {
         top: 48px;
     }
+    
+    /* Mobile cart badge adjustments */
+    .cart-badge {
+        top: -5px;
+        right: -5px;
+        width: 16px;
+        height: 16px;
+        font-size: 0.65rem;
+    }
+}
+
+/* Smooth transitions for cart updates */
+.cart-icon-container {
+    transition: all 0.3s ease;
+}
+
+.cart-badge {
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.cart-badge.update {
+    transform: scale(1.2);
+    background-color: #ff6b6b;
+}
+
+/* Focus states for accessibility */
+.navbar-icon-link:focus,
+.cart-icon-container:focus {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+    border-radius: 4px;
 }
