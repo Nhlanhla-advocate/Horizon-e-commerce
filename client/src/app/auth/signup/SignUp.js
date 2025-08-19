@@ -1,6 +1,10 @@
+'use client';
+
 import { useState } from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import styles from '../../assets/css/auth.module.css';
+import '../../assets/css/buttons.css'; 
+
 
 
 const SignUp = () => {
@@ -19,7 +23,7 @@ const SignUp = () => {
     const userData = { username, email, password };
 
     try {
-      const response = await fetch("http://localhost:3000/user/signup", {
+      const response = await fetch("http://localhost:5000/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userData),
@@ -87,11 +91,11 @@ const SignUp = () => {
             required
           />
         </div>
-        <button type="submit" className={styles.button} disabled={loading}>
+        <button type="submit" className="button" disabled={loading}>
           {loading ? "Signing Up..." : "Sign Up"}
         </button>
         <p className={styles.loginRedirect}>
-            already have an account? <a href="/auth/login">Login</a>
+            already have an account? <a href="/auth/signin">Signin</a>
         </p>
       </form>
     </div>
