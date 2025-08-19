@@ -1,7 +1,5 @@
+import SignUp from './SignUp';
 
-
-import Signup from '@/components/Home/Signup';
-
-export default function SignupPage() {
-  return <Signup />;
+export default function Page() {
+  return <SignUp />;
 }

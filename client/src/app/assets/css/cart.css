@@ -1,0 +1,87 @@
+/* Cart Badge Styles - Add this to your existing navbar.css */
+
+.cart-icon-container {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .cart-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: #ef4444;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: bold;
+    border-radius: 50%;
+    min-width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: bounce-in 0.3s ease-out;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    border: 2px solid white;
+    z-index: 10;
+  }
+  
+  /* Animation for cart badge */
+  @keyframes bounce-in {
+    0% {
+      transform: scale(0);
+      opacity: 0;
+    }
+    50% {
+      transform: scale(1.2);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  
+  /* Hover effect for cart link */
+  .cart-link:hover .cart-badge {
+    background-color: #dc2626;
+    transform: scale(1.1);
+    transition: all 0.2s ease;
+  }
+  
+  /* Pulse animation when items are added */
+  .cart-badge.pulse {
+    animation: pulse 0.6s ease-out;
+  }
+  
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.4);
+      background-color: #f59e0b;
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .cart-badge {
+      min-width: 16px;
+      height: 16px;
+      font-size: 0.7rem;
+      top: -6px;
+      right: -6px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .cart-badge {
+      min-width: 14px;
+      height: 14px;
+      font-size: 0.65rem;
+      top: -5px;
+      right: -5px;
+    }
+  }

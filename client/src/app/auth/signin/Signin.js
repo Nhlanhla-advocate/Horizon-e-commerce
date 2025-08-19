@@ -1,6 +1,9 @@
+'use client';
+
 import { useState } from 'react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import styles from '../../assets/css/auth.module.css';
+import '../../assets/css/buttons.css';
 import Link from 'next/link';
 
 const Signin = () => {
@@ -10,41 +13,51 @@ const Signin = () => {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
-
+    
         if (!email || !password) {
             setError("Please fill in all fields");
             setLoading(false);
             return;
         }
-
+    
         const userData = { email, password };
-
+    
         try {
-            const response = await fetch("http://localhost:3000/user/signin", {
+            console.log("Attempting to fetch from:", "http://localhost:5000/auth/signin");
+            console.log("Sending data:", userData);
+            
+            const response = await fetch("http://localhost:5000/auth/signin", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(userData),
+                credentials: "include"
             });
 
+            console.log("response: ",response)
+        
             const data = await response.json();
-
+            console.log("Response data:", data);
+        
             if (response.ok) {
                 console.log("You have been signed in successfully.", data);
-                localStorage.setItem("token", data.token);
-                router.push("/");
+                localStorage.setItem("token", data.accessToken); 
+                router.push("/products");
             } else {
-                setError(data.message || "An error occurred, please try again.");
+                setError(data.error || "An error occurred, please try again.");
             }
         } catch (error) {
-            setError("Server error. Please try again.");
+            console.error("Full error details:", error);
+            setError(`Server error: ${error.message}`);
         } finally {
             setLoading(false);
         }
     };
+    
 
     return (
         <div className={styles.container}>
@@ -75,7 +88,7 @@ const Signin = () => {
                         required
                     />
                 </div>
-                <button className={styles.button} type="submit" disabled={loading}>
+                <button className="button" type="submit" disabled={loading}>
                     {loading ? "Signing in..." : "Sign In"} 
                 </button>
                 <Link href="/auth/forgot-password" className={styles.forgotPassword}>
@@ -87,4 +100,3 @@ const Signin = () => {
 };
 
 export default Signin;
-

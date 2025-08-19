@@ -7,7 +7,6 @@ import './assets/css/footer.css';
 import { CartProvider } from './components/cart/Cart';
 import Navbar from "./components/navbar/Navbar";
 import Footer from "./components/footer/Footer";
-// import './footer/Footer';
 
 const inter = Inter({ subsets: ['latin'] });
 
