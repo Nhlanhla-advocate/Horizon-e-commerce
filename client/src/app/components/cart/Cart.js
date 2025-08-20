@@ -51,6 +51,8 @@ export const CartProvider = ({ children }) => {
   // Add to cart 
   const addToCart = async (productId, quantity = 1, productData = null) => {
     const userId = localStorage.getItem('userId');
+    const isValidHex24 = typeof productId === 'string' && /^[a-fA-F0-9]{24}$/.test(productId);
+    console.log('addToCart called', { productId, quantity, hasUserId: !!userId, isValidHex24 });
     
     // Prepare product data
     let productPrice = 0;
@@ -90,31 +92,38 @@ export const CartProvider = ({ children }) => {
     };
     
     setCart(updatedCart);
+    console.log('Cart updated locally', updatedCart);
     localStorage.setItem('localCart', JSON.stringify(updatedCart));
     
     // Sync with Express backend if user is logged in
     if (userId) {
-      try {
-        const res = await fetch(`${BASE_URL}/cart/add`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            userId, 
-            productId, 
-            quantity 
-          }),
-        });
-        
-        if (res.ok) {
-          const data = await res.json();
-          // Update with server response
-          setCart(data.cart || data);
-        } else {
-          const errorData = await res.json();
-          console.error('Failed to add to cart:', errorData);
+      console.log('User is logged in, attempting server sync...');
+      if (isValidHex24) {
+        try {
+          const res = await fetch(`${BASE_URL}/cart/add`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              userId, 
+              productId, 
+              quantity 
+            }),
+          });
+          
+          if (res.ok) {
+            const data = await res.json();
+            // Update with server response
+            setCart(data.cart || data);
+            console.log('Server sync successful');
+          } else {
+            const errorData = await res.json();
+            console.error('Failed to add to cart:', errorData);
+          }
+        } catch (err) {
+          console.error('Error adding to cart:', err);
         }
-      } catch (err) {
-        console.error('Error adding to cart:', err);
+      } else {
+        console.warn('Skipping server sync due to invalid productId format. Using local cart only.', productId);
       }
     }
   };

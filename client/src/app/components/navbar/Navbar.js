@@ -1,14 +1,18 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { FaShoppingCart, FaUser, FaSearch, FaSpinner } from 'react-icons/fa';
-import { useCart } from '../cart/CartContext';
+import { useCart } from '../cart/Cart';
 import "../../assets/css/navbar.css";
 
 const Navbar = () => {
   const { cartCount, isLoading } = useCart();
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    console.log('Navbar cartCount changed:', cartCount);
+  }, [cartCount]);
 
   const handleSearch = (e) => {
     e.preventDefault();
