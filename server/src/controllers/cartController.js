@@ -121,7 +121,7 @@ exports.removeFromCart = async (req, res) => {
     const { userId, productId } = req.body;
 
     try {
-        const cart = await Cart.findOne({ userId });
+        const cart = await Cart.findOne({ customerId: userId });
         if (!cart) {
             return res.status(404).json({ message: 'Cart not found' });
         }
@@ -146,7 +146,7 @@ exports.removeMultipleItems = async (req, res) => {
     const { userId, productIds } = req.body;
 
     try {
-        const cart = await Cart.findOne({ userId});
+        const cart = await Cart.findOne({ customerId: userId});
         if (!cart) {
             return res.status(404).json({ message: 'Cart not found'});
         }
@@ -172,7 +172,7 @@ exports.removeMultipleItems = async (req, res) => {
         const { userId } = req.body;
 
         try {
-            const cart = await Cart.findOne({ userId });
+            const cart = await Cart.findOne({ customerId: userId });
             if (!cart) {
             return res.status(404).json({ message: 'Cart not found'});
         }
@@ -192,7 +192,7 @@ exports.removeMultipleItems = async (req, res) => {
         const { userId } = req.params;
 
         try {
-            const cart = await Cart.findOne({ userId }).populate('items.productId');
+            const cart = await Cart.findOne({ customerId: userId }).populate('items.productId');
             if (!cart) {
                 return res.status(404).json({ message: 'Cart not found' });
             }
@@ -207,7 +207,7 @@ exports.removeMultipleItems = async (req, res) => {
   // Update the cart (add an item)
   exports.addItemToCart = async (userId, item) => {
     try {
-      const userCart = await Cart.findOne({ userId: userId });
+      const userCart = await Cart.findOne({ customerId: userId });
   
       if (userCart) {
         userCart.items.push(item);
@@ -216,7 +216,7 @@ exports.removeMultipleItems = async (req, res) => {
       } else {
         // Create a new cart if it doesn't exist
         const newCart = new Cart({
-          userId: userId,
+          customerId: userId,
           items: [item],
           totalPrice: item.price,
           createdAt: new Date(),
@@ -227,6 +227,44 @@ exports.removeMultipleItems = async (req, res) => {
       console.error(error);
     }
   };
+
+// Update quantity of a cart item
+exports.updateItemQuantity = async (req, res) => {
+    const { userId, productId, quantity } = req.body;
+    try {
+        if (!userId || !productId || typeof quantity !== 'number') {
+            return res.status(400).json({ message: 'userId, productId and numeric quantity are required' });
+        }
+
+        const cart = await Cart.findOne({ customerId: userId });
+        if (!cart) {
+            return res.status(404).json({ message: 'Cart not found' });
+        }
+
+        const itemIndex = cart.items.findIndex(item => item.productId.toString() === productId);
+        if (itemIndex === -1) {
+            return res.status(404).json({ message: 'Item not found in the cart' });
+        }
+
+        const item = cart.items[itemIndex];
+        if (quantity <= 0) {
+            // Remove the item if quantity goes to zero or below
+            cart.totalPrice -= item.price * item.quantity;
+            cart.items.splice(itemIndex, 1);
+        } else {
+            // Adjust total price by difference
+            const delta = (quantity - item.quantity) * item.price;
+            item.quantity = quantity;
+            cart.totalPrice += delta;
+        }
+
+        await cart.save();
+        return res.status(200).json(cart);
+    } catch (error) {
+        console.error('Error updating item quantity:', error);
+        return res.status(500).json({ message: 'Error updating item quantity', error: error.message });
+    }
+};
   
 // Create order from cart
 exports.createOrderFromCart = async (userId) => {

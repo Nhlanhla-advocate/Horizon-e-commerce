@@ -5,12 +5,32 @@ const express = require("express");
 const app = express();
 const { connectToMongoDB } = require("./db/connection");
 const cookieParser = require('cookie-parser');
+const cors = require("cors");
 
 // Verify environment variables are loaded
 if (!process.env.JWT_SECRET) {
   console.error("JWT_SECRET is missing from environment variables");
   process.exit(1);
 }
+
+// Enable CORS for frontend at http://localhost:3000
+// app.use(cors({
+//   origin: 'http://localhost:3000',
+//   credentials: true,
+//   methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE'], 
+//   allowedHeaders: ['Content-Type'] 
+// }));
+
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true
+}));
+
+app.options('*', cors({
+  origin: 'http://localhost:3000',
+  credentials: true
+}));
+
 
 // Import route modules
 const authRoutes = require("./routes/auth");
