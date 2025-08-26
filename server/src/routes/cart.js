@@ -7,6 +7,9 @@ router.post('/add', cartController.addToCart);
 // Remove a single item from cart
 router.post('/remove', cartController.removeFromCart);
 
+// Update item quantity
+router.post('/update-quantity', cartController.updateItemQuantity);
+
 // Keep customer cart even when a user logs out
 router.get('/:userId', cartController.getCart);
 
