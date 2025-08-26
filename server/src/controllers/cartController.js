@@ -121,7 +121,7 @@ exports.removeFromCart = async (req, res) => {
     const { userId, productId } = req.body;
 
     try {
-        const cart = await Cart.findOne({ userId });
+        const cart = await Cart.findOne({ customerId: userId });
         if (!cart) {
             return res.status(404).json({ message: 'Cart not found' });
         }
@@ -146,7 +146,7 @@ exports.removeMultipleItems = async (req, res) => {
     const { userId, productIds } = req.body;
 
     try {
-        const cart = await Cart.findOne({ userId});
+        const cart = await Cart.findOne({ customerId: userId});
         if (!cart) {
             return res.status(404).json({ message: 'Cart not found'});
         }
@@ -172,7 +172,7 @@ exports.removeMultipleItems = async (req, res) => {
         const { userId } = req.body;
 
         try {
-            const cart = await Cart.findOne({ userId });
+            const cart = await Cart.findOne({ customerId: userId });
             if (!cart) {
             return res.status(404).json({ message: 'Cart not found'});
         }
@@ -192,7 +192,7 @@ exports.removeMultipleItems = async (req, res) => {
         const { userId } = req.params;
 
         try {
-            const cart = await Cart.findOne({ userId }).populate('items.productId');
+            const cart = await Cart.findOne({ customerId: userId }).populate('items.productId');
             if (!cart) {
                 return res.status(404).json({ message: 'Cart not found' });
             }
@@ -207,7 +207,7 @@ exports.removeMultipleItems = async (req, res) => {
   // Update the cart (add an item)
   exports.addItemToCart = async (userId, item) => {
     try {
-      const userCart = await Cart.findOne({ userId: userId });
+      const userCart = await Cart.findOne({ customerId: userId });
   
       if (userCart) {
         userCart.items.push(item);
@@ -216,7 +216,7 @@ exports.removeMultipleItems = async (req, res) => {
       } else {
         // Create a new cart if it doesn't exist
         const newCart = new Cart({
-          userId: userId,
+          customerId: userId,
           items: [item],
           totalPrice: item.price,
           createdAt: new Date(),
