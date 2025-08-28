@@ -1,0 +1,12 @@
+body[class*="auth"] nav,
+body[class*="auth"] footer {
+    display: none !important;
+}
+
+body[class*="auth"] {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 100vh !important;
+}
