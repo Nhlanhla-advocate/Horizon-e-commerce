@@ -32,5 +32,25 @@ const productsPage = () => {
             description: 'Slim version of PlayStation 4',
             category: 'consoles'
         },
+        {
+            id: 3,
+            name: 'PlayStation 4',
+            _id: '68a5651b427b2be32fafb36d',
+            price: 3000.00,
+            image: '/Pictures/Playstation 4.jpg',
+            slug: 'playstation-4',
+            description: 'Standard PlayStation 4',
+            category: 'consoles'
+        },
+        {
+            id: 4,
+            name: 'PlayStation 5 Disk',
+            _id: '68a563dc8597038db441354b',
+            price: 16500.00,
+            image: '/Pictures/Playstation 5 disk.jpg',
+            slug: 'playstation-5-disk',
+            description: 'Disk edition PlayStation 5',
+            category: 'consoles'
+        },
     ]
 }
