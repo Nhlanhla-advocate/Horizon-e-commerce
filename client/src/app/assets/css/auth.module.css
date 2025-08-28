@@ -86,5 +86,72 @@
     text-align: center;
 }
 
-/* RESET PASSWORD */
+  /* Password input container */
+  .passwordInputContainer {
+    position: relative;
+    display:flex;
+    align-items:center;
+  }
   
+  .passwordInputContainer .input {
+    padding-right: 45px; /* Make space for the toggle button */
+    width: 100%;
+  }
+  
+  .passwordToggle {
+    position: absolute;
+    right: 10px;
+    background: none;
+    align-items: center;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0;
+    justify-content: center;
+    color: #666;
+  }
+  
+  .passwordToggle:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .passwordToggle:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+  }
+
+  /* signup Redirect */
+  .signupRedirect                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        {
+    text-align: center;
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem; 
+  }
+  
+  .signupRedirect a {
+    color: #0070f3;
+    text-decoration: none;
+    font-size: 0.9rem; 
+  }
+  
+  .signupRedirect a:hover {
+    text-decoration: underline;
+  }
+
+/* Signin Redirect */
+.LoginRedirect {
+    text-align: center;
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.LoginRedirect {
+    color: #0070f3;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.LoginRedirect a:hover {
+    text-decoration: underline;
+}
