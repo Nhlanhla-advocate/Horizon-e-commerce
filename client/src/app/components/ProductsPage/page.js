@@ -52,5 +52,21 @@ const productsPage = () => {
             description: 'Disk edition PlayStation 5',
             category: 'consoles'
         },
-    ]
+    ];
+
+    // Extract all categories
+    const categories = ['all', ...new Set(products.map(product => product.category))];
+
+    // Filter products
+    const filterProducts = selectedCategory === 'all'
+    ? products
+    :products.filter(product => product.category === selectedCategory);
+
+    // Sort products based on selected options
+    const sortedProducts = [...filteredProducts].sort((a, b) => {
+        if (sortOption === 'price-low') return a.price - b.price;
+        if (sortOption === 'price-high') return b.price - a.price;
+        if (sortOption === 'name') return a.name.localeCompare(b.name);
+        return a.id - b.id;
+    });
 }
