@@ -198,7 +198,7 @@ const Signin = () => {
             if (response.ok) {
                 console.log("You have been signed in successfully.", data);
                 localStorage.setItem("token", data.accessToken); 
-                router.push("/products");
+                router.push("/");
             } else {
                 setError(data.error || "An error occurred, please try again.");
             }

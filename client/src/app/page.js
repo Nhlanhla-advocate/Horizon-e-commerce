@@ -3,7 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useCart } from '../components/cart/Cart';
+import { useCart } from './components/cart/Cart';
 
 const Products = () => {
     const { addToCart } = useCart();
@@ -17,17 +17,19 @@ const Products = () => {
             image: '/Pictures/Playstation 5 Digital.jpg',
             slug: 'playstation-5-digital',
             description: 'Digital edition PlayStation 5',
-            category: 'consoles'
+            category: 'consoles',
+            stockQuantity: 10
         },
         {
             id: 2,
             name: 'PlayStation 4 Slim',
-            _id: 'ps4-slim-placeholder-id', // Added a placeholder ID
+            _id: 'ps4-slim-placeholder-id',
             price: 4000.00,
             image: '/Pictures/Playstation 4 Slim.jpg',
             slug: 'playstation-4-slim',
             description: 'Slim version of PlayStation 4',
-            category: 'consoles'
+            category: 'consoles',
+            stockQuantity: 0   // Out of stock
         },
         {
             id: 3,
@@ -37,7 +39,8 @@ const Products = () => {
             image: '/Pictures/Playstation 4.jpg',
             slug: 'playstation-4',
             description: 'Standard PlayStation 4',
-            category: 'consoles'
+            category: 'consoles',
+            stockQuantity: 3
         },
         {
             id: 4,
@@ -47,7 +50,8 @@ const Products = () => {
             image: '/Pictures/Playstation 5 disk.jpg',
             slug: 'playstation-5-disk',
             description: 'Disk edition PlayStation 5',
-            category: 'consoles'
+            category: 'consoles',
+            stockQuantity: 12
         },
         {
             id: 5,
@@ -57,7 +61,8 @@ const Products = () => {
             image: '/Pictures/Playstation 5 pro.jpg',
             slug: 'playstation-5-pro',
             description: 'Pro version PlayStation 5',
-            category: 'consoles'
+            category: 'consoles',
+            stockQuantity: 8
         },
         {
             id: 6,
@@ -67,40 +72,63 @@ const Products = () => {
             image: '/Pictures/Playstation 4 pro.jpg',
             slug: 'playstation-4-pro',
             description: 'Pro version PlayStation 4',
-            category: 'consoles'
+            category: 'consoles',
+            stockQuantity: 5
         }
     ];
+
+    // Format price function (same as products page)
+    const formatPrice = (price) => {
+        return `R ${price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+    };
 
     // Debug: check if products are loading
     console.log('Products loaded:', products);
 
     return (
-        <div className="products-container">
-            <h2 className="products-title">Featured Products</h2>
+        <div className="products-page-container">
+            <div className="page-header">
+                <h1 className="page-title">Featured Products</h1>
+                <p className="page-description">Discover our most popular gaming products</p>
+            </div>
+            
             <div className="products-grid">
                 {products.map((product) => {
                     // Debug each product
                     console.log('Rendering product:', product.name, 'ID:', product._id);
                     
                     return (
-                        <div key={product.id} className="product-card"> {/* Use id instead of _id for key */}
+                        <div key={product.id} className="product-card">
                             <div className="product-image-container"> 
                                 <Link href={`/products/${product.slug}`}>
-                                    <Image
-                                        src={product.image}
-                                        alt={product.name}
-                                        className="product-image"
-                                        width={250}
-                                        height={250}
-                                        style={{ objectFit: 'cover' }}
-                                    />
+                                    <div className="image-wrapper">
+                                        <Image
+                                            src={product.image}
+                                            alt={product.name}
+                                            className="product-image"
+                                            width={250}
+                                            height={250}
+                                            style={{ objectFit: 'cover' }}
+                                        />
+                                        {product.stockQuantity === 0 && (
+                                            <div className="out-of-stock-badge">Out of Stock</div>
+                                        )}
+                                    </div>
                                 </Link>
                             </div>
                             <div className="product-info">
                                 <Link href={`/products/${product.slug}`}>
                                     <h3 className="product-name">{product.name}</h3>
                                 </Link>
-                                <div className="product-price">R {product.price.toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                                <div className="product-category">{product.category}</div>
+                                <div className="product-price">{formatPrice(product.price)}</div>
+                                <div className="product-stock">
+                                    {product.stockQuantity > 0 ? (
+                                        <span className="in-stock">{product.stockQuantity} in stock</span>
+                                    ) : (
+                                        <span className="out-of-stock">Out of stock</span>
+                                    )}
+                                </div>
                                 <button
                                     type="button"
                                     className="add-to-cart-button"
@@ -118,6 +146,7 @@ const Products = () => {
                                             }
                                         );
                                     }}
+                                    disabled={product.stockQuantity === 0}
                                 >
                                     <span className="button-content">
                                         <svg xmlns="http://www.w3.org/2000/svg" className="cart-icon" width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
@@ -136,4 +165,3 @@ const Products = () => {
 };
 
 export default Products;
-

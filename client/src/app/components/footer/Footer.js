@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import { FaFacebook, FaInstagram, FaLinkedin } from 'react-icons/fa';
 
 export default function Footer() {
@@ -38,7 +39,9 @@ export default function Footer() {
                 <img src="/visa.svg" alt="Visa" style={{ width: '60px', height: 'auto' }} />
             </div> */}
             <div className="footer-small">
-                <span>© 2025 Horizon E-Commerce. All rights reserved.</span>
+                <span>
+                    © 2025 <Link href="/">Horizon E-Commerce</Link>. All rights reserved.
+                </span>
             </div>
         </>
     );
