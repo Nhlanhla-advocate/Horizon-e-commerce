@@ -44,28 +44,30 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className={styles.container}>
-      <h2 className={styles.title}>Forgot Password</h2>
-      {error && <div className={styles.errorMessage}>{error}</div>}
-      {success && <div className={styles.successMessage}>{success}</div>}
-      <form className={styles.form} onSubmit={handleSubmit}>
-        <div className={styles.formGroup}>
-          <label className={styles.label} htmlFor="email">Email</label>
-          <input
-            className={styles.input}
-            id="email"
-            name="email"
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <button className="button" type="submit" disabled={loading}>
-          {loading ? 'Sending...' : 'Send Reset Link'}
-        </button>
-      </form>
+    <div className={styles.authCenter}>
+      <div className={styles.container}>
+        <h2 className={styles.title}>Forgot Password</h2>
+        {error && <div className={styles.errorMessage}>{error}</div>}
+        {success && <div className={styles.successMessage}>{success}</div>}
+        <form className={styles.form} onSubmit={handleSubmit}>
+          <div className={styles.formGroup}>
+            <label className={styles.label} htmlFor="email">Email</label>
+            <input
+              className={styles.input}
+              id="email"
+              name="email"
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <button className="button" type="submit" disabled={loading}>
+            {loading ? 'Sending...' : 'Send Reset Link'}
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

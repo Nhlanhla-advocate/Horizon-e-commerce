@@ -125,7 +125,8 @@ html, body {
 .navbar-mobile-icons {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 1.5rem;
+    margin-right: 1rem;
 }
 
 .navbar-mobile-icon-btn {
@@ -136,6 +137,9 @@ html, body {
     cursor: pointer;
     display: flex;
     align-items: center;
+    padding: 0.5rem;
+    min-width: 44px;
+    justify-content: center;
 }
 
 .navbar-mobile-menu {
@@ -164,6 +168,26 @@ html, body {
     border-bottom: none;
 }
 
+.navbar-mobile-menu-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #666;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: background-color 0.2s, color 0.2s;
+    z-index: 2001;
+}
+
+.navbar-mobile-menu-close:hover {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }
@@ -179,6 +203,37 @@ html, body {
     padding: 1rem;
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     animation: fadeIn 0.2s;
+}
+
+.navbar-mobile-search-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    font-size: 1.5rem;
+    color: #666;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: background-color 0.2s, color 0.2s;
+    z-index: 2101;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.navbar-mobile-search-close:hover {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+/* Mobile search form positioning */
+.navbar-mobile-search-overlay .navbar-search-wrapper {
+    max-width: calc(100% - 4rem); /* Leave space for close button */
+    margin-right: 3rem; /* Additional margin to prevent overlap */
 }
 
 /* --- CART BADGE STYLES --- */
@@ -213,6 +268,7 @@ html, body {
     font-size: 0.75rem;
     font-weight: bold;
     z-index: 1001;
+    pointer-events: none;
 }
 
 .cart-icon-container {
@@ -220,6 +276,8 @@ html, body {
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 24px;
+    height: 24px;
 }
 
 /* Ensure the navbar links have proper spacing */
@@ -308,6 +366,12 @@ html, body {
     }
     .navbar-mobile-icon-btn {
         font-size: 1.2rem;
+        padding: 0.4rem;
+        min-width: 40px;
+    }
+    .navbar-mobile-icons {
+        gap: 1rem;
+        margin-right: 0.5rem;
     }
     .navbar-mobile-menu .navbar-link {
         font-size: 1rem;
@@ -315,6 +379,11 @@ html, body {
     }
     .navbar-mobile-search-overlay {
         padding: 0.5rem;
+    }
+    
+    .navbar-mobile-search-overlay .navbar-search-wrapper {
+        max-width: calc(100% - 3.5rem);
+        margin-right: 2.5rem;
     }
     .navbar-container {
         padding: 0.5rem;
@@ -347,6 +416,46 @@ html, body {
         width: 16px;
         height: 16px;
         font-size: 0.65rem;
+    }
+    
+    .cart-icon-container {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+@media (max-width: 360px) {
+    .navbar-mobile-icons {
+        gap: 0.75rem;
+        margin-right: 0.25rem;
+    }
+    
+    .navbar-mobile-icon-btn {
+        padding: 0.3rem;
+        min-width: 36px;
+        font-size: 1.1rem;
+    }
+    
+    .navbar-mobile-search-overlay {
+        padding: 0.5rem;
+    }
+    
+    .navbar-mobile-search-overlay .navbar-search-wrapper {
+        max-width: calc(100% - 3rem);
+        margin-right: 2rem;
+    }
+    
+    .cart-icon-container {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .cart-badge {
+        top: -4px;
+        right: -4px;
+        width: 14px;
+        height: 14px;
+        font-size: 0.6rem;
     }
 }
 

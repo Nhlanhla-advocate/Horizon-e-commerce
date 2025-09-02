@@ -1,12 +1,16 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from './components/cart/Cart';
+import { FaSearch, FaTimes } from 'react-icons/fa';
+import { useSearchParams } from 'next/navigation';
 
 const Products = () => {
     const { addToCart } = useCart();
+    const searchParams = useSearchParams();
+    const [searchQuery, setSearchQuery] = useState('');
     
     const products = [
         {
@@ -77,9 +81,42 @@ const Products = () => {
         }
     ];
 
+    // Read search parameter from URL on component mount
+    useEffect(() => {
+        const urlSearch = searchParams.get('search');
+        if (urlSearch) {
+            setSearchQuery(urlSearch);
+        }
+    }, [searchParams]);
+
+    // Filter products based on search query (same logic as products page)
+    const filteredProducts = products.filter(product => {
+        if (!searchQuery) return true;
+        
+        const searchTerm = searchQuery.toLowerCase();
+        return (
+            product.name.toLowerCase().includes(searchTerm) ||
+            product.description.toLowerCase().includes(searchTerm) ||
+            product.category.toLowerCase().includes(searchTerm)
+        );
+    });
+
     // Format price function (same as products page)
     const formatPrice = (price) => {
         return `R ${price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+    };
+
+    const handleSearch = (e) => {
+        e.preventDefault();
+        // Search is handled by the filter, no need to navigate
+    };
+
+    const clearSearch = () => {
+        setSearchQuery('');
+        // Update URL to remove search parameter
+        const url = new URL(window.location);
+        url.searchParams.delete('search');
+        window.history.replaceState({}, '', url);
     };
 
     // Debug: check if products are loading
@@ -91,9 +128,48 @@ const Products = () => {
                 <h1 className="page-title">Featured Products</h1>
                 <p className="page-description">Discover our most popular gaming products</p>
             </div>
+
+            {/* Search Section */}
+            <div className="products-controls">
+                <div className="search-box">
+                    <form onSubmit={handleSearch} className="navbar-search-wrapper">
+                        <div className="navbar-search-relative">
+                            <div className="navbar-search-icon">
+                                <FaSearch />
+                            </div>
+                            <input
+                                className="navbar-search-input"
+                                placeholder="Search products..."
+                                type="search"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                            {searchQuery && (
+                                <button
+                                    type="button"
+                                    className="navbar-search-clear"
+                                    onClick={clearSearch}
+                                    style={{
+                                        position: 'absolute',
+                                        right: '10px',
+                                        top: '50%',
+                                        transform: 'translateY(-50%)',
+                                        background: 'none',
+                                        border: 'none',
+                                        color: '#666',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    <FaTimes />
+                                </button>
+                            )}
+                        </div>
+                    </form>
+                </div>
+            </div>
             
             <div className="products-grid">
-                {products.map((product) => {
+                {filteredProducts.map((product) => {
                     // Debug each product
                     console.log('Rendering product:', product.name, 'ID:', product._id);
                     
@@ -160,6 +236,20 @@ const Products = () => {
                     );
                 })}
             </div>
+
+            {/* Show message when no products found */}
+            {filteredProducts.length === 0 && searchQuery && (
+                <div className="empty-state">
+                    <h3>No products found</h3>
+                    <p>Try adjusting your search terms or browse all our products.</p>
+                    <button 
+                        onClick={clearSearch}
+                        className="reset-filters-button"
+                    >
+                        Clear Search
+                    </button>
+                </div>
+            )}
         </div>
     );
 };

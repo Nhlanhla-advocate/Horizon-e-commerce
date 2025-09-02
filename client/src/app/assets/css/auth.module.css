@@ -1,10 +1,107 @@
+/* Auth page wrapper for centering */
+.authPageWrapper {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8fafc;
+}
+
+/* Two-column auth layout */
+.authSplit {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+    max-width: 1040px;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+/* Single column layout for forgot/reset password */
+.authCenter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+    background: #f8fafc;
+}
+
+.mediaPane {
+    position: relative;
+    flex: 0 0 48%;
+    background: #f5f5f5;
+    overflow: hidden;
+}
+
+.mediaImageWrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.mediaImage {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.mediaOverlay {
+    position: absolute;
+    left: 24px;
+    bottom: 24px;
+    right: 24px;
+    color: #fff;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+.mediaTitle {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 6px 0;
+}
+
+.mediaSubtitle {
+    font-size: 16px;
+    margin: 0;
+}
+
+.formPane {
+    flex: 1 1 52%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 32px;
+    background: #ffffff;
+}
+
+/* Responsive: stack on small screens */
+@media (max-width: 900px) {
+    .authSplit {
+        flex-direction: column;
+        max-width: 640px;
+    }
+    .mediaPane {
+        flex: 0 0 auto;
+        height: 220px;
+    }
+}
+
+/* Existing styles below */
 .container {
     max-width: 400px;
-    margin: 50px auto;
+    margin: 0;
     padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border: 1px solid #eee;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     background-color: white;
 }
   
@@ -46,7 +143,7 @@
 .input {
     padding: 12px;
     border: 1px solid #ddd;
-    border-radius: 4px;
+    border-radius: 8px;
     font-size: 16px;
     transition: all 0.3s ease;
 }
@@ -86,19 +183,19 @@
     text-align: center;
 }
 
-  /* Password input container */
-  .passwordInputContainer {
+/* Password input container */
+.passwordInputContainer {
     position: relative;
     display:flex;
     align-items:center;
-  }
+}
   
-  .passwordInputContainer .input {
+.passwordInputContainer .input {
     padding-right: 45px; /* Make space for the toggle button */
     width: 100%;
-  }
+}
   
-  .passwordToggle {
+.passwordToggle {
     position: absolute;
     right: 10px;
     background: none;
@@ -109,34 +206,34 @@
     padding: 0;
     justify-content: center;
     color: #666;
-  }
+}
   
-  .passwordToggle:hover {
+.passwordToggle:hover {
     background-color: #f0f0f0;
-  }
+}
   
-  .passwordToggle:focus {
+.passwordToggle:focus {
     outline: 2px solid #007bff;
     outline-offset: 2px;
-  }
+}
 
-  /* signup Redirect */
-  .signupRedirect                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        {
+/* signup Redirect */
+.signupRedirect {
     text-align: center;
     margin: 0;
     color: #666;
     font-size: 0.9rem; 
-  }
+}
   
-  .signupRedirect a {
+.signupRedirect a {
     color: #0070f3;
     text-decoration: none;
     font-size: 0.9rem; 
-  }
+}
   
-  .signupRedirect a:hover {
+.signupRedirect a:hover {
     text-decoration: underline;
-  }
+}
 
 /* Signin Redirect */
 .LoginRedirect {

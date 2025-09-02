@@ -28,6 +28,12 @@ const Navbar = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
+      // If we're on the home page, update URL with search parameter
+      if (pathname === '/') {
+        router.push(`/?search=${encodeURIComponent(searchQuery.trim())}`);
+        setIsMobileSearchOpen(false); // Close mobile search if open
+        return;
+      }
       // Navigate to products page with search query as URL parameter
       router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery(''); // Clear search after submitting
@@ -77,6 +83,9 @@ const Navbar = () => {
                   </>
                 )}
               </div>
+            </Link>
+            <Link href="/auth/signin" className="navbar-mobile-icon-btn">
+              <FaUser />
             </Link>
           </div>
         </div>
@@ -169,6 +178,12 @@ const Navbar = () => {
         {/* Mobile Menu Overlay */}
         {isMobileMenuOpen && (
           <div className="navbar-mobile-menu">
+            <button 
+              className="navbar-mobile-menu-close"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <FaTimes />
+            </button>
             <Link href="/" className="navbar-link">
               Home
             </Link>
@@ -187,6 +202,12 @@ const Navbar = () => {
         {/* Mobile Search Overlay */}
         {isMobileSearchOpen && (
           <div className="navbar-mobile-search-overlay">
+            <button 
+              className="navbar-mobile-search-close"
+              onClick={() => setIsMobileSearchOpen(false)}
+            >
+              <FaTimes />
+            </button>
             <form onSubmit={handleSearch} className="navbar-search-wrapper">
               <div className="navbar-search-relative">
                 <div className="navbar-search-icon">
