@@ -121,7 +121,7 @@ filtered.sort((a, b) => {
 });
 
 setProducts(filtered);
-}, [filters, allProducts]); 
+}, [filters]); 
 // Handle filter changes
 const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value}));
