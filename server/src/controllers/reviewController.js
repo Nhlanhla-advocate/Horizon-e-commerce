@@ -72,7 +72,6 @@ const postReview = async (req, res, next) => {
       success: false,
       message: 'Error posting review',
       error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
-
     });
   }
 };
@@ -195,10 +194,85 @@ const deleteReview = async (req, res) => {
   }
 };
 
+// Get all reviews for a specific product (public endpoint)
+const getProductReviews = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const sort = req.query.sort || 'createdAt';
+    const order = req.query.order || 'desc';
+
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({ message: 'Invalid product ID' });
+    }
+
+    // Check if product exists
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    const reviews = await Review.find({ product: productId })
+      .populate('user', 'username')
+      .sort({ [sort]: order === 'desc' ? -1 : 1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    const total = await Review.countDocuments({ product: productId });
+
+    // Calculate rating statistics
+    const ratingStats = await Review.aggregate([
+      { $match: { product: mongoose.Types.ObjectId(productId) } },
+      {
+        $group: {
+          _id: null,
+          averageRating: { $avg: '$rating' },
+          totalReviews: { $sum: 1 },
+          ratingDistribution: {
+            $push: '$rating'
+          }
+        }
+      }
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        product: {
+          _id: product._id,
+          name: product.name,
+          rating: product.rating,
+          numReviews: product.numReviews
+        },
+        reviews,
+        ratingStats: ratingStats.length > 0 ? ratingStats[0] : {
+          averageRating: 0,
+          totalReviews: 0,
+          ratingDistribution: []
+        },
+        pagination: {
+          current: page,
+          total: Math.ceil(total / limit),
+          limit
+        }
+      }
+    });
+  } catch (err) {
+    console.error('Error in getProductReviews:', err);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error fetching product reviews',
+      error: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
+    });
+  }
+};
+
 module.exports = {
   postReview,
   getUserReviews,
   editReview,
   deleteReview,
+  getProductReviews,
   validateReviewInput
 };

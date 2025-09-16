@@ -1,8 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const { authMiddleware } = require('../middleware/authMiddleware');
-const { postReview, getUserReviews, editReview, deleteReview } = require('../controllers/reviewController'); 
+const { postReview, getUserReviews, editReview, deleteReview, getProductReviews } = require('../controllers/reviewController'); 
 
+// Public routes
+router.get('/product/:productId', getProductReviews);
+
+// Authenticated routes
 // Post a review for a product (Authenticated users)
 router.post('/:productId', authMiddleware, postReview);
 
