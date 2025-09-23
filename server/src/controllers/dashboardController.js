@@ -58,6 +58,115 @@ class DashboardController {
       });
     }
   }
+
+  // Get all products for admin management, inactive/deleted
+  async getAllProducts(req, res) {
+    try {
+      const {
+        page = 1,
+        limit = 20,
+        sort = 'createdAt',
+        order = 'desc',
+        category,
+        status,
+        search,
+        minPrice,
+        maxPrice
+      } = req.query;
+
+      const query = {};
+
+      if (category) query.category = category;
+      if (status) query.status = status;
+      if (minPrice || maxPrice) {
+        query.price = {};
+        if (minPrice) query.price.$gte = parseFloat(minPrice);
+        if (maxPrice) query.price.$lte = parseFloat(maxPrice);
+      }
+      if (search) {
+        query.$or = [
+          { name: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' }}
+        ];
+      }
+
+      const products = await Product.find(query)
+        .sort({ [sort]: order === 'desc' ? -1 : 1 })
+        .skip((page - 1) * limit)
+        .limit(parseInt(limit))
+        .populate('createdBy', 'username email')
+        .populate('updatedBy', 'username email');
+
+      const total = await Product.countDocuments(query);
+
+      return res.json({
+        success: true,
+        data: products,
+        pagination: {
+          total,
+          pages: Math.ceil(total / limit),
+          page: parseInt(page),
+          limit: parseInt(limit)
+        }
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        error: `Error fetching products: ${error.message}`
+      });
+    }
+  }
+
+  // Add new product (for the admin)
+  async addProduct(req, res) {
+    try {
+      const {
+        name, 
+        category,
+        description,
+        price,
+        stock,
+        images = [],
+        specifications,
+        featured = false,
+        status = 'active'
+      } = req.body;
+
+      // Validate required fields
+      if(!name || !category || !description || !price || stock === undefined) {
+        return res.status(400).json({
+          success: false,
+          error: 'Missing required fields: name, category, description, price, and stock are required'
+        });
+      }
+
+      const product = new Product({
+        name,
+        category,
+        description,
+        price,
+        stock,
+        images,
+        specifications,
+        featured,
+        status,
+        createdBy: req.user.id
+      });
+
+      await product.save();
+
+      return res.status(201).json({
+        success: true,
+        data: product,
+        message: 'Product created successfully'
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        error: `Error creating product: ${error.message}`
+      });
+    }
+  }
 }
 
 module.exports = new DashboardController();
