@@ -235,6 +235,37 @@ class DashboardController {
       });
     }
   }
+
+  // Delete product - soft delete
+  async deleteProduct(req, res) {
+    try {
+      const { id } = req.params;
+
+      const product = await Product.findById(id);
+      if (!product) {
+        return res.status(404).json({
+          success: false,
+          error: 'Product not found'
+        });
+      }
+
+      // Soft delete by updating status
+      product.status = 'deleted';
+      product.deletedAt = new Date();
+      product.deletedBy = req.user._id;
+      await product.save();
+
+      return res.json({
+        success: true,
+        message: 'Product deleted successfully'
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        error: `Error deleting product: ${error.message}`
+      });
+    }
+  }
 }
 
 module.exports = new DashboardController();
