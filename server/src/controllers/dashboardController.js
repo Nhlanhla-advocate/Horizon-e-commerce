@@ -167,6 +167,74 @@ class DashboardController {
       });
     }
   }
+
+  // Update existing product
+  async updateProduct(req, res) {
+    try {
+      const { id } = req.params;
+      const {
+        name, 
+        category,
+        description,
+        price,
+        stock,
+        images,
+        specifications,
+        featured,
+        status,
+      } = req.body;
+
+      // Validate product exists
+      const existingProduct = await Product.findById(id);
+
+      if (!existingProduct) {
+        return res.status(404).json({
+          success: false,
+          error: 'Product not found'
+        });
+      }
+
+      // Validate category if provided
+      if (category) {
+        const validCategories = ['jewelry', 'electronics', 'consoles', 'computers'];
+        if (!validCategories.includes(category)) {
+          return res.status(400).json({
+            success: false,
+            error: `Invalid category. Must be one of: ${validCategories.join(', ')}`
+          });
+        }
+      }
+
+      // Update the product
+      const updatedProduct = await Product.findByIdAndUpdate(
+        id,
+        {
+          ...(name && { name }),
+          ...(category && { category }),
+          ...(description && { description }),
+          ...(price && { price }),
+          ...(stock !== undefined && { stock }),
+          ...(images && { images }),
+          ...(specifications && { specifications }),
+          ...(featured !== undefined && { featured }),
+          ...(status && { status }),
+          updatedBy: req.user.id
+        },
+        { new: true, runValidators: true }
+      );
+
+      return res.json({
+        success: true,
+        data: updatedProduct,
+        message: 'Product updated successfully'
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        error: `Error updating product: ${error.message}`
+      });
+    }
+  }
 }
 
 module.exports = new DashboardController();
