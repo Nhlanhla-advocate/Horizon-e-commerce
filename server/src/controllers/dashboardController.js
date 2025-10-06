@@ -235,7 +235,78 @@ class DashboardController {
       });
     }
   }
+
+  // Get product reviews for admin review(Admin)
+  async getProductReviews(req, res) {
+    try {
+      const { id } = req.params;
+      const { page = 1, limit = 10, sort = 'createdAt', order = 'desc' } = req.query;
+
+      // Check if the product exists
+      const product = await Product.findById(id);
+      if (!product) {
+        return res.status(404).json({
+          success: false,
+          error: 'Product not found'
+        });
+      }
+   
+
+      const reviews = await Review.find({ product: id })
+        .populate('user', 'username email')
+        .sort({ [sort]: order === 'desc' ? -1 : 1 }) 
+        .skip((page - 1) * limit)
+        .limit(parseInt(limit));
+
+      const total = await Review.countDocuments({ product: id });
+
+      // Calculate average rating
+      const ratingStats = await Review.aggregate([
+        { $match: { product: new mongoose.Types.ObjectId(id) }},
+        {
+          $group: {
+            _id: null,
+            averageRating: { $avg: '$rating' },
+            totalReviews: { $sum: 1 },
+            ratingDistribution: {
+              $push: '$rating'
+            }
+          }
+        }
+      ]);
+
+      return res.json({
+        success: true,
+        data: {
+          product: {
+            _id: product._id,
+            name: product.name,
+            rating: product.rating,
+            numReviews: product.numReviews
+          },
+          reviews,
+          ratingStats: ratingStats.length > 0 ? ratingStats[0] : {
+            averageRating: 0,
+            totalReviews: 0,
+            ratingDistribution: []
+          },
+          pagination: {
+            total,
+            pages: Math.ceil(total / limit),
+            page: parseInt(page),
+            limit: parseInt(limit)
+          }
+        }
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        error: `Error fetching product reviews: ${error.message}`
+      });
+    }
+  }
 }
+
 
 module.exports = new DashboardController();
 

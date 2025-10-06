@@ -204,7 +204,7 @@ class ProductController {
       if (!product) {
         return res.status(404).json({
           success: false,
-          error: `Product not found: ${error}`
+          error: 'Product not found'
         });
       }
 
@@ -221,7 +221,39 @@ class ProductController {
     } catch (error) {
       return res.status(500).json({
         success: false,
-        error: `Error deleting product: ${error}`
+        error: `Error deleting product: ${error.message}`
+      });
+    }
+  }
+
+  // Restore deleted product
+  async restoreProduct(req, res) {
+    try {
+      const { id } = req.params;
+      const product = await Product.findById(id);
+      if (!product) {
+        return res.status(404).json({
+          success: false,
+          error: 'Product not found'
+        });
+      }
+
+      product.status = 'active';
+      product.deletedAt = undefined;
+      product.deletedBy = undefined;
+      product.restoredAt = new Date();
+      product.restoredBy = req.user._id;
+      await product.save();
+
+      return res.json({
+        success: true,
+        message: 'Product restored successfully',
+        data: product
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        error: `Error restoring product: ${error.message}`
       });
     }
   }
