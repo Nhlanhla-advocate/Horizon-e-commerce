@@ -236,7 +236,7 @@ class DashboardController {
     }
   }
 
-  // Get product reviews for admin review(Admin)
+  // Get product reviews for admin review
   async getProductReviews(req, res) {
     try {
       const { id } = req.params;
@@ -302,6 +302,124 @@ class DashboardController {
       return res.status(500).json({
         success: false,
         error: `Error fetching product reviews: ${error.message}`
+      });
+    }
+  }
+
+  // Delete a specific review (Admin only)
+  async deleteReview(req, res) {
+    try {
+      const { reviewId } = req.params;
+      
+      const review = await Review.findById(reviewId);
+      if (!review) {
+        return res.status(404).json({
+          success: false,
+          error: `Review not found`
+        });
+      }
+
+      const session = await mongoose.startSession();
+      session.startTransaction();
+
+      try {
+        // Delete the review
+        await Review.findByIdAndDelete(reviewId, { session });
+
+        // Update product rating and review count
+        const product = await Product.findById(review.product).session(session);
+        if(product) {
+          const remainingReviews = await Review.countDocuments({ product: review.product }, { session });
+          if (remainingReviews > 0) {
+            const avgRating = await Review.aggregate([
+              { $match: { product: review.product }},
+             { $group: {_id: null, avgRating: { $avg: '$rating'}}}
+            ], { session });
+
+            product.rating = avgRating.length > 0 ? avgRating[0].avgRating : 0;
+          } else {
+            product.rating = 0;
+          }
+
+          product.numReviews = remainingReviews;
+          await product.save({ session});
+        }
+
+        await session.commitTransaction();
+        session.endSession();
+
+        return res.json({
+          success: true,
+          message: 'Review deleted successfully'
+        });
+      } catch (error) {
+        await session.abortTransaction();
+        session.endSession();
+        throw error;
+      }
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        error: `Error deleting review: ${error.message}`
+      });
+    }
+  }
+
+  // Bulk operations for products
+  async bulkUpdateProducts(req, res) {
+    try {
+      const { productIds, updateData } = req.body;
+
+      if (!productIds || !Array.isArray(productIds) || productIds.length === 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'Product IDs array is required'
+        });
+      }
+
+      const result = await Product.updateMany(
+        {_id: { $in: productIds}},
+        {
+          ...updateData,
+          updatedBy: req.user._id,
+          updatedAt: new Date()
+        }
+      );
+
+      return res.json({
+        success: true,
+        message: `${result.modifiedCount} products updated successfully` ,
+        data: {
+          matched: result.matchedCount,
+          modified: result.modifiedCount
+        }
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        error: `Error bulk updating products: ${error.message}`
+      });
+    }
+  }
+
+  // Get low stock products
+  async getLowStockProducts(req, res) {
+    try {
+      const { threshold = 10 } = req.query;
+
+      const lowStockProducts = await Product.find({
+        stock: {$lte: parseInt(threshold)},
+        status: 'active'
+      }).sort({ stock: 1 });
+
+      return res.json({
+        success: true,
+        data: lowStockProducts
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        error: `Error fetching low stock products: ${error.message}`
       });
     }
   }
