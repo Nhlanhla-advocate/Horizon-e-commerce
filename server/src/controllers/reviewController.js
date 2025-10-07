@@ -223,7 +223,7 @@ const getProductReviews = async (req, res) => {
 
     // Calculate rating statistics
     const ratingStats = await Review.aggregate([
-      { $match: { product: mongoose.Types.ObjectId(productId) } },
+      { $match: { product: new mongoose.Types.ObjectId(productId) } },
       {
         $group: {
           _id: null,
