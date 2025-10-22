@@ -1,0 +1,16 @@
+body {
+    font-family: sans-serif;
+  }
+  aside {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  a {
+    text-decoration: none;
+    color: white;
+  }
+  a:hover {
+    text-decoration: underline;
+  }
+  

@@ -196,7 +196,7 @@ class ProductController {
     }
   }
 
-  // Delete product (soft delete)
+  // Delete product (soft delete) For admin
   async deleteProduct(req, res) {
     try {
       const product = await Product.findById(req.params.id);
@@ -226,7 +226,7 @@ class ProductController {
     }
   }
 
-  // Restore deleted product
+  // Restore deleted product For admin
   async restoreProduct(req, res) {
     try {
       const { id } = req.params;
