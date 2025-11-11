@@ -59,6 +59,7 @@ const AdminDashboard = () => {
   ];
 
   const ActiveComponent = tabs.find(tab => tab.id === activeTab)?.component;
+  const isRenderable = typeof ActiveComponent === 'function';
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -137,7 +138,7 @@ const AdminDashboard = () => {
           {/* Main Content */}
           <main className="bg-gray-50 min-h-screen p-8">
             <div className="animate-fadeIn">
-              {ActiveComponent && <ActiveComponent />}
+              {isRenderable ? <ActiveComponent /> : null}
             </div>
           </main>
         </div>
