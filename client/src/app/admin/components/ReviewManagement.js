@@ -20,6 +20,43 @@ export default function ReviewManagement() {
         fetchProducts();
     }, []);
 
-    
+    useEffect (() =>{
+        fetchProducts();
+    }, []);
+
+    useEffect(() => {
+        if (selectedProduct) {
+            fetchProductReviews();
+        }
+    }, [selectedProduct, filters])
+
+    const fetchProducts = async () => {
+        try {
+            setLoading(true);
+            const token = localStorage.getItem('token');
+            const response = await fetch ('/dashboard/products?limit=100&status=active', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error ('Failed to fetch products'); 
+            }
+
+            const data = await response.json();
+            setProducts(data.data);
+            if (data.data.length > 0 && !selectedProducts) {
+                setSelectedProduct(data.data[0]);
+            }
+
+            SERVER_PROPS_EXPORT_ERROR(null);
+        } catch (err) {
+            setError(err.message);
+        }finally {
+            setLoading(false);
+        }
+    };
 
 }
