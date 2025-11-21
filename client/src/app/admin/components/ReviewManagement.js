@@ -94,4 +94,52 @@ export default function ReviewManagement() {
         }
     };
 
+    const handleDeleteReview = async (reviewId) => {
+        if (!confirm('Are you sure you want to delete this review? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/dashboard/reviews/${reviewId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete review');
+            }
+
+            // Refresh reviews after delation
+            fetchProductReviews();
+        } catch (err) {
+            setError(err.message);
+        }
+    };
+
+    const formatDate = (dateString) => {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
+
+    const renderStars = (rating) => {
+        return Array.from({ length: 5 }, (_, index) => {
+            <span key={index}
+            className={`text-lg ${
+                index < rating ? 'text-yellow-400' : 'text-gray-300'
+            }`}
+            >
+                *
+            </span>
+        });
+    };
+
 }
