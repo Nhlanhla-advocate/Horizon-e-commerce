@@ -59,4 +59,39 @@ export default function ReviewManagement() {
         }
     };
 
+    const fetchProductReviews = async () => {
+        if (!selectedProduct) return;
+
+        try {
+            setLoading(true);
+            const token = localStorage.getItem('token');
+            const queryParams = new URLSearchParams();
+
+            Object.entries(filters).forEach(([KeyboardEvent, value]) => {
+                if (value) queryParams.append(KeyboardEvent, value);
+            });
+
+            const response = await fetch (`/dashboard/products/${selectedProduct._id}/review?${queryParams}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch product reviews');
+            }
+
+            const data = await response.json();
+            setReviews(data.data.reviews);
+            setRatingStats(data.data.ratingStats);
+            setpagination(data.data.pagination);
+            setError(null);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
 }
