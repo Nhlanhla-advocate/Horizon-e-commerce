@@ -44,6 +44,11 @@ router.get('/products/low-stock', validateLowStockQuery, validate, (req, res) =>
 router.get('/products/:id/reviews', validateReviewQuery, validate, (req, res) => dashboardController.getProductReviews(req, res));
 router.delete('/reviews/:reviewId', validateReviewId, validate, (req, res) => dashboardController.deleteReview(req, res));
 
+// Order management routes
+router.get('/orders', validateQueryParams, validate, (req, res) => dashboardController.getAllOrders(req, res));
+router.get('/orders/:orderId', (req, res) => dashboardController.getOrder(req, res));
+router.patch('/orders/:orderId/status', (req, res) => dashboardController.updateOrderStatus(req, res));
+
 // Product performance and analytics routes
 router.get('/analytics/top-selling', validateTopSellingQuery, validate, (req, res) => dashboardController.getTopSellingProducts(req, res));
 router.get('/analytics/low-selling', validateLowSellingQuery, validate, (req, res) => dashboardController.getLowSellingProducts(req, res));
