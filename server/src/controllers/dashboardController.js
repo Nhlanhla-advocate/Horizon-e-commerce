@@ -16,15 +16,17 @@ class DashboardController {
       if (!forceRefresh) {
         const cachedStats = await Dashboard.getDashboardStats();
         if (cachedStats) {
+          // Convert Mongoose document to plain object if needed
+          const cachedData = cachedStats.toObject ? cachedStats.toObject() : cachedStats;
           return res.json({
             success: true,
             data: {
-              overview: cachedStats.overview,
-              recentOrders: cachedStats.recentOrders,
-              topRatedProducts: cachedStats.topRatedProducts
+              overview: cachedData.overview || {},
+              recentOrders: cachedData.recentOrders || [],
+              topRatedProducts: cachedData.topRatedProducts || []
             },
             cached: true,
-            lastUpdated: cachedStats.lastUpdated
+            lastUpdated: cachedData.lastUpdated
           });
         }
       }
@@ -37,7 +39,7 @@ class DashboardController {
         totalOrders,
         totalRevenue,
         lowStockProducts,
-        recentOrders,
+        recentOrdersRaw,
         topRatedProducts
       ] = await Promise.all([
         Product.countDocuments(),
@@ -49,14 +51,32 @@ class DashboardController {
           { $group: { _id: null, total: { $sum: '$totalPrice' } } }
         ]),
         Product.countDocuments({ stock: { $lt: 10 } }),
-        Order.find().sort({ createdAt: -1 }).limit(5).populate('customerId', 'username email'),
+        Order.find()
+          .sort({ createdAt: -1 })
+          .limit(5)
+          .populate('customerId', 'username email')
+          .lean(),
         Product.find({ status: 'active' })
           .sort({ rating: -1 })
           .limit(5)
           .select('name rating numReviews price')
+          .lean()
       ]);
 
       const revenue = totalRevenue.length > 0 ? totalRevenue[0].total : 0;
+
+      // Format recent orders to handle guest orders
+      const recentOrders = recentOrdersRaw.map(order => ({
+        _id: order._id,
+        customerId: order.customerId || (order.isGuestOrder ? {
+          username: order.guestDetails?.name || 'Guest',
+          email: order.guestDetails?.email || 'N/A'
+        } : null),
+        totalPrice: order.totalPrice,
+        status: order.status,
+        createdAt: order.createdAt,
+        items: order.items || []
+      }));
 
       const statsData = {
         overview: {
@@ -81,9 +101,11 @@ class DashboardController {
         lastUpdated: new Date()
       });
     } catch (error) {
+      console.error('Error in getDashboardStats:', error);
       return res.status(500).json({
         success: false,
-        error: `Error fetching dashboard stats: ${error.message}`
+        error: `Error fetching dashboard stats: ${error.message}`,
+        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
       });
     }
   }
@@ -872,6 +894,197 @@ class DashboardController {
       return res.status(500).json({
         success: false,
         error: `Error fetching product performance: ${error.message}`
+      });
+    }
+  }
+
+  // ORDER MANAGEMENT METHODS
+
+  // Get all orders with filtering, sorting, and pagination
+  async getAllOrders(req, res) {
+    try {
+      const {
+        page = 1,
+        limit = 20,
+        sort = 'createdAt',
+        order = 'desc',
+        status,
+        search,
+        startDate,
+        endDate,
+        minAmount,
+        maxAmount
+      } = req.query;
+
+      const query = {};
+
+      // Status filter
+      if (status) {
+        query.status = status;
+      }
+
+      // Date range filter
+      if (startDate || endDate) {
+        query.createdAt = {};
+        if (startDate) {
+          query.createdAt.$gte = new Date(startDate);
+        }
+        if (endDate) {
+          const end = new Date(endDate);
+          end.setHours(23, 59, 59, 999); // Include the entire end date
+          query.createdAt.$lte = end;
+        }
+      }
+
+      // Amount range filter
+      if (minAmount || maxAmount) {
+        query.totalPrice = {};
+        if (minAmount) query.totalPrice.$gte = parseFloat(minAmount);
+        if (maxAmount) query.totalPrice.$lte = parseFloat(maxAmount);
+      }
+
+      // Search filter - search in customer name/email or order items
+      // Note: MongoDB text search on populated fields requires aggregation
+      // For now, we'll search in items.name and handle customer search separately
+      if (search) {
+        query.$or = [
+          { 'items.name': { $regex: search, $options: 'i' } },
+          { 'guestDetails.name': { $regex: search, $options: 'i' } },
+          { 'guestDetails.email': { $regex: search, $options: 'i' } }
+        ];
+      }
+
+      const orders = await Order.find(query)
+        .populate('customerId', 'username email')
+        .sort({ [sort]: order === 'desc' ? -1 : 1 })
+        .skip((page - 1) * limit)
+        .limit(parseInt(limit))
+        .lean();
+
+      const total = await Order.countDocuments(query);
+
+      // Format orders to include customer info even for guest orders
+      const formattedOrders = orders.map(order => {
+        return {
+          ...order,
+          customer: order.customerId && order.customerId.username
+            ? { 
+                username: order.customerId.username,
+                email: order.customerId.email || 'N/A'
+              }
+            : order.isGuestOrder && order.guestDetails
+            ? {
+                username: order.guestDetails.name || 'Guest',
+                email: order.guestDetails.email || 'N/A'
+              }
+            : {
+                username: 'Unknown',
+                email: 'N/A'
+              }
+        };
+      });
+
+      return res.json({
+        success: true,
+        data: formattedOrders,
+        pagination: {
+          total,
+          pages: Math.ceil(total / limit),
+          page: parseInt(page),
+          limit: parseInt(limit)
+        }
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        error: `Error fetching orders: ${error.message}`
+      });
+    }
+  }
+
+  // Update order status
+  async updateOrderStatus(req, res) {
+    try {
+      const { orderId } = req.params;
+      const { status } = req.body;
+
+      // Validate orderId format
+      if (!mongoose.Types.ObjectId.isValid(orderId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid order ID format'
+        });
+      }
+
+      // Validate status
+      const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+      if (!status || !validStatuses.includes(status)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid status',
+          validStatuses
+        });
+      }
+
+      const order = await Order.findById(orderId);
+      
+      if (!order) {
+        return res.status(404).json({
+          success: false,
+          message: 'Order not found'
+        });
+      }
+
+      order.status = status;
+      const updatedOrder = await order.save();
+
+      // Invalidate cache when order status changes
+      await this.invalidateCache();
+
+      return res.json({
+        success: true,
+        message: 'Order status updated successfully',
+        data: updatedOrder
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        error: `Error updating order status: ${error.message}`
+      });
+    }
+  }
+
+  // Get single order details
+  async getOrder(req, res) {
+    try {
+      const { orderId } = req.params;
+
+      if (!mongoose.Types.ObjectId.isValid(orderId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid order ID format'
+        });
+      }
+
+      const order = await Order.findById(orderId)
+        .populate('customerId', 'username email')
+        .populate('items.productId', 'name price images');
+
+      if (!order) {
+        return res.status(404).json({
+          success: false,
+          message: 'Order not found'
+        });
+      }
+
+      return res.json({
+        success: true,
+        data: order
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        error: `Error fetching order: ${error.message}`
       });
     }
   }
