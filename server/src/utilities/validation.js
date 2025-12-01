@@ -142,11 +142,18 @@ const validateForgotPassword = [
   body("email").trim().isEmail().withMessage("Valid email is required"),
 ];
 
+// Validation middleware for admin sign-in (same as regular sign-in)
+const validateAdminSignIn = [
+  check("email").trim().isEmail().withMessage("A valid email is required"),
+  check("password").not().isEmpty().withMessage("Password is required"),
+];
+
 // Single export statement for all validators and handlers
 module.exports = {
   handleErrors,
   validateSignUp,
   validateSignIn,
+  validateAdminSignIn,
   handleValidationErrors,
   validate,
   validateGuestOrder,

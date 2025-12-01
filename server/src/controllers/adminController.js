@@ -57,9 +57,10 @@ exports.adminSignIn = async (req, res) => {
         // Generate JWT token
         const token = jwt.sign(
             { 
-                id: admin._id, 
+                _id: admin._id, 
                 email: admin.email,
-                role: admin.role || "admin" 
+                role: admin.role || "admin",
+                isAdmin: true // Flag to distinguish admin tokens
             },
             process.env.JWT_SECRET,
             { expiresIn: "24h" } // Extended to 24h for admin convenience
@@ -111,7 +112,9 @@ exports.adminSignOut = async (req, res) => {
 // Get Admin Profile
 exports.getAdminProfile = async (req, res) => {
     try {
-        const admin = await Admin.findById(req.user.id).select('-password');
+        // Admin is already attached to req by adminAuthMiddleware
+        // Just return it without password field
+        const admin = req.admin || req.user;
         
         if (!admin) {
             return res.status(404).json({ 
@@ -120,9 +123,21 @@ exports.getAdminProfile = async (req, res) => {
             });
         }
 
+        // Create admin object without password
+        const adminData = {
+            _id: admin._id,
+            username: admin.username,
+            email: admin.email,
+            role: admin.role,
+            status: admin.status,
+            lastLogin: admin.lastLogin,
+            createdAt: admin.createdAt,
+            updatedAt: admin.updatedAt
+        };
+
         res.json({ 
             success: true,
-            admin 
+            admin: adminData
         });
     } catch (error) {
         console.error("Get admin profile error:", error);
