@@ -1,0 +1,135 @@
+/* Sidebar Styles */
+
+/* Main Sidebar Container */
+.admin-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 16rem; /* w-64 */
+  background-color: #2563eb; /* blue-600 */
+  z-index: 30;
+  transition: transform 0.3s ease-in-out;
+  transform: translateX(-100%);
+}
+
+@media (min-width: 1024px) {
+  .admin-sidebar {
+    position: static;
+    transform: translateX(0);
+  }
+}
+
+.admin-sidebar.open {
+  transform: translateX(0);
+}
+
+/* Sidebar Inner Container */
+.admin-sidebar-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Navigation Area */
+.admin-sidebar-nav {
+  flex: 1;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Sidebar Tab Button */
+.admin-sidebar-tab {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0.625rem 1rem; /* py-2.5 px-4 */
+  text-align: left;
+  transition: all 0.2s ease-in-out;
+  background-color: transparent;
+  color: white;
+  border: none;
+  cursor: pointer;
+  outline: none;
+}
+
+.admin-sidebar-tab:hover {
+  background-color: rgba(29, 78, 216, 0.3); /* blue-700 with opacity */
+}
+
+.admin-sidebar-tab.active {
+  background-color: rgba(29, 78, 216, 0.4); /* blue-700 with opacity */
+}
+
+/* Tab Content */
+.admin-sidebar-tab-content {
+  flex: 1;
+}
+
+.admin-sidebar-tab-label {
+  font-size: 0.625rem; /* text-[10px] */
+  font-weight: 400;
+  color: white;
+}
+
+.admin-sidebar-tab-description {
+  font-size: 0.5625rem; /* text-[9px] */
+  margin-top: 0.125rem;
+  opacity: 0.8;
+  color: white;
+}
+
+/* Sidebar Footer */
+.admin-sidebar-footer {
+  padding: 1rem;
+  border-top: 1px solid rgba(59, 130, 246, 0.5); /* border-blue-500 */
+}
+
+.admin-sidebar-footer-content {
+  font-size: 0.75rem; /* text-xs */
+  color: white;
+  text-align: center;
+}
+
+.admin-sidebar-footer-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.admin-sidebar-status-indicator {
+  width: 0.5rem; /* w-2 */
+  height: 0.5rem; /* h-2 */
+  background-color: #4ade80; /* green-400 */
+  border-radius: 9999px; /* rounded-full */
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Mobile Overlay */
+.admin-sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 20;
+}
+
+@media (min-width: 1024px) {
+  .admin-sidebar-overlay {
+    display: none;
+  }
+}
+

@@ -1,0 +1,424 @@
+/* Dashboard Charts Styles */
+
+/* Charts Container */
+.charts-container {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.charts-wrapper {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .charts-wrapper {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Period Selector */
+.charts-period-selector {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.charts-period-select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.charts-period-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+/* Chart Card */
+.chart-card {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  align-items: stretch;
+}
+
+.chart-card-compact {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  padding: 0.75rem;
+  box-sizing: border-box;
+}
+
+/* Chart Title */
+.chart-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.25rem;
+}
+
+.chart-title-large {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.5rem;
+  margin-top: 0;
+  line-height: 1.4;
+}
+
+/* Chart Container */
+.chart-container {
+  flex: 1;
+  min-height: 0;
+}
+
+/* Loading State */
+.charts-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 0;
+}
+
+.charts-loading-spinner {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+  border-radius: 9999px;
+  height: 2rem;
+  width: 2rem;
+  border: 2px solid transparent;
+  border-top-color: #2563eb;
+}
+
+.charts-loading-text {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #4b5563;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error State */
+.charts-error {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.charts-error-message {
+  font-size: 0.875rem;
+  color: #dc2626;
+}
+
+.charts-error-retry {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #991b1b;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.charts-error-retry:hover {
+  color: #7f1d1d;
+}
+
+/* Empty State */
+.charts-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+}
+
+.charts-empty-compact {
+  height: 180px;
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.charts-empty-large {
+  height: 180px;
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Charts Grid */
+.charts-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.charts-grid-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  align-items: stretch;
+}
+
+/* Force 2-column layout on tablets and above */
+@media (min-width: 640px) {
+  .charts-grid-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: grid;
+    gap: 1rem;
+  }
+  
+  .charts-grid-row > .chart-card {
+    max-width: 100%;
+    width: 100%;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+}
+
+/* Responsive Container Overrides */
+.charts-responsive-container {
+  width: 100% !important;
+}
+
+.charts-responsive-container-compact {
+  height: 180px !important;
+  min-height: 180px;
+  max-height: 180px;
+}
+
+.charts-responsive-container-large {
+  height: 180px !important;
+  min-height: 180px;
+  max-height: 180px;
+}
+
+.charts-responsive-container-pie {
+  height: 100px !important;
+  width: 50% !important;
+}
+
+.charts-responsive-container-bar {
+  height: 500px !important;
+  width: 50% !important;
+}
+
+/* Chart Tooltip Styles */
+.recharts-tooltip-wrapper {
+  background-color: #fff !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 8px !important;
+}
+
+/* Chart Axis Styles */
+.recharts-cartesian-axis-tick-value {
+  font-size: 10px !important;
+  fill: #6b7280 !important;
+}
+
+.recharts-cartesian-axis-line {
+  stroke: #6b7280 !important;
+}
+
+/* Chart Grid Styles */
+.recharts-cartesian-grid {
+  stroke: #e5e7eb !important;
+}
+
+/* Chart Legend Styles */
+.recharts-legend-wrapper {
+  font-size: 0.75rem !important;
+}
+
+/* Space Utilities */
+.charts-space-y {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.charts-space-y-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Text Utilities */
+.text-center {
+  text-align: center;
+}
+
+.text-gray-500 {
+  color: #6b7280;
+}
+
+.text-gray-600 {
+  color: #4b5563;
+}
+
+.text-gray-900 {
+  color: #111827;
+}
+
+.text-sm {
+  font-size: 0.875rem;
+}
+
+.text-xs {
+  font-size: 0.75rem;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+/* Flex Utilities */
+.flex {
+  display: flex;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-end {
+  justify-content: flex-end;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.h-full {
+  height: 100%;
+}
+
+.mb-1 {
+  margin-bottom: 0.25rem;
+}
+
+.mb-4 {
+  margin-bottom: 1rem;
+}
+
+.mt-2 {
+  margin-top: 0.5rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1023px) {
+  .charts-responsive-container-pie {
+    width: 100% !important;
+  }
+  
+  .charts-responsive-container-bar {
+    width: 100% !important;
+  }
+}
+
+/* ===== 4 BOX (2x2) DASHBOARD LAYOUT ===== */
+.charts-4box-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(200px, 1fr));
+  gap: 1rem;
+  width: 100%;
+  align-items: stretch;
+}
+
+@media (max-width: 768px) {
+  .charts-4box-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+}
+
+/* Box style */
+.charts-4box-card {
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 200px;
+  box-sizing: border-box;
+}
+
+/* Box title */
+.charts-4box-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
+}
+
+/* Chart container inside box */
+.charts-4box-body {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.charts-4box-responsive {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 150px !important;
+}
+
+.charts-4box-body .recharts-responsive-container {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 150px !important;
+}
+  

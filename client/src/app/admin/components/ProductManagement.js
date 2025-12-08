@@ -2,6 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import '../../assets/css/admin.css';
+import Pagination from './Pagination';
+
+// Backend base URL
+const BASE_URL = 'http://localhost:5000';
 
 export default function ProductManagement() {
   const [products, setProducts] = useState([]);
@@ -25,7 +29,8 @@ export default function ProductManagement() {
     name: '',
     price: '',
     category: '',
-    stock: ''
+    stock: '',
+    description: ''
   });
 
   const fetchProducts = useCallback(async () => {
@@ -40,7 +45,7 @@ export default function ProductManagement() {
         }
       });
 
-      const response = await fetch(`/dashboard/products?${queryParams}`, {
+      const response = await fetch(`${BASE_URL}/dashboard/products?${queryParams}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -52,8 +57,10 @@ export default function ProductManagement() {
       }
 
       const data = await response.json();
+      console.log('Products response:', data); // Debug log
       setProducts(data.data || []);
       setPagination(data.pagination || {});
+      console.log('Pagination set to:', data.pagination); // Debug log
       setError(null);
     } catch (err) {
       setError(err.message);
@@ -71,39 +78,62 @@ export default function ProductManagement() {
       name: '',
       price: '',
       category: '',
-      stock: ''
+      stock: '',
+      description: ''
     });
     setEditingProduct(null);
   };
 
   const handleAddProduct = async (productData) => {
     try {
+      setError(null);
       const token = localStorage.getItem('token');
-      const response = await fetch('/dashboard/products', {
+      
+      if (!token) {
+        throw new Error('Authentication required. Please log in again.');
+      }
+
+      const response = await fetch(`${BASE_URL}/dashboard/products`, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${token}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(productData)
       });
 
+      let data = {};
+      try {
+        const text = await response.text();
+        if (text) {
+          data = JSON.parse(text);
+        }
+      } catch (parseError) {
+        console.error('Failed to parse response:', parseError);
+      }
+
       if (!response.ok) {
-        throw new Error('Failed to add product');
+        // Check for validation errors
+        if (data.errors && Array.isArray(data.errors)) {
+          const errorMessages = data.errors.map(err => err.msg || err.message).join(', ');
+          throw new Error(`Validation error: ${errorMessages}`);
+        }
+        throw new Error(data.error || data.message || `Failed to add product (${response.status})`);
       }
 
       setShowAddForm(false);
       resetForm();
-      fetchProducts();
+      await fetchProducts();
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Failed to add product. Please try again.');
+      console.error('Error adding product:', err);
     }
   };
 
   const handleEditProduct = async (productId, updates) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`/dashboard/products/${productId}`, {
+      const response = await fetch(`${BASE_URL}/dashboard/products/${productId}`, {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -125,23 +155,68 @@ export default function ProductManagement() {
   };
 
   const handleDeleteProduct = async (productId) => {
+    // Show confirmation dialog
+    if (!window.confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+      return;
+    }
+
+    if (!productId) {
+      setError('Product ID is missing. Cannot delete product.');
+      console.error('Product ID is missing');
+      return;
+    }
+
     try {
+      setError(null);
       const token = localStorage.getItem('token');
-      const response = await fetch(`/dashboard/products/${productId}`, {
+      
+      if (!token) {
+        throw new Error('Authentication required. Please log in again.');
+      }
+
+      console.log('Attempting to delete product:', productId);
+      console.log('URL:', `${BASE_URL}/dashboard/products/${productId}`);
+
+      const response = await fetch(`${BASE_URL}/dashboard/products/${productId}`, {
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${token}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
 
+      console.log('Delete response status:', response.status);
+      console.log('Delete response ok:', response.ok);
+
+      let data = {};
+      try {
+        const text = await response.text();
+        if (text) {
+          data = JSON.parse(text);
+        }
+      } catch (parseError) {
+        console.error('Failed to parse response:', parseError);
+      }
+      
+      console.log('Delete response data:', data);
+
       if (!response.ok) {
-        throw new Error('Failed to delete product');
+        // Check for validation errors
+        if (data.errors && Array.isArray(data.errors)) {
+          const errorMessages = data.errors.map(err => err.msg || err.message).join(', ');
+          throw new Error(`Validation error: ${errorMessages}`);
+        }
+        throw new Error(data.error || data.message || `Failed to delete product (${response.status})`);
       }
 
-      fetchProducts();
+      // Success - refresh the product list
+      console.log('Product deleted successfully, refreshing list...');
+      await fetchProducts();
     } catch (err) {
-      setError(err.message);
+      const errorMessage = err.message || 'Failed to delete product. Please try again.';
+      setError(errorMessage);
+      console.error('Error deleting product:', err);
+      alert(`Error: ${errorMessage}`);
     }
   };
 
@@ -226,7 +301,8 @@ export default function ProductManagement() {
                             name: product.name || '',
                             price: product.price || '',
                             category: product.category || '',
-                            stock: product.stock || ''
+                            stock: product.stock || '',
+                            description: product.description || ''
                           });
                           setShowAddForm(true);
                         }}
@@ -237,7 +313,16 @@ export default function ProductManagement() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleDeleteProduct(product._id)}
+                        onClick={async () => {
+                          const productId = product._id || product.id;
+                          console.log('Delete button clicked for product:', productId);
+                          console.log('Full product object:', product);
+                          if (!productId) {
+                            alert('Error: Product ID is missing');
+                            return;
+                          }
+                          await handleDeleteProduct(productId);
+                        }}
                         className="admin-btn admin-btn-danger"
                         style={{ padding: '0.25rem 0.75rem', fontSize: '0.875rem' }}
                       >
@@ -250,6 +335,22 @@ export default function ProductManagement() {
             </tbody>
           </table>
         </div>
+      )}
+
+      {/* Pagination - Always show if we have pagination data */}
+      {!loading && pagination && Object.keys(pagination).length > 0 && (
+        <Pagination
+          pagination={pagination}
+          onPageChange={(newPage, newLimit) => {
+            setFilters(prev => ({
+              ...prev,
+              page: newPage,
+              ...(newLimit && { limit: newLimit })
+            }));
+            // Scroll to top when page changes
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+        />
       )}
 
       {showAddForm && (
@@ -282,6 +383,20 @@ export default function ProductManagement() {
                 required
               />
             </div>
+            <div className="sm:col-span-2">
+              <label className="admin-form-label">Description</label>
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                className="admin-form-input"
+                rows="4"
+                required
+                minLength="10"
+                maxLength="2000"
+                placeholder="Enter product description (minimum 10 characters)"
+              />
+            </div>
             <div>
               <label className="admin-form-label">Price</label>
               <input
@@ -291,17 +406,25 @@ export default function ProductManagement() {
                 onChange={handleChange}
                 className="admin-form-input"
                 required
+                min="0"
+                step="0.01"
               />
             </div>
             <div>
               <label className="admin-form-label">Category</label>
-              <input
-                type="text"
+              <select
                 name="category"
                 value={formData.category}
                 onChange={handleChange}
                 className="admin-form-input"
-              />
+                required
+              >
+                <option value="">Select a category</option>
+                <option value="jewelry">Jewelry</option>
+                <option value="electronics">Electronics</option>
+                <option value="consoles">Consoles</option>
+                <option value="computers">Computers</option>
+              </select>
             </div>
             <div>
               <label className="admin-form-label">Stock</label>
@@ -312,6 +435,7 @@ export default function ProductManagement() {
                 onChange={handleChange}
                 className="admin-form-input"
                 required
+                min="0"
               />
             </div>
             <div className="sm:col-span-2 flex gap-3">

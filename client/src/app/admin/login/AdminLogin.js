@@ -4,9 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from '../../assets/css/auth.module.css';
 import '../../assets/css/buttons.css';
-import Link from 'next/link';
 
-const Signin = () => {
+const AdminLogin = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -15,22 +14,46 @@ const Signin = () => {
     const router = useRouter();
 
     useEffect(() => {
-        const clearForm = () => {
-        setEmail('');
-        setPassword('');
-        setShowPassword(false);
-        setError(null);
-    };
+        // Check if admin is already logged in with a valid token
+        const checkAdminAuth = async () => {
+            const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+            
+            if (!token) {
+                // No token, show login form
+                return;
+            }
 
+            // Validate token by checking admin profile
+            try {
+                const response = await fetch('http://localhost:5000/admin/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
 
-    clearForm();
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        // Valid admin token, redirect to dashboard
+                        router.push('/admin');
+                        return;
+                    }
+                }
+                
+                // Invalid token, clear it and show login form
+                localStorage.removeItem('adminToken');
+                localStorage.removeItem('token');
+            } catch (error) {
+                // Error validating token, clear it and show login form
+                console.error('Token validation error:', error);
+                localStorage.removeItem('adminToken');
+                localStorage.removeItem('token');
+            }
+        };
 
-    window.addEventListener('load', clearForm);
-
-    return () => {
-        window.removeEventListener('load', clearForm);
-    };
-    },[]);
+        checkAdminAuth();
+    }, [router]);
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
@@ -47,102 +70,80 @@ const Signin = () => {
             return;
         }
     
-        const userData = { email, password };
+        const adminData = { email, password };
     
         try {
-            // Try user login first
-            console.log("Attempting user login:", "http://localhost:5000/auth/signin");
+            console.log("Attempting admin login:", "http://localhost:5000/admin/signin");
             
-            let response = await fetch("http://localhost:5000/auth/signin", {
+            const response = await fetch("http://localhost:5000/admin/signin", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(userData),
+                body: JSON.stringify(adminData),
                 credentials: "include"
             });
         
-            let data = await response.json();
-            console.log("User login response:", data);
+            const data = await response.json();
+            console.log("Admin login response:", data);
         
-            if (response.ok) {
-                console.log("User signed in successfully.", data);
-                localStorage.setItem("token", data.accessToken || data.token); 
-                router.push("/");
-                return;
+            if (response.ok && data.success) {
+                console.log("Admin logged in successfully.", data);
+                // Store admin token (use 'adminToken' key to distinguish from user tokens)
+                localStorage.setItem("adminToken", data.token);
+                localStorage.setItem("token", data.token); // Also store as token for API calls
+                localStorage.setItem("adminRole", data.role || "admin");
+                router.push("/admin");
+            } else {
+                setError(data.error || data.message || "An error occurred, please try again.");
             }
-            
-            // If user login fails with 404, try admin login
-            if (response.status === 404 || response.status === 400) {
-                console.log("User not found, trying admin login...");
-                
-                response = await fetch("http://localhost:5000/admin/signin", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(userData),
-                    credentials: "include"
-                });
-                
-                data = await response.json();
-                console.log("Admin login response:", data);
-                
-                if (response.ok && data.success) {
-                    console.log("Admin signed in successfully.", data);
-                    localStorage.setItem("adminToken", data.token);
-                    localStorage.setItem("token", data.token);
-                    localStorage.setItem("adminRole", data.role || "admin");
-                    router.push("/admin");
-                    return;
-                }
-            }
-            
-            // Both failed
-            setError(data.error || data.message || "Invalid credentials. Please try again.");
         } catch (error) {
-            console.error("Login error:", error);
+            console.error("Admin login error:", error);
             setError(`Server error: ${error.message}`);
         } finally {
             setLoading(false);
         }
     };
-    
 
     return (
         <div className={styles.authPageWrapper}>
             <div className={styles.authSplit}>
                 <div className={styles.mediaPane}>
                     <div className={styles.mediaImageWrapper}>
-                        <img src="/Pictures/Playstation 5 pro.jpg" alt="Promo" className={styles.mediaImage} />
+                        <img src="/Pictures/Playstation 5 pro.jpg" alt="Admin Access" className={styles.mediaImage} />
                         <div className={styles.mediaOverlay}>
-                            <h2 className={styles.mediaTitle}>Solar Vision</h2>
-                            <p className={styles.mediaSubtitle}>See the Sun, Own the Style</p>
+                            <h2 className={styles.mediaTitle}>Admin Portal</h2>
+                            <p className={styles.mediaSubtitle}>Secure Admin Access</p>
                         </div>
                     </div>
                 </div>
 
                 <div className={styles.formPane}>
                     <div className={styles.container}>
-                        <h2 className={styles.title}>Sign In</h2>
+                        <h2 className={styles.title}>Admin Sign In</h2>
+                        <p className={styles.subtitle} style={{ marginBottom: '1.5rem', color: '#666', fontSize: '0.9rem' }}>
+                            Access your admin dashboard
+                        </p>
                         {error && <div className={styles.errorMessage}>{error}</div>}
                         <form className={styles.form} onSubmit={handleSubmit}>
                             <div className={styles.formGroup}>
-                                <label className={styles.label} htmlFor="email">Email</label>
+                                <label className={styles.label} htmlFor="admin-email">Email</label>
                                 <input
                                     className={styles.input}
-                                    id="email"
+                                    id="admin-email"
                                     type="email"
-                                    placeholder="Enter your email"
+                                    placeholder="Enter admin email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
                                 />
                             </div>
                             <div className={styles.formGroup}>
-                                <label className={styles.label} htmlFor="password">Password</label>
+                                <label className={styles.label} htmlFor="admin-password">Password</label>
                                 <div className={styles.passwordInputContainer}>
                                     <input
                                         className={styles.input}
-                                        id="password"
+                                        id="admin-password"
                                         type={showPassword ? "text" : "password"}
-                                        placeholder="Enter your password"
+                                        placeholder="Enter admin password"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         required
@@ -155,9 +156,9 @@ const Signin = () => {
                                     >
                                         {showPassword ? (
                                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M15.0007 12C15.0007 13.6569 13.6576 15 12.0007 15C10.3439 15 9.00073 13.6569 9.00073 12C9.00073 10.3431 10.3439 9 12.0007 9C13.6576 9 15.0007 10.3431 15.0007 12Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                            <path d="M12.0012 5C7.52354 5 3.73326 7.94288 2.45898 12C3.73324 16.0571 7.52354 19 12.0012 19C16.4788 19 20.2691 16.0571 21.5434 12C20.2691 7.94288 16.4788 5 12.0012 5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                        </svg>
+                                                <path d="M15.0007 12C15.0007 13.6569 13.6576 15 12.0007 15C10.3439 15 9.00073 13.6569 9.00073 12C9.00073 10.3431 10.3439 9 12.0007 9C13.6576 9 15.0007 10.3431 15.0007 12Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                                <path d="M12.0012 5C7.52354 5 3.73326 7.94288 2.45898 12C3.73324 16.0571 7.52354 19 12.0012 19C16.4788 19 20.2691 16.0571 21.5434 12C20.2691 7.94288 16.4788 5 12.0012 5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                            </svg>
                                         ) : (
                                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                              <path d="M10.7302 5.07319C11.1448 5.02485 11.5684 5 11.9999 5C16.6639 5 20.3998 7.90264 21.6997 12C21.3957 12.9217 20.8589 13.7533 20.1471 14.4196M6.52026 6.51944C4.47949 7.76406 2.90205 9.69259 2.30011 12C3.60002 16.0974 7.33588 19 12.0001 19C14.037 19 15.8979 18.446 17.4805 17.4804M9.87871 9.87859C9.33576 10.4215 9.00012 11.1715 9.00012 12C9.00012 13.6569 10.3433 15 12.0001 15C12.8286 15 13.5785 14.6644 14.1215 14.1214" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -170,12 +171,11 @@ const Signin = () => {
                             <button className="button" type="submit" disabled={loading}>
                                 {loading ? "Signing in..." : "Sign In"} 
                             </button>
-                            <div className={styles.authLinks}>
-                                <Link href="/auth/forgotpassword" className={styles.forgotPassword}>
-                                    Forgot Password?
-                                </Link>
-                                <p className={styles.signupRedirect}>
-                                    If you don't have an account, <Link href="/auth/signup">sign up</Link>
+                            <div className={styles.authLinks} style={{ marginTop: '1rem' }}>
+                                <p className={styles.signupRedirect} style={{ textAlign: 'center', fontSize: '0.875rem' }}>
+                                    <a href="/" style={{ color: '#666', textDecoration: 'none' }}>
+                                        ← Back to Store
+                                    </a>
                                 </p>
                             </div>
                         </form>
@@ -186,4 +186,5 @@ const Signin = () => {
     );
 };
 
-export default Signin;
+export default AdminLogin;
+

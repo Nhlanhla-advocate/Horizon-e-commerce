@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import '../../assets/css/admin.css';
+import '../../assets/css/dashboardstats.css';
+import DashboardCharts from './DashboardCharts';
 
 // Backend base URL
 const BASE_URL = 'http://localhost:5000';
@@ -94,39 +96,37 @@ export default function DashboardStats() {
 
     if (loading) {
         return (
-          <div className="flex items-center justify-center" style={{ height: '16rem' }}>
-            <div className="flex items-center space-x-4">
+          <div className="dashboard-loading-container">
+            <div className="dashboard-loading-content">
               <div className="admin-spinner" style={{ width: '2rem', height: '2rem', borderTopColor: '#2563eb' }}></div>
-              <span className="text-gray-600">Loading dashboard...</span>
+              <span className="dashboard-loading-text">Loading dashboard...</span>
             </div>
           </div>
         );
-      }
+    }
     
-    
-      if (error) {
+    if (error) {
         return (
           <div className="admin-alert admin-alert-error">
-            <p className="text-sm">{error}</p>
+            <p className="dashboard-error-text">{error}</p>
             <button
               onClick={refreshStats}
-              className="admin-btn admin-btn-danger mt-4"
+              className="admin-btn admin-btn-danger dashboard-error-retry"
             >
               Retry
             </button>
           </div>
         );
-      }
+    }
     
-    
-      return (
-        <div className="space-y-6">
-          {/* Header */}
-          <div className="flex justify-between items-center">
+    return (
+        <div className="dashboard-container">
+            {/* Header */}
+            <div className="dashboard-header">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Dashboard Overview</h2>
+              <h2 className="dashboard-title">Dashboard Overview</h2>
               {lastUpdated && (
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="dashboard-last-updated">
                   Last updated: {formatDate(lastUpdated)}
                 </p>
               )}
@@ -134,217 +134,215 @@ export default function DashboardStats() {
             <button
               onClick={refreshStats}
               disabled={loading}
-              className="admin-btn admin-btn-secondary flex items-center space-x-2"
+              className="admin-btn admin-btn-secondary dashboard-refresh-btn"
             >
               {loading ? (
-                <div className="admin-spinner" style={{ width: '1rem', height: '1rem', borderTopColor: '#4b5563' }}></div>
+                <div className="admin-spinner" style={{ width: '0.75rem', height: '0.75rem', borderTopColor: '#4b5563' }}></div>
               ) : (
-                <span className="text-lg">↻</span>
+                <span className="dashboard-refresh-icon">↻</span>
               )}
-              <span>Refresh Data</span>
+              <span className="dashboard-refresh-text">Refresh</span>
             </button>
-          </div>
+            </div>
     
-    
-          {/* Stats Cards */}
-          <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
+            {/* Stats Cards Row - Top */}
+            <div className="stats-grid dashboard-stats-grid" style={{ gap: '0.75rem' }}>
             <div className="stat-card">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
+              <div className="dashboard-stat-card-content">
+                <div className="dashboard-stat-card-content-left">
                   <p className="stat-card-label">Total Products</p>
                   <p className="stat-card-value">{stats?.overview?.totalProducts || 0}</p>
-                  <p className="text-xs text-green-600 mt-1">+12.5% from last month</p>
+                  <p className="dashboard-stat-percentage-small-green">+12.5%</p>
                 </div>
                 <div className="stat-card-icon" style={{ backgroundColor: '#dbeafe', color: '#2563eb' }}>
-                  <span className="text-lg">📦</span>
+                  <span className="dashboard-stat-icon">📦</span>
                 </div>
               </div>
             </div>
     
-    
             <div className="stat-card">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
+              <div className="dashboard-stat-card-content">
+                <div className="dashboard-stat-card-content-left">
                   <p className="stat-card-label">Active Products</p>
                   <p className="stat-card-value">{stats?.overview?.activeProducts || 0}</p>
-                  <p className="text-xs text-green-600 mt-1">+8.2% from last month</p>
+                  <p className="dashboard-stat-percentage-medium">+8.2% from last month</p>
                 </div>
                 <div className="stat-card-icon" style={{ backgroundColor: '#dcfce7', color: '#059669' }}>
-                  <span className="text-lg">✓</span>
+                  <span className="dashboard-stat-icon">✓</span>
                 </div>
               </div>
             </div>
     
-    
             <div className="stat-card">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
+              <div className="dashboard-stat-card-content">
+                <div className="dashboard-stat-card-content-left">
                   <p className="stat-card-label">Total Users</p>
                   <p className="stat-card-value">{stats?.overview?.totalUsers || 0}</p>
-                  <p className="text-xs text-blue-600 mt-1">+15.3% from last month</p>
+                  <p className="dashboard-stat-percentage-small-blue">+15.3%</p>
                 </div>
                 <div className="stat-card-icon" style={{ backgroundColor: '#f3e8ff', color: '#9333ea' }}>
-                  <span className="text-lg">👥</span>
+                  <span className="dashboard-stat-icon">👥</span>
                 </div>
               </div>
             </div>
     
-    
             <div className="stat-card">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
+              <div className="dashboard-stat-card-content">
+                <div className="dashboard-stat-card-content-left">
                   <p className="stat-card-label">Total Orders</p>
                   <p className="stat-card-value">{stats?.overview?.totalOrders || 0}</p>
-                  <p className="text-xs text-yellow-600 mt-1">+22.1% from last month</p>
+                  <p className="dashboard-stat-percentage-small-yellow">+22.1%</p>
                 </div>
                 <div className="stat-card-icon" style={{ backgroundColor: '#fef3c7', color: '#d97706' }}>
-                  <span className="text-lg">📋</span>
+                  <span className="dashboard-stat-icon">📋</span>
                 </div>
               </div>
             </div>
     
-    
             <div className="stat-card">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
+              <div className="dashboard-stat-card-content">
+                <div className="dashboard-stat-card-content-left">
                   <p className="stat-card-label">Total Revenue</p>
                   <p className="stat-card-value">{formatCurrency(stats?.overview?.totalRevenue || 0)}</p>
-                  <p className="text-xs text-green-600 mt-1">+18.7% from last month</p>
+                  <p className="dashboard-stat-percentage-medium">+18.7% from last month</p>
                 </div>
                 <div className="stat-card-icon" style={{ backgroundColor: '#d1fae5', color: '#059669' }}>
-                  <span className="text-lg">💰</span>
+                  <span className="dashboard-stat-icon">💰</span>
                 </div>
               </div>
             </div>
     
-    
             <div className="stat-card">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
+              <div className="dashboard-stat-card-content">
+                <div className="dashboard-stat-card-content-left">
                   <p className="stat-card-label">Low Stock</p>
                   <p className="stat-card-value">{stats?.overview?.lowStockProducts || 0}</p>
-                  <p className={`text-xs mt-1 ${(stats?.overview?.lowStockProducts || 0) > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                    {(stats?.overview?.lowStockProducts || 0) > 0 ? 'Needs attention' : 'All good'}
+                  <p className={`dashboard-stat-percentage-small ${(stats?.overview?.lowStockProducts || 0) > 0 ? 'dashboard-stat-percentage-small-red' : 'dashboard-stat-percentage-small-green'}`}>
+                    {(stats?.overview?.lowStockProducts || 0) > 0 ? 'Alert' : 'OK'}
                   </p>
                 </div>
                 <div className="stat-card-icon" style={{ backgroundColor: '#fee2e2', color: '#dc2626' }}>
-                  <span className="text-lg">⚠</span>
+                  <span className="dashboard-stat-icon">⚠</span>
                 </div>
               </div>
             </div>
-          </div>
+            </div>
     
-    
-          {/* Recent Orders and Top Products */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Recent Orders */}
-            <div className="admin-card" style={{ borderRadius: '1rem', overflow: 'hidden' }}>
-              <div style={{ background: 'linear-gradient(to right, #3b82f6, #9333ea)', padding: '1rem 1.5rem' }}>
-                <div className="flex items-center space-x-4">
-                  <div style={{ width: '2rem', height: '2rem', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  </div>
-                  <h3 className="text-lg font-semibold text-white">Recent Orders</h3>
-                </div>
-              </div>
-              <div className="p-6">
-                <div className="space-y-4">
-                  {stats?.recentOrders?.length > 0 ? (
-                    stats.recentOrders.map((order, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100" style={{ transition: 'background-color 0.2s' }}>
-                        <div className="flex items-center space-x-4">
-                          <div style={{ width: '2.5rem', height: '2.5rem', background: 'linear-gradient(to right, #3b82f6, #9333ea)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 600, fontSize: '0.875rem' }}>
-                            {order.customerId?.username?.charAt(0)?.toUpperCase() || 'U'}
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold text-gray-900">
-                              {order.customerId?.username || 'Unknown User'}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {formatDate(order.createdAt)}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-bold text-gray-900">
-                            {formatCurrency(order.totalPrice)}
-                          </p>
-                          <span className={`admin-badge ${
-                            order.status === 'completed' ? 'admin-badge-success' :
-                            order.status === 'pending' ? 'admin-badge-warning' :
-                            'admin-badge-danger'
-                          }`}>
-                            {order.status}
-                          </span>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-8">
-                      <p className="text-gray-500 text-sm">No recent orders</p>
+            {/* Charts Section - 4 Box (2x2) Grid Layout */}
+            <div className="charts-4box-grid dashboard-charts-section">
+                {/* Top Left - Revenue Over Time */}
+                <DashboardCharts showCharts={['revenue']} />
+                
+                {/* Top Right - Orders Over Time */}
+                <DashboardCharts showCharts={['orders']} />
+                
+                {/* Bottom Left - Order Status Distribution */}
+                <DashboardCharts showCharts={['status']} />
+                
+                {/* Bottom Right - Products by Category */}
+                <DashboardCharts showCharts={['category']} />
+            </div>
+
+            {/* Third Section - Recent Orders and Top Rated Products in 2-Grid Layout */}
+            <div className="dashboard-grid-section">
+                {/* Recent Orders */}
+                <div className="admin-card" style={{ borderRadius: '0.75rem', overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ background: 'linear-gradient(to right, #3b82f6, #9333ea)', padding: '0.375rem 0.5rem' }}>
+                        <h3 className="dashboard-card-header">Recent Orders</h3>
                     </div>
-                  )}
-                </div>
-              </div>
-            </div>
-    
-    
-            {/* Top Rated Products */}
-            <div className="admin-card" style={{ borderRadius: '1rem', overflow: 'hidden' }}>
-              <div style={{ background: 'linear-gradient(to right, #eab308, #f97316)', padding: '1rem 1.5rem' }}>
-                <div className="flex items-center space-x-4">
-                  <div style={{ width: '2rem', height: '2rem', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  </div>
-                  <h3 className="text-lg font-semibold text-white">Top Rated Products</h3>
-                </div>
-              </div>
-              <div className="p-6">
-                <div className="space-y-4">
-                  {stats?.topRatedProducts?.length > 0 ? (
-                    stats.topRatedProducts.map((product, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100" style={{ transition: 'background-color 0.2s' }}>
-                        <div className="flex items-center space-x-4">
-                          <div style={{ width: '2.5rem', height: '2.5rem', background: 'linear-gradient(to right, #facc15, #f97316)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: '0.875rem' }}>
-                            {index + 1}
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold text-gray-900">{product.name}</p>
-                            <div className="flex items-center space-x-2">
-                              <div className="flex">
-                                {Array.from({ length: 5 }, (_, i) => (
-                                  <span
-                                    key={i}
-                                    style={{
-                                      color: i < Math.round(product.rating || 0) ? '#facc15' : '#d1d5db',
-                                      fontSize: '0.75rem'
-                                    }}
-                                  >
-                                    ★
-                                  </span>
-                                ))}
-                              </div>
-                              <span className="text-xs text-gray-500">
-                                {product.rating?.toFixed(1) || '0.0'} ({product.numReviews || 0})
-                              </span>
-                            </div>
-                          </div>
+                    <div className="dashboard-card-content">
+                        <div className="dashboard-card-list">
+                            {stats?.recentOrders?.length > 0 ? (
+                                stats.recentOrders.slice(0, 5).map((order, index) => (
+                                    <div key={order._id || `order-${index}`} className="dashboard-item">
+                                        <div className="dashboard-item-left">
+                                            <div style={{ width: '1.5rem', height: '1.5rem', background: 'linear-gradient(to right, #3b82f6, #9333ea)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 600, fontSize: '0.625rem', flexShrink: 0 }}>
+                                                {order.customerId?.username?.charAt(0)?.toUpperCase() || 'U'}
+                                            </div>
+                                            <div className="dashboard-item-content">
+                                                <p className="dashboard-item-title">
+                                                    {order.customerId?.username || 'Unknown User'}
+                                                </p>
+                                                <p className="dashboard-item-subtitle">
+                                                    {new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="dashboard-item-right">
+                                            <p className="dashboard-item-price">
+                                                {formatCurrency(order.totalPrice)}
+                                            </p>
+                                            <span className={`admin-badge dashboard-item-badge ${
+                                                order.status === 'completed' ? 'admin-badge-success' :
+                                                order.status === 'pending' ? 'admin-badge-warning' :
+                                                'admin-badge-danger'
+                                            }`}>
+                                                {order.status}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="dashboard-empty-state">
+                                    <p className="dashboard-empty-text">No recent orders</p>
+                                </div>
+                            )}
                         </div>
-                        <div className="text-right">
-                          <p className="text-sm font-bold text-gray-900">
-                            {formatCurrency(product.price)}
-                          </p>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-8">
-                      <p className="text-gray-500 text-sm">No top rated products</p>
                     </div>
-                  )}
                 </div>
-              </div>
+
+                {/* Top Rated Products */}
+                <div className="admin-card" style={{ borderRadius: '0.75rem', overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ background: 'linear-gradient(to right, #eab308, #f97316)', padding: '0.375rem 0.5rem' }}>
+                        <h3 className="dashboard-card-header">Top Rated Products</h3>
+                    </div>
+                    <div className="dashboard-card-content">
+                        <div className="dashboard-card-list">
+                            {stats?.topRatedProducts?.length > 0 ? (
+                                stats.topRatedProducts.slice(0, 5).map((product, index) => (
+                                    <div key={product._id || index} className="dashboard-item">
+                                        <div className="dashboard-item-left">
+                                            <div style={{ width: '1.5rem', height: '1.5rem', background: 'linear-gradient(to right, #facc15, #f97316)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: '0.625rem', flexShrink: 0 }}>
+                                                {index + 1}
+                                            </div>
+                                            <div className="dashboard-item-content">
+                                                <p className="dashboard-item-title">{product.name}</p>
+                                                <div className="dashboard-item-rating-container">
+                                                    <div className="dashboard-item-rating-stars">
+                                                        {Array.from({ length: 5 }, (_, i) => (
+                                                            <span
+                                                                key={i}
+                                                                style={{
+                                                                    color: i < Math.round(product.rating || 0) ? '#facc15' : '#d1d5db',
+                                                                    fontSize: '0.5rem'
+                                                                }}
+                                                            >
+                                                                ★
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                    <span className="dashboard-item-rating-value">
+                                                        {product.rating?.toFixed(1) || '0.0'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="dashboard-item-right">
+                                            <p className="dashboard-item-price">
+                                                {formatCurrency(product.price)}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="dashboard-empty-state">
+                                    <p className="dashboard-empty-text">No top rated products</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
-      );
-    }
-    
+    );
+}

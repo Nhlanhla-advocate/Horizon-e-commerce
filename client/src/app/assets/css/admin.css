@@ -35,7 +35,7 @@
   background: white;
   border-radius: 0.5rem;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  padding: 1.5rem;
+  padding: 0.75rem;
 }
 
 .admin-card-header {
@@ -57,27 +57,53 @@
 /* Stats cards */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  width: 100%;
+  max-width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+@media (max-width: 1023px) {
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .stat-card {
   background: white;
-  border-radius: 0.5rem;
+  border-radius: 0.375rem;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-  padding: 1.25rem;
+  padding: 0.75rem;
   overflow: hidden;
 }
 
 .stat-card-icon {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 0.375rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   flex-shrink: 0;
 }
 
@@ -88,7 +114,7 @@
 }
 
 .stat-card-label {
-  font-size: 0.875rem;
+  font-size: 0.625rem;
   font-weight: 500;
   color: #6b7280;
   text-overflow: ellipsis;
@@ -97,10 +123,10 @@
 }
 
 .stat-card-value {
-  font-size: 1.125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #111827;
-  margin-top: 0.25rem;
+  margin-top: 0.125rem;
 }
 
 /* Button styles */
