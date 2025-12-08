@@ -4,6 +4,7 @@ import { useState } from 'react';
 import TopSellingProducts from './Analytics/TopSellingProducts';
 import LowSellingProducts from './Analytics/LowSellingProducts';
 import ProductPerformance from './Analytics/ProductPerfomance';
+import '../../assets/css/Analytics.css';
 
 export default function Analytics() {
   const [activeTab, setActiveTab] = useState('top-selling');
@@ -17,26 +18,26 @@ export default function Analytics() {
   const ActiveComponent = tabs.find(tab => tab.id === activeTab)?.component; //Rendering the active component
 
   return (
-    <div className="space-y-8">
+    <div className="analytics-page-container">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+      <div className="analytics-header">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Product Analytics</h2>
-          <p className="text-gray-600 mt-1">Comprehensive insights into your product performance</p>
+          <h2 className="analytics-header-title">Product Analytics</h2>
+          <p className="analytics-header-subtitle">Comprehensive insights into your product performance</p>
         </div>
       </div>
 
       {/* Tab Navigation */}
-      <div className="bg-white p-2 rounded-2xl shadow-lg border border-gray-100">
-        <nav className="flex flex-col sm:flex-row gap-2">
+      <div className="analytics-tabs-container">
+        <nav className="analytics-tabs-nav">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 py-3 px-4 rounded-xl font-medium text-sm transition-all duration-200 ${
+              className={`analytics-tab-button ${
                 activeTab === tab.id
-                  ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg transform scale-105'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  ? 'analytics-tab-button-active'
+                  : 'analytics-tab-button-inactive'
               }`}
             >
               {tab.label}
@@ -46,7 +47,7 @@ export default function Analytics() {
       </div>
 
       {/* Content */}
-      <div className="animate-fadeIn">
+      <div className="analytics-content">
         {ActiveComponent && <ActiveComponent />}
       </div>
     </div>
