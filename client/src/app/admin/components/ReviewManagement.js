@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import '../../assets/css/admin.css';
+import '../../assets/css/reviewManagement.css';
 import Pagination from './Pagination';
 
 // Backend base URL
@@ -147,11 +148,11 @@ export default function ReviewManagement() {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="review-management-container">
             <div className="admin-card" style={{ borderRadius: '0.75rem' }}>
                 <div>
-                    <h2 className="text-xl font-semibold text-gray-900">Review Management</h2>
-                    <p className="text-sm text-gray-500">Manage product reviews and ratings.</p>
+                    <h2 className="review-management-title">Review Management</h2>
+                    <p className="review-management-subtitle">Manage product reviews and ratings.</p>
                 </div>
             </div>
 
@@ -161,56 +162,62 @@ export default function ReviewManagement() {
                 </div>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="review-management-grid">
                 {/* Products List */}
-                <div className="lg:col-span-1">
+                <div className="review-management-products-column">
                     <div className="admin-card" style={{ borderRadius: '0.75rem' }}>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Products</h3>
+                        <h3 className="review-management-section-title">Products</h3>
                         {loading ? (
-                            <div className="flex items-center justify-center py-8">
+                            <div className="review-management-loading">
                                 <div className="admin-spinner" style={{ width: '2rem', height: '2rem', borderTopColor: '#2563eb' }}></div>
                             </div>
                         ) : products.length === 0 ? (
-                            <p className="text-gray-500 text-center py-8">No products found</p>
+                            <p className="review-management-empty">No products found</p>
                         ) : (
-                            <div className="space-y-3 max-h-[600px] overflow-y-auto">
+                            <div className="review-management-products-list">
                                 {products.map((product) => (
                                     <button
                                         key={product._id}
                                         onClick={() => handleProductSelect(product)}
-                                        className={`w-full text-left p-4 rounded-lg transition-all duration-200 ${
+                                        className={`review-management-product-button ${
                                             selectedProduct?._id === product._id
-                                                ? 'bg-gray-800 text-white shadow-md'
-                                                : 'bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md'
+                                                ? 'review-management-product-button-selected'
+                                                : 'review-management-product-button-unselected'
                                         }`}
                                         style={{
                                             borderRadius: '0.5rem'
                                         }}
                                     >
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex-1">
-                                                <div className={`font-semibold mb-1 ${
-                                                    selectedProduct?._id === product._id ? 'text-white' : 'text-gray-900'
+                                        <div className="review-management-product-content">
+                                            <div className="review-management-product-info">
+                                                <div className={`review-management-product-name ${
+                                                    selectedProduct?._id === product._id 
+                                                        ? 'review-management-product-name-selected' 
+                                                        : 'review-management-product-name-unselected'
                                                 }`}>
                                                     {product.name}
                                                 </div>
-                                                <div className={`text-sm ${
-                                                    selectedProduct?._id === product._id ? 'text-gray-300' : 'text-gray-600'
+                                                <div className={`review-management-product-rating ${
+                                                    selectedProduct?._id === product._id 
+                                                        ? 'review-management-product-rating-selected' 
+                                                        : 'review-management-product-rating-unselected'
                                                 }`}>
                                                     {product.rating ? (
-                                                        <div className="flex items-center gap-1">
+                                                        <div className="review-management-product-rating-container">
                                                             {renderStars(product.rating)}
-                                                            <span className="ml-1">({product.numReviews || 0} reviews)</span>
+                                                            <span className="review-management-product-rating-count">({product.numReviews || 0} reviews)</span>
                                                         </div>
                                                     ) : (
                                                         <span>No reviews yet</span>
                                                     )}
                                                 </div>
                                             </div>
-                                            <div className={`ml-3 flex-shrink-0 ${
-                                                selectedProduct?._id === product._id ? 'text-yellow-400' : 'text-gray-400'
+                                            <div className={`review-management-product-icon ${
+                                                selectedProduct?._id === product._id 
+                                                    ? 'review-management-product-icon-selected' 
+                                                    : 'review-management-product-icon-unselected'
                                             }`}>
-                                                <span className="text-xl">⭐</span>
+                                                <span className="review-management-product-icon-star">⭐</span>
                                             </div>
                                         </div>
                                     </button>
@@ -221,20 +228,20 @@ export default function ReviewManagement() {
                 </div>
 
                 {/* Reviews List */}
-                <div className="lg:col-span-2">
+                <div className="review-management-reviews-column">
                     {selectedProduct ? (
                         <div className="admin-card" style={{ borderRadius: '0.75rem' }}>
-                            <div className="flex items-center justify-between mb-4">
+                            <div className="review-management-reviews-header">
                                 <div>
-                                    <h3 className="text-lg font-semibold text-gray-900">{selectedProduct.name}</h3>
+                                    <h3 className="review-management-reviews-title">{selectedProduct.name}</h3>
                                     {ratingStats && (
-                                        <div className="mt-2">
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-2xl font-bold text-gray-900">
+                                        <div className="review-management-rating-stats">
+                                            <div className="review-management-rating-stats-container">
+                                                <span className="review-management-rating-average">
                                                     {ratingStats.averageRating?.toFixed(1) || '0.0'}
                                                 </span>
-                                                <div className="flex">{renderStars(ratingStats.averageRating || 0)}</div>
-                                                <span className="text-sm text-gray-600">
+                                                <div className="review-management-rating-stars">{renderStars(ratingStats.averageRating || 0)}</div>
+                                                <span className="review-management-rating-count">
                                                     ({ratingStats.totalReviews || 0} reviews)
                                                 </span>
                                             </div>
@@ -243,41 +250,42 @@ export default function ReviewManagement() {
                                 </div>
                                 <button
                                     onClick={() => setSelectedProduct(null)}
-                                    className="admin-btn admin-btn-secondary text-sm"
+                                    className="admin-btn admin-btn-secondary"
+                                    style={{ fontSize: '0.875rem' }}
                                 >
                                     Back to Products
                                 </button>
                             </div>
 
                             {reviewsLoading ? (
-                                <div className="flex items-center justify-center py-8">
+                                <div className="review-management-loading">
                                     <div className="admin-spinner" style={{ width: '2rem', height: '2rem', borderTopColor: '#2563eb' }}></div>
                                 </div>
                             ) : reviews.length === 0 ? (
-                                <p className="text-gray-500 text-center py-8">No reviews found for this product</p>
+                                <p className="review-management-empty">No reviews found for this product</p>
                             ) : (
                                 <>
-                                    <div className="space-y-4">
+                                    <div className="review-management-reviews-list">
                                         {reviews.map((review) => (
-                                            <div key={review._id} className="border border-gray-200 rounded-lg p-4">
-                                                <div className="flex items-start justify-between">
-                                                    <div className="flex-1">
-                                                        <div className="flex items-center gap-2 mb-2">
-                                                            <div className="font-semibold text-gray-900">
+                                            <div key={review._id} className="review-management-review-card">
+                                                <div className="review-management-review-content">
+                                                    <div className="review-management-review-main">
+                                                        <div className="review-management-review-header">
+                                                            <div className="review-management-review-username">
                                                                 {review.user?.username || 'Anonymous'}
                                                             </div>
-                                                            <div className="flex">{renderStars(review.rating)}</div>
-                                                            <span className="text-sm text-gray-500">
+                                                            <div className="review-management-rating-stars">{renderStars(review.rating)}</div>
+                                                            <span className="review-management-review-date">
                                                                 {new Date(review.createdAt).toLocaleDateString()}
                                                             </span>
                                                         </div>
                                                         {review.comment && (
-                                                            <p className="text-gray-700 mt-2">{review.comment}</p>
+                                                            <p className="review-management-review-comment">{review.comment}</p>
                                                         )}
                                                     </div>
                                                     <button
                                                         onClick={() => handleDeleteReview(review._id)}
-                                                        className="admin-btn admin-btn-danger text-sm ml-4"
+                                                        className="admin-btn admin-btn-danger review-management-review-delete"
                                                     >
                                                         Delete
                                                     </button>
@@ -286,7 +294,7 @@ export default function ReviewManagement() {
                                         ))}
                                     </div>
                                     {pagination.pages > 1 && (
-                                        <div className="mt-6">
+                                        <div className="review-management-pagination">
                                             <Pagination
                                                 pagination={pagination}
                                                 onPageChange={handlePageChange}
@@ -298,8 +306,8 @@ export default function ReviewManagement() {
                         </div>
                     ) : (
                         <div className="admin-card" style={{ borderRadius: '0.75rem' }}>
-                            <div className="text-center py-12">
-                                <p className="text-gray-500 text-lg">Select a product to view its reviews</p>
+                            <div className="review-management-empty-state">
+                                <p className="review-management-empty-state-text">Select a product to view its reviews</p>
                             </div>
                         </div>
                     )}

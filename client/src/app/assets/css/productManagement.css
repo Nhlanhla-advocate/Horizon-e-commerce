@@ -1,0 +1,145 @@
+/* ProductManagement */
+
+/* Main Container */
+.product-management-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* space-y-6 */
+}
+
+/* Header Section */
+.product-management-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem; /* gap-4 */
+}
+
+@media (min-width: 640px) {
+  .product-management-header {
+    flex-direction: row; /* sm:flex-row */
+    align-items: center; /* sm:items-center */
+    justify-content: space-between; /* sm:justify-between */
+  }
+}
+
+.product-management-title {
+  font-size: 1.25rem; /* text-xl */
+  font-weight: 600; /* font-semibold */
+  color: #111827; /* text-gray-900 */
+}
+
+.product-management-subtitle {
+  font-size: 0.875rem; /* text-sm */
+  color: #6b7280; /* text-gray-500 */
+}
+
+/* Loading State */
+.product-management-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 10rem;
+}
+
+/* Empty State */
+.product-management-empty {
+  text-align: center; /* text-center */
+}
+
+.product-management-empty-text {
+  font-size: 0.875rem; /* text-sm */
+  color: #6b7280; /* text-gray-500 */
+}
+
+/* Table Container */
+.product-management-table-container {
+  overflow-x: auto; /* overflow-x-auto */
+  border-radius: 0.5rem; /* rounded-lg */
+  border: 1px solid #e5e7eb; /* border border-gray-200 */
+  background-color: white; /* bg-white */
+}
+
+/* Table Cell Styles */
+.product-management-table-cell-primary {
+  color: #111827; /* text-gray-900 */
+}
+
+.product-management-table-cell-secondary {
+  color: #6b7280; /* text-gray-500 */
+}
+
+.product-management-table-cell-right {
+  text-align: right; /* text-right */
+}
+
+/* Action Buttons Container */
+.product-management-actions {
+  display: flex;
+  justify-content: flex-end; /* justify-end */
+  gap: 0.5rem; /* gap-2 */
+}
+
+/* Form Section */
+.product-management-form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.product-management-form-title {
+  font-size: 1.125rem; /* text-lg */
+  font-weight: 600; /* font-semibold */
+  color: #111827; /* text-gray-900 */
+}
+
+.product-management-form-close {
+  font-size: 0.875rem; /* text-sm */
+  color: #6b7280; /* text-gray-500 */
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.product-management-form-close:hover {
+  color: #374151; /* hover:text-gray-700 */
+}
+
+.product-management-form {
+  margin-top: 1.5rem; /* mt-6 */
+  display: grid;
+  gap: 1rem; /* gap-4 */
+  grid-template-columns: 1fr; /* Default: single column */
+}
+
+@media (min-width: 640px) {
+  .product-management-form {
+    grid-template-columns: repeat(2, 1fr); /* sm:grid-cols-2 */
+  }
+}
+
+.product-management-form-field-full {
+  grid-column: 1 / -1; /* sm:col-span-2 */
+}
+
+@media (min-width: 640px) {
+  .product-management-form-field-full {
+    grid-column: span 2; /* sm:col-span-2 */
+  }
+}
+
+.product-management-form-actions {
+  display: flex;
+  gap: 0.75rem; /* gap-3 */
+}
+
+@media (min-width: 640px) {
+  .product-management-form-actions {
+    grid-column: span 2; /* sm:col-span-2 */
+  }
+}
+
+
+
+
+

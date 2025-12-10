@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from '../../assets/css/auth.module.css';
 import '../../assets/css/buttons.css';
+import Link from 'next/link';
 
-const AdminLogin = () => {
+const AdminSignin = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -16,9 +17,9 @@ const AdminLogin = () => {
     useEffect(() => {
         // Check if admin is already logged in with a valid token
         const checkAdminAuth = async () => {
-            const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+            const adminToken = localStorage.getItem('adminToken');
             
-            if (!token) {
+            if (!adminToken) {
                 // No token, show login form
                 return;
             }
@@ -27,7 +28,7 @@ const AdminLogin = () => {
             try {
                 const response = await fetch('http://localhost:5000/admin/profile', {
                     headers: {
-                        'Authorization': `Bearer ${token}`,
+                        'Authorization': `Bearer ${adminToken}`,
                         'Content-Type': 'application/json',
                     },
                 });
@@ -35,7 +36,7 @@ const AdminLogin = () => {
                 if (response.ok) {
                     const data = await response.json();
                     if (data.success) {
-                        // Valid admin token, redirect to dashboard
+                        // Admin token, redirect to dashboard
                         router.push('/admin');
                         return;
                     }
@@ -82,19 +83,58 @@ const AdminLogin = () => {
                 credentials: "include"
             });
         
-            const data = await response.json();
-            console.log("Admin login response:", data);
-        
-            if (response.ok && data.success) {
-                console.log("Admin logged in successfully.", data);
-                // Store admin token (use 'adminToken' key to distinguish from user tokens)
-                localStorage.setItem("adminToken", data.token);
-                localStorage.setItem("token", data.token); // Also store as token for API calls
-                localStorage.setItem("adminRole", data.role || "admin");
-                router.push("/admin");
-            } else {
-                setError(data.error || data.message || "An error occurred, please try again.");
+            let data;
+            try {
+                data = await response.json();
+            } catch (jsonError) {
+                console.error("Failed to parse admin login response:", jsonError);
+                setError("Invalid response from server. Please try again.");
+                setLoading(false);
+                return;
             }
+            
+            console.log("Admin login response status:", response.status);
+            console.log("Admin login response data:", data);
+        
+            // Check if admin login was successful
+            if (response.ok && data && data.success === true && data.token) {
+                console.log("Admin signed in successfully.", data);
+                
+                // Store tokens immediately
+                localStorage.clear();
+                localStorage.setItem("adminToken", data.token);
+                localStorage.setItem("adminRole", data.role || "admin");
+                
+                // Verify storage immediately
+                const storedAdminToken = localStorage.getItem("adminToken");
+                const storedToken = localStorage.getItem("token");
+                console.log("Tokens stored and verified:", {
+                    adminToken: storedAdminToken ? "Stored" : "Missing",
+                    token: storedToken ? "Stored" : "Missing",
+                    tokenLength: storedToken?.length || 0
+                });
+                
+                // Ensure tokens are persisted before redirect
+                // Use a longer delay to ensure localStorage is fully written
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Double-check tokens are still there before redirect
+                const finalCheck = localStorage.getItem("adminToken");
+                if (!finalCheck) {
+                    console.error("Token lost before redirect! Retrying storage...");
+                    localStorage.setItem("adminToken", data.token);
+                    localStorage.setItem("token", data.token);
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                }
+                
+                console.log("Navigating to /admin");
+                // Use hard redirect with full page reload to ensure clean state
+                window.location.href = "/admin";
+                return;
+            }
+            
+            // Admin login failed
+            setError(data.error || data.message || "Invalid admin credentials. Please try again.");
         } catch (error) {
             console.error("Admin login error:", error);
             setError(`Server error: ${error.message}`);
@@ -173,9 +213,9 @@ const AdminLogin = () => {
                             </button>
                             <div className={styles.authLinks} style={{ marginTop: '1rem' }}>
                                 <p className={styles.signupRedirect} style={{ textAlign: 'center', fontSize: '0.875rem' }}>
-                                    <a href="/" style={{ color: '#666', textDecoration: 'none' }}>
+                                    <Link href="/" style={{ color: '#666', textDecoration: 'none' }}>
                                         ← Back to Store
-                                    </a>
+                                    </Link>
                                 </p>
                             </div>
                         </form>
@@ -186,5 +226,5 @@ const AdminLogin = () => {
     );
 };
 
-export default AdminLogin;
+export default AdminSignin;
 

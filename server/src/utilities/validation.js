@@ -142,6 +142,30 @@ const validateForgotPassword = [
   body("email").trim().isEmail().withMessage("Valid email is required"),
 ];
 
+// Validation middleware for admin sign-up
+const validateAdminSignUp = [
+  check("username")
+    .trim()
+    .not()
+    .isEmpty()
+    .withMessage("Username is required")
+    .isLength({ min: 3 })
+    .withMessage("Username must be at least 3 characters long"),
+  check("email")
+    .trim()
+    .isEmail()
+    .withMessage("A valid email is required"),
+  check("password")
+    .isLength({ min: 6 })
+    .withMessage("Password must be at least 6 characters long")
+    .matches(
+      /^(?=.*[A-Za-z])(?=.*\d)(?=.*[A-Z])(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{6,}$/
+    )
+    .withMessage(
+      "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+    ),
+];
+
 // Validation middleware for admin sign-in (same as regular sign-in)
 const validateAdminSignIn = [
   check("email").trim().isEmail().withMessage("A valid email is required"),
@@ -153,6 +177,7 @@ module.exports = {
   handleErrors,
   validateSignUp,
   validateSignIn,
+  validateAdminSignUp,
   validateAdminSignIn,
   handleValidationErrors,
   validate,

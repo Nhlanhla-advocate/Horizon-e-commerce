@@ -127,8 +127,16 @@ class DashboardController {
 
       const query = {};
 
+      // By default, exclude deleted products unless status='deleted' is explicitly requested
+      if (status === 'deleted') {
+        query.status = 'deleted';
+      } else if (!status) {
+        query.status = { $ne: 'deleted' };
+      } else {
+        query.status = status;
+      }
+
       if (category) query.category = category;
-      if (status) query.status = status;
       if (minPrice || maxPrice) {
         query.price = {};
         if (minPrice) query.price.$gte = parseFloat(minPrice);
@@ -1170,6 +1178,102 @@ class DashboardController {
     } catch (error) {
       console.error('Error invalidating cache:', error);
       // Don't throw - cache invalidation failure shouldn't break the main operation
+    }
+  }
+
+  // Get chart data for dashboard visualization
+  async getChartData(req, res) {
+    try {
+      const { period = '30' } = req.query; // days
+      const days = parseInt(period);
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
+
+      // Get order status distribution
+      const orderStatusDistribution = await Order.aggregate([
+        {
+          $group: {
+            _id: '$status',
+            count: { $sum: 1 },
+            totalRevenue: { 
+              $sum: { 
+                $cond: [{ $eq: ['$status', 'completed'] }, '$totalPrice', 0] 
+              } 
+            }
+          }
+        }
+      ]);
+
+      // Get revenue over time (daily)
+      const revenueOverTime = await Order.aggregate([
+        {
+          $match: {
+            status: 'completed',
+            createdAt: { $gte: startDate }
+          }
+        },
+        {
+          $group: {
+            _id: {
+              $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
+            },
+            revenue: { $sum: '$totalPrice' },
+            orders: { $sum: 1 }
+          }
+        },
+        { $sort: { _id: 1 } }
+      ]);
+
+      // Get category breakdown from products
+      const categoryBreakdown = await Product.aggregate([
+        {
+          $group: {
+            _id: '$category',
+            count: { $sum: 1 },
+            totalStock: { $sum: '$stock' },
+            avgPrice: { $avg: '$price' }
+          }
+        }
+      ]);
+
+      // Get orders by status count
+      const ordersByStatus = {};
+      orderStatusDistribution.forEach(item => {
+        ordersByStatus[item._id] = {
+          count: item.count,
+          revenue: item.totalRevenue || 0
+        };
+      });
+
+      // Format revenue over time for charts
+      const revenueData = revenueOverTime.map(item => ({
+        date: item._id,
+        revenue: item.revenue || 0,
+        orders: item.orders || 0
+      }));
+
+      // Format category breakdown
+      const categoryData = categoryBreakdown.map(item => ({
+        category: item._id || 'Unknown',
+        count: item.count || 0,
+        stock: item.totalStock || 0,
+        avgPrice: item.avgPrice || 0
+      }));
+
+      return res.json({
+        success: true,
+        data: {
+          orderStatusDistribution: ordersByStatus,
+          revenueOverTime: revenueData,
+          categoryBreakdown: categoryData
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching chart data:', error);
+      return res.status(500).json({
+        success: false,
+        error: `Error fetching chart data: ${error.message}`
+      });
     }
   }
 }

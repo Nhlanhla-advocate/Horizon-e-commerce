@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import '../../assets/css/admin.css';
+import '../../assets/css/productManagement.css';
 import Pagination from './Pagination';
 
 // Backend base URL
@@ -236,12 +237,12 @@ export default function ProductManagement() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="product-management-container">
       <div className="admin-card" style={{ borderRadius: '0.75rem' }}>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="product-management-header">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">Product Management</h2>
-            <p className="text-sm text-gray-500">Manage your product catalog and keep inventory up to date.</p>
+            <h2 className="product-management-title">Product Management</h2>
+            <p className="product-management-subtitle">Manage your product catalog and keep inventory up to date.</p>
           </div>
           <button
             type="button"
@@ -263,15 +264,15 @@ export default function ProductManagement() {
       )}
 
       {loading ? (
-        <div className="flex items-center justify-center" style={{ height: '10rem' }}>
+        <div className="product-management-loading">
           <div className="admin-spinner" style={{ width: '2.5rem', height: '2.5rem', borderTopColor: '#2563eb', borderWidth: '4px' }}></div>
         </div>
       ) : products.length === 0 ? (
-        <div className="admin-card text-center" style={{ borderStyle: 'dashed' }}>
-          <p className="text-sm text-gray-500">No products found. Try adjusting your filters or add a new product.</p>
+        <div className="admin-card product-management-empty" style={{ borderStyle: 'dashed' }}>
+          <p className="product-management-empty-text">No products found. Try adjusting your filters or add a new product.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+        <div className="product-management-table-container">
           <table className="admin-table">
             <thead>
               <tr>
@@ -279,20 +280,20 @@ export default function ProductManagement() {
                 <th>Category</th>
                 <th>Price</th>
                 <th>Stock</th>
-                <th className="text-right">Actions</th>
+                <th className="product-management-table-cell-right">Actions</th>
               </tr>
             </thead>
             <tbody>
               {products.map((product) => (
                 <tr key={product._id}>
-                  <td className="text-gray-900">{product.name}</td>
-                  <td className="text-gray-500">{product.category}</td>
-                  <td className="text-gray-900">
+                  <td className="product-management-table-cell-primary">{product.name}</td>
+                  <td className="product-management-table-cell-secondary">{product.category}</td>
+                  <td className="product-management-table-cell-primary">
                     {typeof product.price === 'number' ? `R ${product.price.toFixed(2)}` : product.price}
                   </td>
-                  <td className="text-gray-900">{product.stock}</td>
-                  <td className="text-right">
-                    <div className="flex justify-end gap-2">
+                  <td className="product-management-table-cell-primary">{product.stock}</td>
+                  <td className="product-management-table-cell-right">
+                    <div className="product-management-actions">
                       <button
                         type="button"
                         onClick={() => {
@@ -355,8 +356,8 @@ export default function ProductManagement() {
 
       {showAddForm && (
         <div className="admin-card" style={{ borderRadius: '0.75rem' }}>
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">
+          <div className="product-management-form-header">
+            <h3 className="product-management-form-title">
               {editingProduct ? 'Edit Product' : 'Add New Product'}
             </h3>
             <button
@@ -365,14 +366,13 @@ export default function ProductManagement() {
                 setShowAddForm(false);
                 resetForm();
               }}
-              className="text-sm text-gray-500 hover:text-gray-700"
-              style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+              className="product-management-form-close"
             >
               Close
             </button>
           </div>
-          <form className="mt-6 grid gap-4 sm:grid-cols-2" onSubmit={handleSubmit}>
-            <div className="sm:col-span-2">
+          <form className="product-management-form" onSubmit={handleSubmit}>
+            <div className="product-management-form-field-full">
               <label className="admin-form-label">Name</label>
               <input
                 type="text"
@@ -383,7 +383,7 @@ export default function ProductManagement() {
                 required
               />
             </div>
-            <div className="sm:col-span-2">
+            <div className="product-management-form-field-full">
               <label className="admin-form-label">Description</label>
               <textarea
                 name="description"
@@ -438,7 +438,7 @@ export default function ProductManagement() {
                 min="0"
               />
             </div>
-            <div className="sm:col-span-2 flex gap-3">
+            <div className="product-management-form-actions">
               <button
                 type="submit"
                 className="admin-btn admin-btn-primary"

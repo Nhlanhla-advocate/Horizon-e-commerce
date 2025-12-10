@@ -25,6 +25,7 @@ router.use(isAdmin);
 
 // Dashboard overview and statistics
 router.get('/stats', (req, res) => dashboardController.getDashboardStats(req, res));
+router.get('/charts', (req, res) => dashboardController.getChartData(req, res));
 
 // Cache management routes
 router.post('/cache/refresh', (req, res) => dashboardController.refreshDashboardCache(req, res));

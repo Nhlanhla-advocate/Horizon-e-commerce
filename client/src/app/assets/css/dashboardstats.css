@@ -82,6 +82,17 @@
   margin-bottom: 0.25rem; /* mb-1 */
 }
 
+/* Hover effect for stat cards - pop up on hover */
+.dashboard-stats-grid .stat-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.dashboard-stats-grid .stat-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15), 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
 .dashboard-stat-card-content {
   display: flex;
   align-items: center;
@@ -135,6 +146,16 @@
 .dashboard-charts-section {
   width: 100%;
   margin-bottom: 0.5rem; /* mb-2 */
+}
+
+/* Hover effect for chart containers - pop up on hover */
+.dashboard-charts-section > div {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dashboard-charts-section > div:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12), 0 3px 8px rgba(0, 0, 0, 0.08);
 }
 
 /* Recent Orders / Top Rated Products Grid */
@@ -191,6 +212,14 @@
 /* Ensure cards don't create page-level scrollbars */
 .dashboard-grid-section .admin-card {
   overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+/* Hover effect for admin cards in grid - pop up on hover */
+.dashboard-grid-section .admin-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15), 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .dashboard-card-list {
@@ -207,11 +236,14 @@
   padding: 0.375rem; /* p-1.5 */
   background-color: #f9fafb; /* bg-gray-50 */
   border-radius: 0.375rem; /* rounded-md */
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
 }
 
 .dashboard-item:hover {
   background-color: #f3f4f6; /* hover:bg-gray-100 */
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
 .dashboard-item-left {

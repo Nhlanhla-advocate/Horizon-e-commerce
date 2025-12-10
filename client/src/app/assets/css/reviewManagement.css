@@ -1,0 +1,277 @@
+/* ReviewManagement */
+
+/* Main Container */
+.review-management-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* space-y-6 */
+}
+
+/* Header Section */
+.review-management-title {
+  font-size: 1.25rem; /* text-xl */
+  font-weight: 600; /* font-semibold */
+  color: #111827; /* text-gray-900 */
+}
+
+.review-management-subtitle {
+  font-size: 0.875rem; /* text-sm */
+  color: #6b7280; /* text-gray-500 */
+}
+
+/* Grid Layout */
+.review-management-grid {
+  display: grid;
+  grid-template-columns: 1fr; /* grid-cols-1 */
+  gap: 1rem; /* gap-4 */
+}
+
+@media (min-width: 1024px) {
+  .review-management-grid {
+    grid-template-columns: repeat(3, 1fr); /* lg:grid-cols-3 */
+  }
+}
+
+.review-management-products-column {
+  grid-column: span 1; /* lg:col-span-1 */
+}
+
+@media (min-width: 1024px) {
+  .review-management-products-column {
+    grid-column: span 1;
+  }
+}
+
+.review-management-reviews-column {
+  grid-column: span 1; /* Default: full width on mobile */
+}
+
+@media (min-width: 1024px) {
+  .review-management-reviews-column {
+    grid-column: span 2; /* lg:col-span-2 */
+  }
+}
+
+/* Products Section */
+.review-management-section-title {
+  font-size: 1.125rem; /* text-lg */
+  font-weight: 600; /* font-semibold */
+  color: #111827; /* text-gray-900 */
+  margin-bottom: 1rem; /* mb-4 */
+}
+
+.review-management-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 0; /* py-8 */
+}
+
+.review-management-empty {
+  color: #6b7280; /* text-gray-500 */
+  text-align: center; /* text-center */
+  padding: 2rem 0; /* py-8 */
+}
+
+.review-management-products-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem; /* space-y-3 */
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+/* Product Button */
+.review-management-product-button {
+  width: 100%; /* w-full */
+  text-align: left; /* text-left */
+  padding: 1rem; /* p-4 */
+  border-radius: 0.5rem; /* rounded-lg */
+  transition: all 0.2s; /* transition-all duration-200 */
+  border: none;
+  cursor: pointer;
+  outline: none;
+}
+
+.review-management-product-button-selected {
+  background-color: #1f2937; /* bg-gray-800 */
+  color: white; /* text-white */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+}
+
+.review-management-product-button-unselected {
+  background-color: white; /* bg-white */
+  border: 1px solid #e5e7eb; /* border border-gray-200 */
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+}
+
+.review-management-product-button-unselected:hover {
+  background-color: #f9fafb; /* hover:bg-gray-50 */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* hover:shadow-md */
+}
+
+.review-management-product-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.review-management-product-info {
+  flex: 1;
+}
+
+.review-management-product-name {
+  font-weight: 600; /* font-semibold */
+  margin-bottom: 0.25rem; /* mb-1 */
+}
+
+.review-management-product-name-selected {
+  color: white; /* text-white */
+}
+
+.review-management-product-name-unselected {
+  color: #111827; /* text-gray-900 */
+}
+
+.review-management-product-rating {
+  font-size: 0.875rem; /* text-sm */
+}
+
+.review-management-product-rating-selected {
+  color: #d1d5db; /* text-gray-300 */
+}
+
+.review-management-product-rating-unselected {
+  color: #4b5563; /* text-gray-600 */
+}
+
+.review-management-product-rating-container {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem; /* gap-1 */
+}
+
+.review-management-product-rating-count {
+  margin-left: 0.25rem; /* ml-1 */
+}
+
+.review-management-product-icon {
+  margin-left: 0.75rem; /* ml-3 */
+  flex-shrink: 0; /* flex-shrink-0 */
+}
+
+.review-management-product-icon-selected {
+  color: #facc15; /* text-yellow-400 */
+}
+
+.review-management-product-icon-unselected {
+  color: #9ca3af; /* text-gray-400 */
+}
+
+.review-management-product-icon-star {
+  font-size: 1.25rem; /* text-xl */
+}
+
+/* Reviews Section */
+.review-management-reviews-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem; /* mb-4 */
+}
+
+.review-management-reviews-title {
+  font-size: 1.125rem; /* text-lg */
+  font-weight: 600; /* font-semibold */
+  color: #111827; /* text-gray-900 */
+}
+
+.review-management-rating-stats {
+  margin-top: 0.5rem; /* mt-2 */
+}
+
+.review-management-rating-stats-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* gap-2 */
+}
+
+.review-management-rating-average {
+  font-size: 1.5rem; /* text-2xl */
+  font-weight: 700; /* font-bold */
+  color: #111827; /* text-gray-900 */
+}
+
+.review-management-rating-stars {
+  display: flex;
+}
+
+.review-management-rating-count {
+  font-size: 0.875rem; /* text-sm */
+  color: #4b5563; /* text-gray-600 */
+}
+
+.review-management-reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem; /* space-y-4 */
+}
+
+.review-management-review-card {
+  border: 1px solid #e5e7eb; /* border border-gray-200 */
+  border-radius: 0.5rem; /* rounded-lg */
+  padding: 1rem; /* p-4 */
+}
+
+.review-management-review-content {
+  display: flex;
+  align-items: flex-start; /* items-start */
+  justify-content: space-between;
+}
+
+.review-management-review-main {
+  flex: 1;
+}
+
+.review-management-review-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* gap-2 */
+  margin-bottom: 0.5rem; /* mb-2 */
+}
+
+.review-management-review-username {
+  font-weight: 600; /* font-semibold */
+  color: #111827; /* text-gray-900 */
+}
+
+.review-management-review-date {
+  font-size: 0.875rem; /* text-sm */
+  color: #6b7280; /* text-gray-500 */
+}
+
+.review-management-review-comment {
+  color: #374151; /* text-gray-700 */
+  margin-top: 0.5rem; /* mt-2 */
+}
+
+.review-management-review-delete {
+  margin-left: 1rem; /* ml-4 */
+  font-size: 0.875rem; /* text-sm */
+}
+
+.review-management-pagination {
+  margin-top: 1.5rem; /* mt-6 */
+}
+
+/* Empty State */
+.review-management-empty-state {
+  text-align: center; /* text-center */
+  padding: 3rem 0; /* py-12 */
+}
+
+.review-management-empty-state-text {
+  color: #6b7280; /* text-gray-500 */
+  font-size: 1.125rem; /* text-lg */
+}
+
