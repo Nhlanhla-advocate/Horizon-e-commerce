@@ -15,22 +15,21 @@ const Signin = () => {
     const router = useRouter();
 
     useEffect(() => {
+        // Clear form on mount
         const clearForm = () => {
-        setEmail('');
-        setPassword('');
-        setShowPassword(false);
-        setError(null);
-    };
+            setEmail('');
+            setPassword('');
+            setShowPassword(false);
+            setError(null);
+        };
 
+        clearForm();
+        window.addEventListener('load', clearForm);
 
-    clearForm();
-
-    window.addEventListener('load', clearForm);
-
-    return () => {
-        window.removeEventListener('load', clearForm);
-    };
-    },[]);
+        return () => {
+            window.removeEventListener('load', clearForm);
+        };
+    }, []);
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
@@ -47,22 +46,32 @@ const Signin = () => {
             return;
         }
     
-        const userData = { email, password };
+        const loginData = { email, password };
     
         try {
-            // Try user login first
+            // User login
             console.log("Attempting user login:", "http://localhost:5000/auth/signin");
             
-            let response = await fetch("http://localhost:5000/auth/signin", {
+            const response = await fetch("http://localhost:5000/auth/signin", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(userData),
+                body: JSON.stringify(loginData),
                 credentials: "include"
             });
-        
-            let data = await response.json();
-            console.log("User login response:", data);
-        
+            
+            let data;
+            try {
+                data = await response.json();
+            } catch (jsonError) {
+                console.error("Failed to parse user login response:", jsonError);
+                setError("Invalid response from server. Please try again.");
+                setLoading(false);
+                return;
+            }
+            
+            console.log("User login response status:", response.status);
+            console.log("User login response data:", data);
+            
             if (response.ok) {
                 console.log("User signed in successfully.", data);
                 localStorage.setItem("token", data.accessToken || data.token); 
@@ -70,31 +79,7 @@ const Signin = () => {
                 return;
             }
             
-            // If user login fails with 404, try admin login
-            if (response.status === 404 || response.status === 400) {
-                console.log("User not found, trying admin login...");
-                
-                response = await fetch("http://localhost:5000/admin/signin", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(userData),
-                    credentials: "include"
-                });
-                
-                data = await response.json();
-                console.log("Admin login response:", data);
-                
-                if (response.ok && data.success) {
-                    console.log("Admin signed in successfully.", data);
-                    localStorage.setItem("adminToken", data.token);
-                    localStorage.setItem("token", data.token);
-                    localStorage.setItem("adminRole", data.role || "admin");
-                    router.push("/admin");
-                    return;
-                }
-            }
-            
-            // Both failed
+            // Login failed
             setError(data.error || data.message || "Invalid credentials. Please try again.");
         } catch (error) {
             console.error("Login error:", error);
@@ -121,6 +106,9 @@ const Signin = () => {
                 <div className={styles.formPane}>
                     <div className={styles.container}>
                         <h2 className={styles.title}>Sign In</h2>
+                        <p className={styles.subtitle} style={{ marginBottom: '1.5rem', color: '#666', fontSize: '0.9rem' }}>
+                            Welcome back! Please sign in to your account.
+                        </p>
                         {error && <div className={styles.errorMessage}>{error}</div>}
                         <form className={styles.form} onSubmit={handleSubmit}>
                             <div className={styles.formGroup}>
@@ -187,3 +175,5 @@ const Signin = () => {
 };
 
 export default Signin;
+
+

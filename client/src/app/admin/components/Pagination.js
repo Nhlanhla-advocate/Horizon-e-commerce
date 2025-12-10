@@ -1,5 +1,7 @@
 'use client';
 
+import '../../assets/css/pagination.css';
+
 export default function Pagination({ pagination, onPageChange, className = '' }) {
   const { page = 1, pages = 1, total = 0, limit = 20 } = pagination;
 
@@ -34,25 +36,25 @@ export default function Pagination({ pagination, onPageChange, className = '' })
   const endItem = Math.min(page * limit, total);
 
   return (
-    <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 ${className}`}>
+    <div className={`pagination-container ${className}`}>
       {/* Results Info - Always show */}
-      <div className="text-sm text-gray-600">
-        Showing <span className="font-medium">{startItem}</span> to{' '}
-        <span className="font-medium">{endItem}</span> of{' '}
-        <span className="font-medium">{total}</span> results
+      <div className="pagination-results-info">
+        Showing <span className="pagination-results-number">{startItem}</span> to{' '}
+        <span className="pagination-results-number">{endItem}</span> of{' '}
+        <span className="pagination-results-number">{total}</span> results
       </div>
 
       {/* Pagination Controls - Only show if more than 1 page */}
       {pages > 1 && (
-      <div className="flex items-center gap-2">
+      <div className="pagination-controls">
         {/* Previous Button */}
         <button
           onClick={() => handlePageChange(page - 1)}
           disabled={page === 1}
-          className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+          className={`pagination-btn ${
             page === 1
-              ? 'text-gray-400 cursor-not-allowed bg-gray-100'
-              : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+              ? 'pagination-btn-disabled'
+              : 'pagination-btn-default'
           }`}
           aria-label="Previous page"
         >
@@ -60,18 +62,18 @@ export default function Pagination({ pagination, onPageChange, className = '' })
         </button>
 
         {/* Page Numbers */}
-        <div className="flex items-center gap-1">
+        <div className="pagination-page-numbers">
           {/* First page */}
           {page > 3 && (
             <>
               <button
                 onClick={() => handlePageChange(1)}
-                className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="pagination-btn pagination-btn-default"
               >
                 1
               </button>
               {page > 4 && (
-                <span className="px-2 text-gray-400">...</span>
+                <span className="pagination-ellipsis">...</span>
               )}
             </>
           )}
@@ -81,10 +83,10 @@ export default function Pagination({ pagination, onPageChange, className = '' })
             <button
               key={pageNum}
               onClick={() => handlePageChange(pageNum)}
-              className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+              className={`pagination-btn ${
                 pageNum === page
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                  ? 'pagination-btn-active'
+                  : 'pagination-btn-default'
               }`}
             >
               {pageNum}
@@ -95,11 +97,11 @@ export default function Pagination({ pagination, onPageChange, className = '' })
           {page < pages - 2 && (
             <>
               {page < pages - 3 && (
-                <span className="px-2 text-gray-400">...</span>
+                <span className="pagination-ellipsis">...</span>
               )}
               <button
                 onClick={() => handlePageChange(pages)}
-                className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="pagination-btn pagination-btn-default"
               >
                 {pages}
               </button>
@@ -111,10 +113,10 @@ export default function Pagination({ pagination, onPageChange, className = '' })
         <button
           onClick={() => handlePageChange(page + 1)}
           disabled={page === pages}
-          className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+          className={`pagination-btn ${
             page === pages
-              ? 'text-gray-400 cursor-not-allowed bg-gray-100'
-              : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+              ? 'pagination-btn-disabled'
+              : 'pagination-btn-default'
           }`}
           aria-label="Next page"
         >
@@ -124,15 +126,15 @@ export default function Pagination({ pagination, onPageChange, className = '' })
       )}
 
       {/* Items per page selector - Always show */}
-      <div className="flex items-center gap-2">
-        <label className="text-sm text-gray-600">Items per page:</label>
+      <div className="pagination-items-per-page">
+        <label className="pagination-items-per-page-label">Items per page:</label>
         <select
           value={limit}
           onChange={(e) => {
             const newLimit = parseInt(e.target.value);
             onPageChange(1, newLimit); // Reset to page 1 when limit changes
           }}
-          className="px-2 py-1 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="pagination-items-per-page-select"
         >
           <option value={10}>10</option>
           <option value={20}>20</option>

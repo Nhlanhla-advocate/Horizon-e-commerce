@@ -20,12 +20,26 @@ const AdminDashboard = () => {
   // Check authentication on mount
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+      // Longer delay to ensure tokens are persisted if coming from signin
+      // This gives localStorage time to fully persist the tokens
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      let token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+      
+      // If no token found, wait a bit more and check again (for timing issues)
+      if (!token) {
+        await new Promise(resolve => setTimeout(resolve, 300));
+        token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+      }
       
       if (!token) {
-        router.push('/admin/login');
+        console.log('No admin token found, redirecting to signin');
+        router.push('/admin/signin');
+        setLoading(false);
         return;
       }
+
+      console.log('Token found, validating with server...');
 
       // Verify token is valid by checking admin profile
       try {
@@ -39,22 +53,30 @@ const AdminDashboard = () => {
         if (response.ok) {
           const data = await response.json();
           if (data.success) {
+            console.log('Admin token validated successfully');
             setIsAuthenticated(true);
           } else {
+            console.error('Token validation failed - invalid response:', data);
             localStorage.removeItem('adminToken');
             localStorage.removeItem('token');
-            router.push('/admin/login');
+            router.push('/admin');
           }
         } else {
+          const errorData = await response.json().catch(() => ({}));
+          console.error('Token validation failed - HTTP error:', response.status, errorData);
           localStorage.removeItem('adminToken');
           localStorage.removeItem('token');
-          router.push('/admin/login');
+          router.push('/admin');
         }
       } catch (error) {
-        console.error('Auth check failed:', error);
-        localStorage.removeItem('adminToken');
-        localStorage.removeItem('token');
-        router.push('/admin/login');
+        console.error('Auth check failed with error:', error);
+        // On network errors, don't immediately clear tokens - might be temporary
+        // Only clear if it's clearly an auth error
+        if (error.message && error.message.includes('401')) {
+          localStorage.removeItem('adminToken');
+          localStorage.removeItem('token');
+        }
+        router.push('/admin');
       } finally {
         setLoading(false);
       }
