@@ -97,12 +97,15 @@ const AdminSignin = () => {
             console.log("Admin login response data:", data);
         
             // Check if admin login was successful
-            if (response.ok && data && data.success === true && data.token) {
+            // Backend returns accessToken, but also check for token for backward compatibility
+            const token = data.accessToken || data.token;
+            if (response.ok && data && data.success === true && token) {
                 console.log("Admin signed in successfully.", data);
                 
                 // Store tokens immediately
                 localStorage.clear();
-                localStorage.setItem("adminToken", data.token);
+                localStorage.setItem("adminToken", token);
+                localStorage.setItem("token", token); 
                 localStorage.setItem("adminRole", data.role || "admin");
                 
                 // Verify storage immediately
@@ -122,8 +125,8 @@ const AdminSignin = () => {
                 const finalCheck = localStorage.getItem("adminToken");
                 if (!finalCheck) {
                     console.error("Token lost before redirect! Retrying storage...");
-                    localStorage.setItem("adminToken", data.token);
-                    localStorage.setItem("token", data.token);
+                    localStorage.setItem("adminToken", token);
+                    localStorage.setItem("token", token);
                     await new Promise(resolve => setTimeout(resolve, 200));
                 }
                 

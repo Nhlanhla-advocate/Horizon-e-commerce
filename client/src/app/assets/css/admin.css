@@ -61,6 +61,9 @@
   gap: 1rem;
   width: 100%;
   max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  position: relative;
 }
 
 @media (min-width: 1024px) {
@@ -93,6 +96,9 @@
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
   padding: 0.75rem;
   overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .stat-card-icon {
@@ -235,11 +241,14 @@
 /* Table styles */
 .admin-table {
   width: 100%;
+  max-width: 100%;
   border-collapse: collapse;
   background-color: white;
   border-radius: 0.5rem;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: visible;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
 }
 
 .admin-table thead {
