@@ -75,6 +75,10 @@ const AdminDashboard = () => {
         if (error.message && error.message.includes('401')) {
           localStorage.removeItem('adminToken');
           localStorage.removeItem('token');
+          router.push('/admin');
+        } else {
+          // For other errors, still redirect to signin to avoid loops
+          router.push('/admin');
         }
         router.push('/admin');
       } finally {
@@ -151,8 +155,8 @@ const AdminDashboard = () => {
   const isRenderable = typeof ActiveComponent === 'function';
 
   return (
-    <div className="min-h-screen bg-gray-100 w-full">
-      <div className="flex w-full min-h-screen">
+    <div className="min-h-screen bg-gray-100 w-full overflow-x-hidden" style={{ width: '100%', maxWidth: '100vw', boxSizing: 'border-box' }}>
+      <div className="flex w-full min-h-screen" style={{ width: '100%', maxWidth: '100vw', boxSizing: 'border-box' }}>
         <Sidebar 
           tabs={tabs}
           activeTab={activeTab}
@@ -162,10 +166,10 @@ const AdminDashboard = () => {
         />
 
         {/* Main Content Area */}
-        <div className="flex-1 lg:ml-0 w-full min-w-0">
+        <div className="flex-1 lg:ml-0" style={{ width: '100%', maxWidth: '100%', minWidth: 0, boxSizing: 'border-box', overflow: 'hidden' }}>
           {/* Main Content */}
-          <main className="bg-gray-50 w-full overflow-x-hidden" style={{ width: '100%', maxWidth: '100%', padding: '0.75rem' }}>
-            <div className="animate-fadeIn w-full" style={{ width: '100%', maxWidth: '100%', margin: 0 }}>
+          <main className="bg-gray-50 w-full overflow-x-hidden" style={{ width: '100%', maxWidth: '100%', padding: '0.75rem', boxSizing: 'border-box' }}>
+            <div className="animate-fadeIn w-full" style={{ width: '100%', maxWidth: '100%', margin: 0, boxSizing: 'border-box' }}>
               {isRenderable ? <ActiveComponent /> : null}
             </div>
           </main>

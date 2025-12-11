@@ -369,7 +369,10 @@
   grid-template-rows: repeat(2, minmax(200px, 1fr));
   gap: 1rem;
   width: 100%;
+  max-width: 100%;
   align-items: stretch;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 @media (max-width: 768px) {
@@ -390,6 +393,9 @@
   height: 100%;
   min-height: 200px;
   box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 /* Box title */

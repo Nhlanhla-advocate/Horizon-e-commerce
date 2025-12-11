@@ -36,7 +36,9 @@
   max-width: 100%;
   margin: 0;
   padding: 0;
-  overflow: visible;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  position: relative;
 }
 
 /* Header Section */
@@ -79,7 +81,10 @@
 /* Stats Cards */
 .dashboard-stats-grid {
   width: 100%;
+  max-width: 100%;
   margin-bottom: 0.25rem; /* mb-1 */
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 /* Hover effect for stat cards - pop up on hover */
@@ -145,7 +150,10 @@
 /* Charts Section */
 .dashboard-charts-section {
   width: 100%;
+  max-width: 100%;
   margin-bottom: 0.5rem; /* mb-2 */
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 /* Hover effect for chart containers - pop up on hover */
@@ -164,6 +172,9 @@
   grid-template-columns: 1fr; /* grid-cols-1 */
   gap: 0.5rem; /* gap-2 */
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 @media (min-width: 768px) {
