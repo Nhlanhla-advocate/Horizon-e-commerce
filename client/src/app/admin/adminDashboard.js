@@ -166,7 +166,7 @@ const AdminDashboard = () => {
         />
 
         {/* Main Content Area */}
-        <div className="flex-1 lg:ml-0" style={{ width: '100%', maxWidth: '100%', minWidth: 0, boxSizing: 'border-box', overflow: 'hidden' }}>
+        <div className="flex-1 admin-main-content" style={{ width: '100%', maxWidth: '100%', minWidth: 0, boxSizing: 'border-box', overflow: 'hidden' }}>
           {/* Main Content */}
           <main className="bg-gray-50 w-full overflow-x-hidden" style={{ width: '100%', maxWidth: '100%', padding: '0.75rem', boxSizing: 'border-box' }}>
             <div className="animate-fadeIn w-full" style={{ width: '100%', maxWidth: '100%', margin: 0, boxSizing: 'border-box' }}>
