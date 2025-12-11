@@ -15,8 +15,10 @@
 
 @media (min-width: 1024px) {
   .admin-sidebar {
-    position: static;
+    position: fixed;
     transform: translateX(0);
+    height: 100vh;
+    overflow-y: auto;
   }
 }
 
@@ -130,6 +132,11 @@
 @media (min-width: 1024px) {
   .admin-sidebar-overlay {
     display: none;
+  }
+  
+  /* Main content area margin for fixed sidebar */
+  .admin-main-content {
+    margin-left: 16rem; /* w-64 - sidebar width */
   }
 }
 
