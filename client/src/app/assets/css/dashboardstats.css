@@ -327,3 +327,55 @@
   font-size: 0.625rem; /* text-[10px] */
 }
 
+/* Dark Mode Styles for Dashboard Stats */
+:root.dark-mode .dashboard-container {
+  background-color: transparent !important;
+}
+
+:root.dark-mode .dashboard-title {
+  color: #f9fafb !important; /* gray-50 */
+}
+
+:root.dark-mode .dashboard-last-updated {
+  color: #9ca3af !important; /* gray-400 */
+}
+
+:root.dark-mode .dashboard-stat-card-content {
+  color: #f9fafb !important; /* gray-50 */
+}
+
+:root.dark-mode .dashboard-stat-percentage-small-green,
+:root.dark-mode .dashboard-stat-percentage-small-blue,
+:root.dark-mode .dashboard-stat-percentage-small-yellow,
+:root.dark-mode .dashboard-stat-percentage-small-red {
+  color: #9ca3af !important; /* gray-400 */
+}
+
+:root.dark-mode .dashboard-card-header {
+  color: #f9fafb !important; /* gray-50 */
+}
+
+:root.dark-mode .dashboard-item {
+  background-color: #374151 !important; /* gray-700 */
+}
+
+:root.dark-mode .dashboard-item:hover {
+  background-color: #4b5563 !important; /* gray-600 */
+}
+
+:root.dark-mode .dashboard-item-title {
+  color: #f9fafb !important; /* gray-50 */
+}
+
+:root.dark-mode .dashboard-item-subtitle {
+  color: #9ca3af !important; /* gray-400 */
+}
+
+:root.dark-mode .dashboard-item-price {
+  color: #f9fafb !important; /* gray-50 */
+}
+
+:root.dark-mode .dashboard-empty-text {
+  color: #9ca3af !important; /* gray-400 */
+}
+

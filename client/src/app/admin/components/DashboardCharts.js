@@ -113,6 +113,23 @@ export default function DashboardCharts({ showCharts = null }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period, showCharts]);
 
+  // Listen for product updates to refresh category chart
+  useEffect(() => {
+    const handleProductUpdate = () => {
+      // Only refresh if we're showing the category chart
+      if (!showCharts || showCharts.length === 0 || showCharts.includes('category')) {
+        fetchChartData();
+      }
+    };
+
+    window.addEventListener('product-updated', handleProductUpdate);
+    
+    return () => {
+      window.removeEventListener('product-updated', handleProductUpdate);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showCharts]);
+
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('en-ZA', {
       style: 'currency',

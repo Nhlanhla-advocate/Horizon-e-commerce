@@ -1,9 +1,9 @@
 'use client';
 import React, { useState } from 'react';
 import Image from 'next/image';
-import Navbar from '../../components/Navbar';
+import Navbar from '../../components/navbar/Navbar';
 import '../../assets/css/product.css';
-import ImageModal from '../../components/ImageModal';
+import ImageModal from '../../components/imagemodal/ImageModal';
 import { useCart } from '../../cart/Cart';
 
 

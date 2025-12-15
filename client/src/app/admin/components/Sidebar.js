@@ -1,6 +1,7 @@
 'use client';
 
 import '../../assets/css/sidebar.css';
+import ThemeToggle from './ThemeToggle';
 
 export default function Sidebar({ tabs, activeTab, setActiveTab, sidebarOpen, setSidebarOpen }) {
   return (
@@ -36,6 +37,9 @@ export default function Sidebar({ tabs, activeTab, setActiveTab, sidebarOpen, se
               <div className="admin-sidebar-footer-status">
                 <div className="admin-sidebar-status-indicator"></div>
                 <span>System Online</span>
+              </div>
+              <div style={{ marginTop: '0.75rem' }}>
+                <ThemeToggle />
               </div>
             </div>
           </div>

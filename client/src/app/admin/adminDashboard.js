@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardStats from './components/DashboardStats';
-import ProductManagement from './components/ProductManagement';
+import ProductManagement from './components/Product management/ProductManagement';
 import Analytics from './components/Analytics';
 import InventoryAlerts from './components/InventoryAlerts';
 import ReviewManagement from './components/ReviewManagement';
@@ -16,6 +16,20 @@ const AdminDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const router = useRouter();
+
+  // Listen for tab changes from search bar
+  useEffect(() => {
+    const handleTabChange = (event) => {
+      const tabId = event.detail;
+      const validTabs = ['overview', 'products', 'analytics', 'inventory', 'reviews', 'cache'];
+      if (validTabs.includes(tabId)) {
+        setActiveTab(tabId);
+      }
+    };
+
+    window.addEventListener('admin-tab-change', handleTabChange);
+    return () => window.removeEventListener('admin-tab-change', handleTabChange);
+  }, []);
 
   // Check authentication on mount
   useEffect(() => {
@@ -155,7 +169,7 @@ const AdminDashboard = () => {
   const isRenderable = typeof ActiveComponent === 'function';
 
   return (
-    <div className="min-h-screen bg-gray-100 w-full overflow-x-hidden" style={{ width: '100%', maxWidth: '100vw', boxSizing: 'border-box' }}>
+    <div className="min-h-screen bg-gray-100 admin-dashboard-container w-full overflow-x-hidden" style={{ width: '100%', maxWidth: '100vw', boxSizing: 'border-box' }}>
       <div className="flex w-full min-h-screen" style={{ width: '100%', maxWidth: '100vw', boxSizing: 'border-box' }}>
         <Sidebar 
           tabs={tabs}
@@ -168,7 +182,7 @@ const AdminDashboard = () => {
         {/* Main Content Area */}
         <div className="flex-1 admin-main-content" style={{ width: '100%', maxWidth: '100%', minWidth: 0, boxSizing: 'border-box', overflow: 'hidden' }}>
           {/* Main Content */}
-          <main className="bg-gray-50 w-full overflow-x-hidden" style={{ width: '100%', maxWidth: '100%', padding: '0.75rem', boxSizing: 'border-box' }}>
+          <main className="bg-gray-50 admin-main w-full overflow-x-hidden" style={{ width: '100%', maxWidth: '100%', padding: '0.75rem', boxSizing: 'border-box' }}>
             <div className="animate-fadeIn w-full" style={{ width: '100%', maxWidth: '100%', margin: 0, boxSizing: 'border-box' }}>
               {isRenderable ? <ActiveComponent /> : null}
             </div>

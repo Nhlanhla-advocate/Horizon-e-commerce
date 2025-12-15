@@ -185,6 +185,9 @@
 /* Form styles */
 .admin-form-group {
   margin-bottom: 1rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .admin-form-label {
@@ -192,7 +195,9 @@
   font-size: 0.875rem;
   font-weight: 500;
   color: #374151;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .admin-form-input {
@@ -203,6 +208,8 @@
   font-size: 0.875rem;
   color: #111827;
   background-color: white;
+  box-sizing: border-box;
+  max-width: 100%;
 }
 
 .admin-form-input:focus {
@@ -224,6 +231,8 @@
   background-repeat: no-repeat;
   background-size: 1.5em 1.5em;
   padding-right: 2.5rem;
+  box-sizing: border-box;
+  max-width: 100%;
 }
 
 .admin-form-textarea {
@@ -236,6 +245,8 @@
   background-color: white;
   resize: vertical;
   min-height: 3rem;
+  box-sizing: border-box;
+  max-width: 100%;
 }
 
 /* Table styles */
@@ -382,6 +393,9 @@
   max-width: 90vw;
   max-height: 90vh;
   overflow-y: auto;
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Pagination styles */
@@ -746,4 +760,231 @@
   .xl\\:grid-cols-6 {
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
+}
+
+/* ============================================
+   DARK MODE STYLES
+   ============================================ */
+
+:root.dark-mode .admin-layout,
+:root.dark-mode .min-h-screen.bg-gray-100 {
+  background-color: #111827 !important; /* gray-900 */
+}
+
+:root.dark-mode .bg-gray-50 {
+  background-color: #1f2937 !important; /* gray-800 */
+}
+
+:root.dark-mode .admin-card {
+  background-color: #1f2937 !important; /* gray-800 */
+  border-color: #374151; /* gray-700 */
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+}
+
+:root.dark-mode .admin-card-title,
+:root.dark-mode h2,
+:root.dark-mode h3 {
+  color: #f9fafb !important; /* gray-50 */
+}
+
+:root.dark-mode .admin-card-subtitle,
+:root.dark-mode p {
+  color: #d1d5db !important; /* gray-300 */
+}
+
+:root.dark-mode .stat-card {
+  background-color: #1f2937 !important; /* gray-800 */
+  border-color: #374151; /* gray-700 */
+}
+
+:root.dark-mode .stat-card-label {
+  color: #9ca3af !important; /* gray-400 */
+}
+
+:root.dark-mode .stat-card-value {
+  color: #f9fafb !important; /* gray-50 */
+}
+
+:root.dark-mode .admin-table {
+  background-color: #1f2937 !important; /* gray-800 */
+  border-color: #374151 !important; /* gray-700 */
+}
+
+:root.dark-mode .admin-table th {
+  background-color: #111827 !important; /* gray-900 */
+  color: #f9fafb !important; /* gray-50 */
+  border-color: #374151 !important; /* gray-700 */
+}
+
+:root.dark-mode .admin-table td {
+  color: #e5e7eb !important; /* gray-200 */
+  border-color: #374151 !important; /* gray-700 */
+}
+
+:root.dark-mode .admin-table tr:hover {
+  background-color: #374151 !important; /* gray-700 */
+}
+
+:root.dark-mode .admin-btn-primary {
+  background-color: #2563eb !important; /* blue-600 */
+  color: white !important;
+}
+
+:root.dark-mode .admin-btn-primary:hover {
+  background-color: #1d4ed8 !important; /* blue-700 */
+}
+
+:root.dark-mode .admin-btn-secondary {
+  background-color: #374151 !important; /* gray-700 */
+  color: #f9fafb !important; /* gray-50 */
+  border-color: #4b5563 !important; /* gray-600 */
+}
+
+:root.dark-mode .admin-btn-secondary:hover {
+  background-color: #4b5563 !important; /* gray-600 */
+}
+
+:root.dark-mode .admin-btn-danger {
+  background-color: #dc2626 !important; /* red-600 */
+  color: white !important;
+}
+
+:root.dark-mode .admin-btn-danger:hover {
+  background-color: #b91c1c !important; /* red-700 */
+}
+
+:root.dark-mode .admin-form-input,
+:root.dark-mode .admin-form-select,
+:root.dark-mode .admin-form-textarea {
+  background-color: #111827 !important; /* gray-900 */
+  border-color: #374151 !important; /* gray-700 */
+  color: #f9fafb !important; /* gray-50 */
+}
+
+:root.dark-mode .admin-form-input:focus,
+:root.dark-mode .admin-form-select:focus,
+:root.dark-mode .admin-form-textarea:focus {
+  border-color: #2563eb !important; /* blue-600 */
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+}
+
+:root.dark-mode .admin-form-label {
+  color: #d1d5db !important; /* gray-300 */
+}
+
+:root.dark-mode .admin-alert {
+  background-color: #1f2937 !important; /* gray-800 */
+  border-color: #374151 !important; /* gray-700 */
+  color: #f9fafb !important; /* gray-50 */
+}
+
+:root.dark-mode .admin-alert-error {
+  background-color: #7f1d1d !important; /* red-900 */
+  border-color: #991b1b !important; /* red-800 */
+  color: #fecaca !important; /* red-200 */
+}
+
+:root.dark-mode .admin-badge {
+  background-color: #374151 !important; /* gray-700 */
+  color: #f9fafb !important; /* gray-50 */
+}
+
+:root.dark-mode .admin-badge-success {
+  background-color: #065f46 !important; /* green-800 */
+  color: #d1fae5 !important; /* green-200 */
+}
+
+:root.dark-mode .admin-badge-warning {
+  background-color: #78350f !important; /* yellow-800 */
+  color: #fef3c7 !important; /* yellow-200 */
+}
+
+:root.dark-mode .admin-badge-danger {
+  background-color: #991b1b !important; /* red-800 */
+  color: #fecaca !important; /* red-200 */
+}
+
+/* Search bar dark mode */
+:root.dark-mode .admin-search-input,
+:root.dark-mode .product-management-search-input,
+:root.dark-mode .review-management-search-input {
+  background-color: #111827 !important; /* gray-900 */
+  border-color: #374151 !important; /* gray-700 */
+  color: #f9fafb !important; /* gray-50 */
+}
+
+:root.dark-mode .admin-search-input:focus,
+:root.dark-mode .product-management-search-input:focus,
+:root.dark-mode .review-management-search-input:focus {
+  border-color: #2563eb !important; /* blue-600 */
+}
+
+:root.dark-mode .admin-search-results {
+  background-color: #1f2937 !important; /* gray-800 */
+  border-color: #374151 !important; /* gray-700 */
+}
+
+:root.dark-mode .admin-search-result-item:hover {
+  background-color: #374151 !important; /* gray-700 */
+}
+
+:root.dark-mode .admin-search-result-title {
+  color: #f9fafb !important; /* gray-50 */
+}
+
+:root.dark-mode .admin-search-result-subtitle {
+  color: #9ca3af !important; /* gray-400 */
+}
+
+/* Dashboard stats dark mode */
+:root.dark-mode .dashboard-container {
+  background-color: transparent !important;
+}
+
+:root.dark-mode .dashboard-title {
+  color: #f9fafb !important; /* gray-50 */
+}
+
+:root.dark-mode .dashboard-last-updated {
+  color: #9ca3af !important; /* gray-400 */
+}
+
+/* Pagination dark mode */
+:root.dark-mode .pagination-button {
+  background-color: #1f2937 !important; /* gray-800 */
+  border-color: #374151 !important; /* gray-700 */
+  color: #e5e7eb !important; /* gray-200 */
+}
+
+:root.dark-mode .pagination-button:hover:not(:disabled) {
+  background-color: #374151 !important; /* gray-700 */
+}
+
+:root.dark-mode .pagination-button.active {
+  background-color: #2563eb !important; /* blue-600 */
+  color: white !important;
+}
+
+/* Modal dark mode */
+:root.dark-mode .admin-modal-overlay {
+  background-color: rgba(0, 0, 0, 0.75) !important;
+}
+
+:root.dark-mode .admin-modal {
+  background-color: #1f2937 !important; /* gray-800 */
+  border-color: #374151 !important; /* gray-700 */
+}
+
+:root.dark-mode .admin-modal-header {
+  border-bottom-color: #374151 !important; /* gray-700 */
+}
+
+:root.dark-mode .admin-modal-title {
+  color: #f9fafb !important; /* gray-50 */
+}
+
+/* Charts dark mode */
+:root.dark-mode .charts-4box-card {
+  background-color: #1f2937 !important; /* gray-800 */
+  border-color: #374151 !important; /* gray-700 */
 }
