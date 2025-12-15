@@ -140,3 +140,20 @@
   }
 }
 
+/* Dark Mode Styles for Sidebar */
+:root.dark-mode .admin-sidebar {
+  background-color: #1e3a8a !important; /* blue-800 - darker blue for dark mode */
+}
+
+:root.dark-mode .admin-sidebar-tab:hover {
+  background-color: rgba(30, 58, 138, 0.5) !important; /* blue-800 with opacity */
+}
+
+:root.dark-mode .admin-sidebar-tab.active {
+  background-color: rgba(30, 58, 138, 0.7) !important; /* blue-800 with more opacity */
+}
+
+:root.dark-mode .admin-sidebar-footer {
+  border-top-color: rgba(59, 130, 246, 0.3) !important; /* border-blue-500 with less opacity */
+}
+

@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import '../../assets/css/admin.css';
 import '../../assets/css/dashboardstats.css';
 import DashboardCharts from './DashboardCharts';
+import SearchBar from './SearchBar';
 
 // Backend base URL
 const BASE_URL = 'http://localhost:5000';
@@ -143,6 +144,13 @@ export default function DashboardStats() {
               )}
               <span className="dashboard-refresh-text">Refresh</span>
             </button>
+            </div>
+
+            {/* Search Bar */}
+            <div style={{ marginTop: '1rem', marginBottom: '1.5rem', width: '100%', boxSizing: 'border-box', display: 'flex', justifyContent: 'flex-start' }}>
+              <div style={{ maxWidth: '32rem', width: '100%' }}>
+                <SearchBar />
+              </div>
             </div>
     
             {/* Stats Cards Row - Top */}

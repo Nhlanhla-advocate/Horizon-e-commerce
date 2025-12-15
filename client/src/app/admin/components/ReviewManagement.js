@@ -11,11 +11,13 @@ const BASE_URL = 'http://localhost:5000';
 export default function ReviewManagement() {
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [products, setProducts] = useState([]);
+    const [allProducts, setAllProducts] = useState([]); // Store all products for filtering
     const [reviews, setReviews] = useState([]);
     const [ratingStats, setRatingStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [reviewsLoading, setReviewsLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
     const [filters, setFilters] = useState({
         page: 1,
         limit: 10,
@@ -42,7 +44,9 @@ export default function ReviewManagement() {
             }
 
             const data = await response.json();
-            setProducts(data.data || []);
+            const fetchedProducts = data.data || [];
+            setAllProducts(fetchedProducts);
+            setProducts(fetchedProducts);
             setError(null);
         } catch (err) {
             console.error('Error fetching products:', err);
@@ -129,6 +133,38 @@ export default function ReviewManagement() {
         setFilters(prev => ({ ...prev, page: newPage }));
     };
 
+    // Filter products based on search query
+    useEffect(() => {
+        if (!searchQuery.trim()) {
+            setProducts(allProducts);
+            return;
+        }
+
+        const queryLower = searchQuery.toLowerCase().trim();
+        const filtered = allProducts.filter(product => {
+            // For single character, check if it starts with that character
+            if (queryLower.length === 1) {
+                return (
+                    product.name?.toLowerCase().startsWith(queryLower) ||
+                    product.category?.toLowerCase().startsWith(queryLower) ||
+                    product.description?.toLowerCase().startsWith(queryLower)
+                );
+            }
+            // For longer queries, check if it contains the query
+            return (
+                product.name?.toLowerCase().includes(queryLower) ||
+                product.category?.toLowerCase().includes(queryLower) ||
+                product.description?.toLowerCase().includes(queryLower)
+            );
+        });
+        setProducts(filtered);
+        
+        // Clear selected product if it's not in the filtered results
+        if (selectedProduct && !filtered.find(p => p._id === selectedProduct._id)) {
+            setSelectedProduct(null);
+        }
+    }, [searchQuery, allProducts]); // eslint-disable-line react-hooks/exhaustive-deps
+
     useEffect(() => {
         fetchProducts();
     }, []);
@@ -153,6 +189,41 @@ export default function ReviewManagement() {
                 <div>
                     <h2 className="review-management-title">Review Management</h2>
                     <p className="review-management-subtitle">Manage product reviews and ratings.</p>
+                </div>
+
+                {/* Search Bar */}
+                <div className="review-management-search-container">
+                    <div className="review-management-search-wrapper">
+                        <svg 
+                            className="review-management-search-icon" 
+                            width="20" 
+                            height="20" 
+                            viewBox="0 0 24 24" 
+                            fill="none" 
+                            stroke="currentColor" 
+                            strokeWidth="2"
+                        >
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                        <input
+                            type="text"
+                            className="review-management-search-input"
+                            placeholder="Search products by name, category, or description..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                        {searchQuery && (
+                            <button
+                                type="button"
+                                className="review-management-search-clear"
+                                onClick={() => setSearchQuery('')}
+                                aria-label="Clear search"
+                            >
+                                ×
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
 

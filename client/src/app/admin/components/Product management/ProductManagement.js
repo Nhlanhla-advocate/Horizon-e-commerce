@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import '../../assets/css/admin.css';
-import '../../assets/css/productManagement.css';
-import Pagination from './Pagination';
+import '../../../assets/css/admin.css';
+import '../../../assets/css/productManagement.css';
+import Pagination from '../Pagination';
+import ProductModal from './productModal';
 
 // Backend base URL
 const BASE_URL = 'http://localhost:5000';
@@ -122,9 +123,12 @@ export default function ProductManagement() {
         throw new Error(data.error || data.message || `Failed to add product (${response.status})`);
       }
 
+      await fetchProducts();
       setShowAddForm(false);
       resetForm();
-      await fetchProducts();
+      
+      // Dispatch event to notify charts to refresh
+      window.dispatchEvent(new CustomEvent('product-updated'));
     } catch (err) {
       setError(err.message || 'Failed to add product. Please try again.');
       console.error('Error adding product:', err);
@@ -147,9 +151,20 @@ export default function ProductManagement() {
         throw new Error('Failed to update product');
       }
 
+      await fetchProducts();
+      
+      // Small delay to ensure backend has fully processed the update
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
       setEditingProduct(null);
+      setShowAddForm(false);
       resetForm();
-      fetchProducts();
+      
+      // Dispatch event to notify charts to refresh
+      console.log('Product updated, dispatching product-updated event...', { productId, updates });
+      window.dispatchEvent(new CustomEvent('product-updated', { 
+        detail: { productId, updates } 
+      }));
     } catch (err) {
       setError(err.message);
     }
@@ -213,6 +228,9 @@ export default function ProductManagement() {
       // Success - refresh the product list
       console.log('Product deleted successfully, refreshing list...');
       await fetchProducts();
+      
+      // Dispatch event to notify charts to refresh
+      window.dispatchEvent(new CustomEvent('product-updated'));
     } catch (err) {
       const errorMessage = err.message || 'Failed to delete product. Please try again.';
       setError(errorMessage);
@@ -221,19 +239,37 @@ export default function ProductManagement() {
     }
   };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
+  const [searchInput, setSearchInput] = useState('');
 
-    if (editingProduct) {
-      handleEditProduct(editingProduct._id, formData);
-    } else {
-      handleAddProduct(formData);
-    }
+  // Debounce search input
+  useEffect(() => {
+    const searchTimer = setTimeout(() => {
+      setFilters(prev => ({
+        ...prev,
+        search: searchInput,
+        page: 1 // Reset to first page when searching
+      }));
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(searchTimer);
+  }, [searchInput]);
+
+  // Sync searchInput with filters.search on mount or external changes
+  useEffect(() => {
+    setSearchInput(filters.search || '');
+  }, []); // Only on mount
+
+  const handleSearchChange = (e) => {
+    setSearchInput(e.target.value);
   };
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const handleSearchClear = () => {
+    setSearchInput('');
+    setFilters(prev => ({
+      ...prev,
+      search: '',
+      page: 1
+    }));
   };
 
   return (
@@ -254,6 +290,41 @@ export default function ProductManagement() {
           >
             Add Product
           </button>
+        </div>
+
+        {/* Contextual Search Bar */}
+        <div className="product-management-search-container">
+          <div className="product-management-search-wrapper">
+            <svg 
+              className="product-management-search-icon" 
+              width="20" 
+              height="20" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2"
+            >
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <input
+              type="text"
+              className="product-management-search-input"
+              placeholder="Search products by name, category, or description..."
+              value={searchInput}
+              onChange={handleSearchChange}
+            />
+            {filters.search && (
+              <button
+                type="button"
+                className="product-management-search-clear"
+                onClick={handleSearchClear}
+                aria-label="Clear search"
+              >
+                ×
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -354,111 +425,25 @@ export default function ProductManagement() {
         />
       )}
 
-      {showAddForm && (
-        <div className="admin-card" style={{ borderRadius: '0.75rem' }}>
-          <div className="product-management-form-header">
-            <h3 className="product-management-form-title">
-              {editingProduct ? 'Edit Product' : 'Add New Product'}
-            </h3>
-            <button
-              type="button"
-              onClick={() => {
-                setShowAddForm(false);
-                resetForm();
-              }}
-              className="product-management-form-close"
-            >
-              Close
-            </button>
-          </div>
-          <form className="product-management-form" onSubmit={handleSubmit}>
-            <div className="product-management-form-field-full">
-              <label className="admin-form-label">Name</label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className="admin-form-input"
-                required
-              />
-            </div>
-            <div className="product-management-form-field-full">
-              <label className="admin-form-label">Description</label>
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                className="admin-form-input"
-                rows="4"
-                required
-                minLength="10"
-                maxLength="2000"
-                placeholder="Enter product description (minimum 10 characters)"
-              />
-            </div>
-            <div>
-              <label className="admin-form-label">Price</label>
-              <input
-                type="number"
-                name="price"
-                value={formData.price}
-                onChange={handleChange}
-                className="admin-form-input"
-                required
-                min="0"
-                step="0.01"
-              />
-            </div>
-            <div>
-              <label className="admin-form-label">Category</label>
-              <select
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                className="admin-form-input"
-                required
-              >
-                <option value="">Select a category</option>
-                <option value="jewelry">Jewelry</option>
-                <option value="electronics">Electronics</option>
-                <option value="consoles">Consoles</option>
-                <option value="computers">Computers</option>
-              </select>
-            </div>
-            <div>
-              <label className="admin-form-label">Stock</label>
-              <input
-                type="number"
-                name="stock"
-                value={formData.stock}
-                onChange={handleChange}
-                className="admin-form-input"
-                required
-                min="0"
-              />
-            </div>
-            <div className="product-management-form-actions">
-              <button
-                type="submit"
-                className="admin-btn admin-btn-primary"
-              >
-                {editingProduct ? 'Update Product' : 'Create Product'}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowAddForm(false);
-                  resetForm();
-                }}
-                className="admin-btn admin-btn-secondary"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
+      {/* Product Modal */}
+      <ProductModal
+        isOpen={showAddForm}
+        onClose={() => {
+          setShowAddForm(false);
+          resetForm();
+        }}
+        onSubmit={async (productData) => {
+          if (editingProduct) {
+            await handleEditProduct(editingProduct._id, productData);
+          } else {
+            await handleAddProduct(productData);
+          }
+        }}
+        formData={formData}
+        setFormData={setFormData}
+        editingProduct={editingProduct}
+        error={error}
+      />
     </div>
   );
 }
