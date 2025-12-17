@@ -79,6 +79,17 @@ const Signin = () => {
                 return;
             }
             
+            // Check if this is an admin trying to use user signin
+            if (response.status === 403 && data.error && data.error.includes("admin")) {
+                setError("This email is registered as an admin. Redirecting to admin sign-in...");
+                // Redirect to admin signin after a short delay
+                setTimeout(() => {
+                    router.push("/admin/signin");
+                }, 2000);
+                setLoading(false);
+                return;
+            }
+            
             // Login failed
             setError(data.error || data.message || "Invalid credentials. Please try again.");
         } catch (error) {

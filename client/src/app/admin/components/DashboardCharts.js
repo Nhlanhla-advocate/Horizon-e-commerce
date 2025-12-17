@@ -71,7 +71,7 @@ export default function DashboardCharts({ showCharts = null }) {
       setLoading(true);
       setError(null);
 
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
       const response = await fetch(`${BASE_URL}/dashboard/charts?period=${period}`, {
         headers: {
           'Authorization': `Bearer ${token}`,

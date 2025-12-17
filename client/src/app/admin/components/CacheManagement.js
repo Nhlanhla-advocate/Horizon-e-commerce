@@ -19,7 +19,7 @@ export default function CacheManagement() {
   const fetchCacheStatus = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
       const response = await fetch('/api/dashboard/cache/status', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -47,7 +47,7 @@ export default function CacheManagement() {
   const refreshCache = async () => {
     try {
       setActionLoading(true);
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
       const response = await fetch('/api/dashboard/cache/refresh', {
         method: 'POST',
         headers: {
@@ -80,7 +80,7 @@ export default function CacheManagement() {
 
     try {
       setActionLoading(true);
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
       const response = await fetch('/api/dashboard/cache/clear', {
         method: 'DELETE',
         headers: {

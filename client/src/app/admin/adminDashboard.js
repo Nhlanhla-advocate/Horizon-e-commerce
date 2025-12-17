@@ -38,63 +38,59 @@ const AdminDashboard = () => {
       // This gives localStorage time to fully persist the tokens
       await new Promise(resolve => setTimeout(resolve, 200));
       
-      let token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+      // Prioritize adminToken - only check for admin token, not regular user token
+      let adminToken = localStorage.getItem('adminToken');
       
-      // If no token found, wait a bit more and check again (for timing issues)
-      if (!token) {
+      // If no admin token found, wait a bit more and check again (for timing issues)
+      if (!adminToken) {
         await new Promise(resolve => setTimeout(resolve, 300));
-        token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+        adminToken = localStorage.getItem('adminToken');
       }
       
-      if (!token) {
+      if (!adminToken) {
         console.log('No admin token found, redirecting to signin');
+        // Clear any regular user tokens to prevent confusion
+        localStorage.removeItem('token');
         router.push('/admin/signin');
         setLoading(false);
         return;
       }
 
-      console.log('Token found, validating with server...');
+      console.log('Admin token found, validating with server...');
 
       // Verify token is valid by checking admin profile
       try {
         const response = await fetch('http://localhost:5000/admin/profile', {
           headers: {
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${adminToken}`,
             'Content-Type': 'application/json',
           },
         });
 
         if (response.ok) {
           const data = await response.json();
-          if (data.success) {
+          if (data.success && data.admin) {
             console.log('Admin token validated successfully');
             setIsAuthenticated(true);
           } else {
             console.error('Token validation failed - invalid response:', data);
             localStorage.removeItem('adminToken');
             localStorage.removeItem('token');
-            router.push('/admin');
+            router.push('/admin/signin');
           }
         } else {
           const errorData = await response.json().catch(() => ({}));
           console.error('Token validation failed - HTTP error:', response.status, errorData);
           localStorage.removeItem('adminToken');
           localStorage.removeItem('token');
-          router.push('/admin');
+          router.push('/admin/signin');
         }
       } catch (error) {
         console.error('Auth check failed with error:', error);
-        // On network errors, don't immediately clear tokens - might be temporary
-        // Only clear if it's clearly an auth error
-        if (error.message && error.message.includes('401')) {
-          localStorage.removeItem('adminToken');
-          localStorage.removeItem('token');
-          router.push('/admin');
-        } else {
-          // For other errors, still redirect to signin to avoid loops
-          router.push('/admin');
-        }
-        router.push('/admin');
+        // Clear tokens on any error and redirect to signin
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('token');
+        router.push('/admin/signin');
       } finally {
         setLoading(false);
       }

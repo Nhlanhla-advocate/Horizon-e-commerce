@@ -102,11 +102,18 @@ const AdminSignin = () => {
             if (response.ok && data && data.success === true && token) {
                 console.log("Admin signed in successfully.", data);
                 
-                // Store tokens immediately
+                // Clear all tokens first to ensure clean state
                 localStorage.clear();
+                
+                // Store admin tokens - prioritize adminToken
                 localStorage.setItem("adminToken", token);
                 localStorage.setItem("token", token); 
                 localStorage.setItem("adminRole", data.role || "admin");
+                
+                // Verify this is actually an admin response
+                if (data.role && data.role !== 'admin' && data.role !== 'super_admin') {
+                    console.error("Warning: Response does not indicate admin role");
+                }
                 
                 // Verify storage immediately
                 const storedAdminToken = localStorage.getItem("adminToken");

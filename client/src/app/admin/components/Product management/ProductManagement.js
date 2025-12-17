@@ -38,7 +38,7 @@ export default function ProductManagement() {
   const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
       const queryParams = new URLSearchParams();
 
       Object.entries(filters).forEach(([key, value]) => {
@@ -89,7 +89,7 @@ export default function ProductManagement() {
   const handleAddProduct = async (productData) => {
     try {
       setError(null);
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
       
       if (!token) {
         throw new Error('Authentication required. Please log in again.');
@@ -137,7 +137,7 @@ export default function ProductManagement() {
 
   const handleEditProduct = async (productId, updates) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
       const response = await fetch(`${BASE_URL}/dashboard/products/${productId}`, {
         method: 'PUT',
         headers: {
@@ -184,7 +184,7 @@ export default function ProductManagement() {
 
     try {
       setError(null);
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
       
       if (!token) {
         throw new Error('Authentication required. Please log in again.');

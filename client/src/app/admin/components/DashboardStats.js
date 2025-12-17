@@ -20,7 +20,8 @@ export default function DashboardStats() {
             setLoading(true);
             setError(null);
 
-            const token = localStorage.getItem('token');
+            // Use adminToken for admin dashboard, fallback to token for backward compatibility
+            const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
             if (!token) {
                 throw new Error('Authentication required. Please log in.');
             }
