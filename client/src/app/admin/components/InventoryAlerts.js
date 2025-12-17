@@ -21,7 +21,7 @@ export default function InventoryAlerts() {
     const fetchLowStockAlerts = async () => {
         try {
             setLoading(true);
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
             const queryParams = new URLSearchParams();
 
             Object.entries(filters).forEach(([key, value]) => {

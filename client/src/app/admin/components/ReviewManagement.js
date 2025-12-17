@@ -30,7 +30,7 @@ export default function ReviewManagement() {
     const fetchProducts = async () => {
         try {
             setLoading(true);
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
             
             const response = await fetch(`${BASE_URL}/dashboard/products`, {
                 headers: {
@@ -59,7 +59,7 @@ export default function ReviewManagement() {
     const fetchReviews = async (productId) => {
         try {
             setReviewsLoading(true);
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
             const queryParams = new URLSearchParams({
                 page: filters.page,
                 limit: filters.limit,
@@ -105,7 +105,7 @@ export default function ReviewManagement() {
         }
 
         try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
             const response = await fetch(`${BASE_URL}/dashboard/reviews/${reviewId}`, {
                 method: 'DELETE',
                 headers: {
