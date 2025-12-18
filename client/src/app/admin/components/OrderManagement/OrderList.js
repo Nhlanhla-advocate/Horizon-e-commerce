@@ -95,4 +95,15 @@ export default function OrderList() {
             page: 1 //Reset to first page when filters change
         }));
     };
+
+    const handleClearFilters = () => {
+        setFilters ({
+            status: 'all',
+            startDate: '',
+            endDate: '',
+            customerId: '',
+            page: 1,
+            limit: 20
+        });
+    };
 }
