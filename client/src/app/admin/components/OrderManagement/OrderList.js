@@ -140,7 +140,47 @@ export default function OrderList() {
 
  if (loading && orders.length === 0) {
     return (
-        
-    )
+        <div className="dashboard-container">
+            <div className="dashboard-header">
+                <h2 className="dashboard-title">Order Management</h2>
+            </div>
+
+            <div className="dashboard-loading">
+                <div className="admin-spinner"></div>
+            </div>
+        </div>
+    );
  }
-}
+
+ return (
+    <div className="dashboard-container">
+        <div className="dashboard-header">
+            <h2 className="dashboard-title">Order Management</h2>
+            <p className="dashboard-subtitle">View and manage all orders</p>
+        </div>
+
+        {error && (
+            <div className="admin-error-message">
+                {error}
+            </div>
+        )}
+
+        {/*Filters*/}
+        <div className="order-filters">
+            <div className="order-filters-grid">
+
+            </div>
+            <label className="filter-label">Status</label>
+            <select 
+                value={filters.status}
+                onChange={(e) => handleFilterChange('status', e.target.value)}
+                className="filter-select"
+                >
+                    {ORDER_STATUSES.map(status => (
+                        <option key={status.value} value={status.value}>
+                            {status.label}
+                        </option>
+                    ))}
+                </select>
+        </div>
+ )
