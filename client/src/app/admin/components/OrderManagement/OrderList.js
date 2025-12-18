@@ -67,6 +67,32 @@ export default function OrderList() {
                     'Content-Type': 'application/json',
                 },
             });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch (() => ({}));
+                throw new Error(errorData.message || 'Failed to fetch orders');
+            }
+
+            const data = await response.json();
+            setOrders(data.orders || []);
+            setPagination(data.pagination || {});
+        } catch (err) {
+            console.error('Error fetching orders:', err);
+            setError (err.message);
+        } finally {
+            setLoading(false);
         }
-    }
+    };
+
+    useEffect (() => {
+        fetchOrders();
+    }, [filters.page, filters.status, filters.startDate, filters.endDate, filters.customerId]);
+
+    const handleFilterChange = (key, value) => {
+        setFilters(prev => ({
+            ...prev,
+            [key]: value,
+            page: 1 //Reset to first page when filters change
+        }));
+    };
 }
