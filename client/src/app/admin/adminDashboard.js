@@ -8,6 +8,7 @@ import Analytics from './components/Analytics';
 import InventoryAlerts from './components/InventoryAlerts';
 import ReviewManagement from './components/ReviewManagement';
 import CacheManagement from './components/CacheManagement';
+import OrderList from './components/OrderManagement/OrderList';
 import Sidebar from './components/Sidebar';
 
 const AdminDashboard = () => {
@@ -21,7 +22,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     const handleTabChange = (event) => {
       const tabId = event.detail;
-      const validTabs = ['overview', 'products', 'analytics', 'inventory', 'reviews', 'cache'];
+      const validTabs = ['overview', 'products', 'analytics', 'inventory', 'reviews', 'cache', 'orders'];
       if (validTabs.includes(tabId)) {
         setActiveTab(tabId);
       }
@@ -70,6 +71,14 @@ const AdminDashboard = () => {
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.admin) {
+            // Additional check: Verify the admin role is actually admin or super_admin
+            if (data.admin.role && data.admin.role !== 'admin' && data.admin.role !== 'super_admin') {
+              console.error('Token validation failed - user does not have admin role:', data.admin.role);
+              localStorage.removeItem('adminToken');
+              localStorage.removeItem('token');
+              router.push('/admin/signin');
+              return;
+            }
             console.log('Admin token validated successfully');
             setIsAuthenticated(true);
           } else {
@@ -81,6 +90,10 @@ const AdminDashboard = () => {
         } else {
           const errorData = await response.json().catch(() => ({}));
           console.error('Token validation failed - HTTP error:', response.status, errorData);
+          // If it's a 403 error, explicitly handle it as access denied
+          if (response.status === 403) {
+            console.error('Access denied - user does not have admin privileges');
+          }
           localStorage.removeItem('adminToken');
           localStorage.removeItem('token');
           router.push('/admin/signin');
@@ -151,6 +164,13 @@ const AdminDashboard = () => {
       icon: '',
       component: ReviewManagement,
       description: 'Customer feedback'
+    },
+    {
+      id: 'orders',
+      label: 'Orders',
+      icon: '',
+      component: OrderList,
+      description: 'Manage orders'
     },
     {
       id: 'cache',
