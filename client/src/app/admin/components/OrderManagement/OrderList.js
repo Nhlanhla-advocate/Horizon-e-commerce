@@ -32,4 +32,41 @@ export default function OrderList() {
         page: 1,
         limit: 20
     });
+
+    //Fetch orders with current filters
+    const fetchOrders = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+            if (!token) {
+                throw new Error('Authentication required');
+            }
+
+            //Build query parameters
+            const queryParams = new URLSearchParams();
+            if (filters.status !== 'all') {
+                queryParams.append('status', filters.status);
+            }
+            if (filters.startDate) {
+                queryParams.append('startDate', filters.startDate);
+            }
+            if (filters.endDate) {
+                queryParams.append('endDate', filters.endDate);
+            }
+            if (filters.customerId) {
+                queryParams.append('customerId', filters.customerId);
+            }
+            queryParams.append('page', filters.page);
+            queryParams.append('limit', filters.limit);
+
+            const response = await fetch(`$(BASE_URL)/admin/orders?$(queryParams)`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+        }
+    }
 }
