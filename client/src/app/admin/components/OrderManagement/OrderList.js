@@ -216,4 +216,72 @@ export default function OrderList() {
                />
                <p className="filter-help"> Filter by specific customer ID</p>
         </div>
+
+    
+    
+    <button 
+       onClick={handleClearFilters}
+       className="admin-btn admin-btn-secondary"
+       >
+        Clear All Filters
+    </button>
+    </div>
+
+    {/*Order Table*/}
+    <div className="orders-wrapper">
+        {orders.length === 0 ? (
+            <div className="orders-empty">
+                <p> No orders found matching your filters</p>
+            </div>
+        ) : (
+            <>
+                <div className="orders-table-wrapper">
+                    <table className="orders-table">
+                        <thead>
+                            <tr className="orders-head-row">
+                                <th className="orders-th">Order Id</th>
+                                <th className="orders-th">Customer</th>
+                                <th className="orders-th">Items</th>
+                                <th className="orders-th">Total</th>
+                                <th className="orders-th">Status</th>
+                                <th className="orders-th">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {orders.map(order => (
+                                <tr key={order._id} className="orders-tr">
+                                    <td className="orders-td">
+                                        <span className="mono-text">
+                                            {order._id.toString().substring(0, 8)}...
+                                        </span>
+                                    </td>
+                                    <td className="orders-td">
+                                        <div>
+                                            {order.customer?.name || order.customer?.username || 'Guest'}
+                                            {order.customer?.isGuest && (
+                                                <span className="guest-badge">(Guest)</span>)}
+                                        </div>
+                                        <div className="customer-email">
+                                            {order.customer?.email || 'N/A'}
+                                        </div>
+                                    </td>
+                                    <td className="orders-td">
+                                        {order.items?.length || 0} item(s)
+                                    </td>
+                                    <td className="orders-td total-price">
+                                        {formatCurrency(order.totalPrice)}
+                                    </td>
+                                    <td className="orders-td">
+                                        <span className={`status-badge ${getStatusBadgeClass(order.status)}`}>
+                                            {order.status}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>            
+            </>
+        )}
+    </div>
  )
