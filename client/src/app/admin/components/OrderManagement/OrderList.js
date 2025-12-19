@@ -20,7 +20,7 @@ const ORDER_STATUSES = [
 export default function OrderList() {
     const [orders, setOrders] = useState ([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(true);
+    const [error, setError] = useState(null);
     const [pagination, setPagination] = useState({});
 
     //Filters states
@@ -61,7 +61,7 @@ export default function OrderList() {
             queryParams.append('page', filters.page);
             queryParams.append('limit', filters.limit);
 
-            const response = await fetch(`$(BASE_URL)/admin/orders?$(queryParams)`, {
+            const response = await fetch(`${BASE_URL}/admin/orders?${queryParams}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
@@ -185,7 +185,7 @@ export default function OrderList() {
         </div>
 
         <div>
-            <label className="filter-label">Start Date</label>\
+            <label className="filter-label">Start Date</label>
             <input
               type="date"
               value={filters.startDate}
@@ -219,15 +219,14 @@ export default function OrderList() {
 
     
     
-    <button 
-       onClick={handleClearFilters}
-       className="admin-btn admin-btn-secondary"
-       >
-        Clear All Filters
-    </button>
-    </div>
+        <button 
+            onClick={handleClearFilters}
+            className="admin-btn admin-btn-secondary"
+        >
+            Clear All Filters
+        </button>
 
-    {/*Order Table*/}
+        {/*Order Table*/}
     <div className="orders-wrapper">
         {orders.length === 0 ? (
             <div className="orders-empty">
@@ -276,12 +275,33 @@ export default function OrderList() {
                                             {order.status}
                                         </span>
                                     </td>
+                                    <td className="orders-td mono-text">
+                                        {formatDate(order.createdAt)}
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
-                </div>            
+                </div>    
+
+                {pagination.totalPages > 1 && (
+                    <div className="orders-pagination">
+                        <Pagination
+                            currentPage={pagination.currentPage}
+                            totalPages={pagination.totalPages}
+                            onPageChange={(page) => handleFilterChange('page', page)}
+                        />
+                    </div>
+                )}        
             </>
         )}
     </div>
- )
+
+    {pagination.totalOrders !== undefined && (
+        <div className="orders-summary">
+        showing {orders.length} of {pagination.totalOrders} orders
+        </div>
+    )}
+    </div>
+   );
+};
