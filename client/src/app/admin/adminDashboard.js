@@ -8,7 +8,7 @@ import Analytics from './components/Analytics';
 import InventoryAlerts from './components/InventoryAlerts';
 import ReviewManagement from './components/ReviewManagement';
 import CacheManagement from './components/CacheManagement';
-import OrderList from './components/OrderManagement/OrderList';
+import OrderManagement from './components/OrderManagement/OrderManagement';
 import Sidebar from './components/Sidebar';
 
 const AdminDashboard = () => {
@@ -169,7 +169,7 @@ const AdminDashboard = () => {
       id: 'orders',
       label: 'Orders',
       icon: '',
-      component: OrderList,
+      component: OrderManagement,
       description: 'Manage orders'
     },
     {

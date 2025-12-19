@@ -18,7 +18,7 @@ const ORDER_STATUSES = [
     { value: 'cancelled', label: 'Cancelled' }
 ];
 
-export default function OrderList() {
+export default function OrderList({ onOrderSelect }) {
     const [orders, setOrders] = useState ([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -249,7 +249,12 @@ export default function OrderList() {
                         </thead>
                         <tbody>
                             {orders.map(order => (
-                                <tr key={order._id} className="orders-tr">
+                                <tr 
+                                    key={order._id} 
+                                    className="orders-tr"
+                                    onClick={() => onOrderSelect && onOrderSelect(order._id)}
+                                    style={{ cursor: onOrderSelect ? 'pointer' : 'default' }}
+                                >
                                     <td className="orders-td">
                                         <span className="mono-text">
                                             {order._id.toString().substring(0, 8)}...
