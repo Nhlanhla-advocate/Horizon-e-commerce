@@ -183,4 +183,37 @@ export default function OrderList() {
                     ))}
                 </select>
         </div>
+
+        <div>
+            <label className="filter-label">Start Date</label>\
+            <input
+              type="date"
+              value={filters.startDate}
+              onChange={(e) => handleFilterChange('startDate', e.target.value)}
+              className="filter-input"
+              />
+        </div>
+
+        <div>
+            <label className="filter-label">End Date</label>
+                <input
+                    type="date"
+                    value={filters.endDate}
+                    min={filters.startDate}
+                    onChange={(e) => handleFilterChange('endDate', e.target.value)}
+                    className="filter-input"
+                    />
+        </div>
+
+        <div>
+            <label className="filter-label">Customer ID</label>
+            <input
+               type="text"
+               placeholder="Enter customer ID"
+               value={filters.customerId}
+               onChange={(e) => handleFilterChange('customerId', e.target.value)}
+               className="filter-input filter-mono"
+               />
+               <p className="filter-help"> Filter by specific customer ID</p>
+        </div>
  )
