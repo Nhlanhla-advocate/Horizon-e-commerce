@@ -148,12 +148,53 @@ const getStatusBadgeClass = (status) => {
     const statusClasses = {
         pending: 'status-pending',
         processing: 'status-processing',
-        shepped: 'status-shipped',
+        shipped: 'status-shipped',
         delivered: 'status-delivered',
         cancelled: 'status-cancelled'
     };
     return statusClasses[status] || 'status-default';
 };
 
+return(
+    <div className="dashboard-container">
+        <div className="dashboard-header">
+            <h2 className="dashboard-title">Update Order status</h2>
+            <p className="dashboard-subtitle">Change the status of an order</p>
+        </div>
+
+        {error && (
+            <div className="admin-error-message">
+                {error}
+            </div>
+        )}
+
+        {success && (
+            <div className="admin-success-message">
+                {success}
+            </div>
+        )}
+
+        {/* Order ID Input */}
+        <div className="order-filters" style={{marginBottom: '1.5rem'}}>
+            <label className="filter-label">Order ID</label>
+            <input
+                type="text"
+                placeholder="Enter order ID or select from Order List"
+                value={orderid}
+                onChange={handleOrderChange}
+                className="filter-input filter-mono"
+                />
+                <p className="filter-help">Enter the order ID to update its status</p>
+        </div>
+
+        {loading && (
+            <div className="dashboard-loading">
+                <div className="admin-spinner"
+                style={{ width: '2rem', height: '2rem', borderTopColor: '#2563eb' }}
+                />
+                </div>
+        )}
+    </div>
+)
 
 });
