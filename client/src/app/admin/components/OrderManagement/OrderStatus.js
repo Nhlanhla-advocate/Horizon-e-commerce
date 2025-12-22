@@ -67,4 +67,61 @@ const fetchOrderDetails = async (id) => {
         setLoading(false);
     }
 };
+
+const handleOrderIdChange = (e) => {
+    const id = e.target.value.trim();
+    setOrderId(id);
+    if (id) {
+        fetchOrderDetails(id);
+    } else {
+        setOrder(null);
+        setNewStatus('');
+    }
+};
+
+const handleStatusUpdate = async (e) => {
+    e.preventDefault();
+
+    if (!orderId || !newStatus) {
+        setError('Please select an order and choose a status');
+        return;
+    }
+
+    try {
+        setUpdating(true);
+        setError(null);
+        setSuccess(null);
+
+        const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+        if (!token) {
+            throw new Error('Authentication required');
+        }
+
+        const response = await fetch(`${BASE_URL}/dashboard/orders/${orderId}/status`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ status: newStatus }),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || 'Failed to update order status');
+        }
+
+        const data = await response.json();
+        setSuccess('Order status updated successfully!');
+        setOrder(data.data || order);
+
+        //Clear success message after 3 seconds
+        setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+        console.error('Error updating order status:', err);
+        setError(err.message);
+    } finally {
+        setUpdating(false);
+    }
+};
 });
