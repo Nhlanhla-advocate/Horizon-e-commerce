@@ -407,3 +407,89 @@ exports.createGuestOrder = async (req, res, next) => {
   }
 };
 
+// Get all orders with filters (Admin only)
+exports.getAllOrders = async (req, res) => {
+  try {
+    const { status, startDate, endDate, customerId, page = 1, limit = 20 } = req.query;
+    
+    // Build filter object
+    const filter = {};
+    
+    // Filter by status
+    if (status && status !== 'all') {
+      filter.status = status;
+    }
+    
+    // Filter by date range
+    if (startDate || endDate) {
+      filter.createdAt = {};
+      if (startDate) {
+        filter.createdAt.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        // Set end date to end of day
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        filter.createdAt.$lte = end;
+      }
+    }
+    
+    // Filter by customer ID
+    if (customerId && mongoose.Types.ObjectId.isValid(customerId)) {
+      filter.customerId = new mongoose.Types.ObjectId(customerId);
+    }
+    
+    // Calculate pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    
+    // Get total count for pagination
+    const totalOrders = await Order.countDocuments(filter);
+    
+    // Fetch orders with filters, pagination, and populate customer info
+    const orders = await Order.find(filter)
+      .populate('customerId', 'username email')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit))
+      .lean();
+    
+    // Format orders to include customer info (for both registered and guest orders)
+    const formattedOrders = orders.map(order => {
+      const orderObj = {
+        ...order,
+        customer: order.isGuestOrder 
+          ? {
+              name: order.guestDetails?.name || 'Guest',
+              email: order.guestDetails?.email || 'N/A',
+              isGuest: true
+            }
+          : {
+              _id: order.customerId?._id || null,
+              username: order.customerId?.username || 'Unknown',
+              email: order.customerId?.email || 'N/A',
+              isGuest: false
+            }
+      };
+      return orderObj;
+    });
+    
+    res.status(200).json({
+      success: true,
+      orders: formattedOrders,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(totalOrders / parseInt(limit)),
+        totalOrders,
+        limit: parseInt(limit)
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    res.status(500).json({ 
+      success: false,
+      message: "Server error", 
+      error: error.message 
+    });
+  }
+};
+

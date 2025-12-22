@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const Admin = require("../models/admin");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
@@ -114,11 +115,81 @@ exports.signIn = async (req, res) => {
     try {
         const { email, password } = req.body;
         
+        // Normalize email for search
+        const normalizedEmail = email.toLowerCase().trim();
+        
         // Find user and validate password
-        const user = await User.findOne({ email });
+        let user = await User.findOne({ email: normalizedEmail });
+        if (!user) {
+            // Try case-insensitive regex search
+            user = await User.findOne({ 
+                email: { $regex: new RegExp(`^${normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } 
+            });
+        }
+        
         if (!user || !(await user.comparePassword(password))) {
             return res.status(400).json({ error: "Invalid login credentials" });
         }
+        
+        // CRITICAL CHECK: If user has admin role, they must use admin signin
+        // Check role field in User document
+        if (user.role === 'admin' || user.role === 'super_admin') {
+            console.log('[USER SIGNIN] ⚠️ User has admin role:', user.role);
+            console.log('[USER SIGNIN] 🚫 BLOCKING: User with admin role attempting to use user endpoint - returning 403');
+            return res.status(403).json({ 
+                success: false,
+                error: "This email is registered as an admin. Please use the admin sign-in page at /admin/signin" 
+            });
+        }
+        
+        // ADDITIONAL CHECK: Check if this user's ObjectId exists in Admin collection
+        // This catches cases where admin might have been created in User collection but should be in Admin
+        try {
+            const adminByUserId = await Admin.findById(user._id);
+            if (adminByUserId) {
+                console.log('[USER SIGNIN] ⚠️ User ObjectId found in Admin collection!');
+                console.log('[USER SIGNIN] Admin email:', adminByUserId.email, 'User email:', user.email);
+                // Verify password against admin (already verified for user, but double-check)
+                const adminPasswordMatch = await adminByUserId.comparePassword(password);
+                if (adminPasswordMatch) {
+                    console.log('[USER SIGNIN] 🚫 BLOCKING: Admin found by ObjectId, blocking user login');
+                    return res.status(403).json({ 
+                        success: false,
+                        error: "This email is registered as an admin. Please use the admin sign-in page at /admin/signin" 
+                    });
+                }
+            }
+        } catch (adminIdCheckError) {
+            console.log('[USER SIGNIN] No admin found with user ObjectId (this is normal)');
+        }
+        
+        // CRITICAL CHECK: Also verify this email is NOT in Admin collection
+        // This prevents admins from logging in as users even if they exist in both collections
+        const doubleCheckAdmin = await Admin.findOne({ 
+            $or: [
+                { email: normalizedEmail },
+                { email: { $regex: new RegExp(`^${normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } }
+            ]
+        });
+        
+        if (doubleCheckAdmin) {
+            console.log('[USER SIGNIN] ⚠️ WARNING: Email exists in BOTH Admin and User collections!');
+            console.log('[USER SIGNIN] Admin email:', doubleCheckAdmin.email, 'User email:', user.email);
+            // Verify password against admin (already verified for user, but double-check)
+            const adminPasswordMatchByEmail = await doubleCheckAdmin.comparePassword(password);
+            if (adminPasswordMatchByEmail) {
+                console.log('[USER SIGNIN] 🚫 BLOCKING: Admin credentials valid, blocking user login');
+                return res.status(403).json({ 
+                    success: false,
+                    error: "This email is registered as an admin. Please use the admin sign-in page at /admin/signin" 
+                });
+            }
+            // If admin password doesn't match, continue with user check
+        }
+        
+        // Regular user authentication (role is 'user' or doesn't have admin role)
+        // Password already verified above, so we can proceed
+        console.log('[USER SIGNIN] User authenticated successfully:', user.email);
 
         // Generate tokens
         const { accessToken, refreshToken } = generateTokens(user);
