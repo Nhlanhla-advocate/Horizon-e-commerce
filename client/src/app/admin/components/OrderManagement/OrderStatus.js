@@ -124,4 +124,36 @@ const handleStatusUpdate = async (e) => {
         setUpdating(false);
     }
 };
+
+const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+};
+
+const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-ZA', {
+        style: 'currency',
+        currency: 'ZAR'
+    }).format(amount);
+};
+
+const getStatusBadgeClass = (status) => {
+    const statusClasses = {
+        pending: 'status-pending',
+        processing: 'status-processing',
+        shepped: 'status-shipped',
+        delivered: 'status-delivered',
+        cancelled: 'status-cancelled'
+    };
+    return statusClasses[status] || 'status-default';
+};
+
+
 });
