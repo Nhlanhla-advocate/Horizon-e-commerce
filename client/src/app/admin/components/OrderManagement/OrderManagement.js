@@ -8,20 +8,28 @@ import OrderList from './OrderList';
 import OrderStatus from './OrderStatus';
 
 export default function OrderManagement() {
-    const [selectedOrderId, setSelectedOrderId] = useState(null);
+    const [activeSubTab, setActiveSubTab] = useState('list');
+    const [selectwdOrderId, setSelectedOrderId] = useState(null);
 
-    const handleOrderSelect = (orderId) => {
-        setSelectedOrderId(orderId);
-    };
+    const subTabs = [
+        {
+            id: 'list',
+            label: 'Oder List',
+            component: OrderList
+        },
 
-    return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-            <OrderList onOrderSelect={handleOrderSelect} />
-            <OrderStatus 
-                selectedOrderId={selectedOrderId} 
-                setSelectedOrderId={setSelectedOrderId} 
-            />
-        </div>
-    );
+        {
+            id: 'detail',
+            label: 'Order Detail',
+            component: OrderDetailView
+        },
+
+        {
+            id: 'status',
+            label: 'Update Status',
+            component: OrderStatus
+        }
+    ];
+   
 }
 
