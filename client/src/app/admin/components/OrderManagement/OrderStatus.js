@@ -254,11 +254,58 @@ return(
                             ))}
                             </select>
                     </div>
+
+                    <button 
+                        type="submit"
+                        disabled={updating || !newStatus || newStatus === order.status}
+                        className="admin-btn admin-btn-primary"
+                        style={{
+                            opacity:
+                            updating || !newStatus || newStatus === order.status ? 0.6 : 1, cursor:
+                            updating || !newStatus || newStatus === order.status ? 'not-allowed' : 'pointer'
+                        }}
+                        >
+                            {updating ? (
+                                <>
+                                <span
+                                className="admin-spinner"
+                                style={{
+                                    width:'0.875rem',
+                                    height:'0.875rem',
+                                    borderTopColor:'white',
+                                    marginRight:'0.5rem'
+                                }}
+                                />
+                                Updating...
+                                </>
+                            ) : (
+                                'Update Status'
+                            )}
+                        </button>
+
+                        {newStatus === order.status && newStatus && (
+                            <p className="dashboard-subtitle" style={{ marginTop: '0.5rem' }}>
+                                Status is already set to {newStatus}
+                            </p>
+                        )}
                 </form>
             </div>
             </>
         )}
-    </div>
-)
 
-});
+        {!order && !loading && orderId && (
+            <div className="orders-empty">
+                <p>Order not found. Please check the order ID and try again.</p>
+            </div>
+        )}
+
+        {!order && !loading && !orderId && (
+            <div className="orders-empty">
+                <p>
+                    Enter an order ID above to update its status, or select an order from the Order List to update its status.
+                </p>
+            </div>
+        )}
+    </div>
+);
+
