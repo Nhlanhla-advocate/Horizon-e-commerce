@@ -194,6 +194,70 @@ return(
                 />
                 </div>
         )}
+
+        {order && (
+            <>
+            {/*Current Order info*/}
+            <div className="orders-wrapper" style={{ marginBottom:'1.5rem'}}>
+                <div style={{ padding:'1.5rem'}}>
+                    <h3 style={{ fontSize:'1rem', fontWeight:'600',marginBottom:'1rem'}}>
+                        Current Order Information
+                    </h3>
+                    <div className="orders-grid">
+                        <div>
+                            <p className="dashboard-subtitle">Order ID</p>
+                            <p className="mono-text">{order._id?.toString()}</p>
+                        </div>
+
+                        <div>
+                            <p className="dashboard-subtitle">Current Status</p>
+                            <span className={`status-badge ${getStatusBadgeClass(order.status)}`}>
+                                {order.status}
+                            </span>
+                        </div>
+
+                        <div>
+                            <p className="dashboard-subtitle">Total Amount</p>
+                            <p style={{ fontWeight:600 }}>
+                                {formatCurrency(order.totalPrice)}
+                            </p>
+                        </div>
+
+                        <div>
+                            <p className="dashboard-subtitle">Order Date</p>
+                            <p>{formatDate(order.createdAt)}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/*Status Update Form*/}
+            <div className="order-filters">
+                <h3 style={{ fontSize:'1rem',fontWeight:'600',marginBottom:'1rem'}}>
+                    Update Status
+                </h3>
+
+                <form onSubmit={handleStatusUpdate}>
+                    <div style={{ marginBottom:'1rem'}}>
+                        <label className="filter-label">New Status</label>
+                        <select 
+                            vallue={newStatus}
+                            onChange={(e) => setNewStatus(e.target.value)}
+                            className="filter-select"
+                            required
+                            >
+                            <option value="">Select a status</option>
+                            {ORDER_STATUSES.map(status => (
+                                <option key={status.value} value={status.value}>
+                                    {status.label}
+                                </option>
+                            ))}
+                            </select>
+                    </div>
+                </form>
+            </div>
+            </>
+        )}
     </div>
 )
 
