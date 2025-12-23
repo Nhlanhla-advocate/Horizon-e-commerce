@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import '../../../assets/css/admin.css';
-import '../../../assets/css/ordeList.css';
 import Pagination from '../Pagination';
 
 //Backend base URL

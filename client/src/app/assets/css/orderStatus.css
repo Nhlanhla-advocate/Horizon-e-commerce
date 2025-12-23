@@ -1,0 +1,171 @@
+/*DASHBOARD LAYOUT*/
+.dashboard-container {
+    padding: 1.5rem;
+}
+
+.dashboard-header {
+    margin-bottom: 1.5rem;
+}
+
+.dashboard-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.dashboard-subtitle {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+/*MESSAGES*/
+.admin-error-message {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background-color: #fee2e2;
+    color: #991b1b;
+    border-radius: 0.5rem;
+}
+
+.admin-success-message {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background-color: #d1fae5;
+    color: #065f46;
+    border-radius: 0.5rem;
+}
+
+/*FILTERS / FORMS*/
+.order-filters {
+    background-color: #ffffff;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+}
+
+.filter-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.filter-input,
+.filter-select {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+}
+
+.filter-help {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+}
+
+.filter-mono {
+    font-family: monospace;
+  }
+  
+  /* Loading */
+  .dashboard-loading {
+    display: flex;
+    justify-content: center;
+    margin: 2rem 0;
+  }
+  
+  .admin-spinner {
+    border: 2px solid #e5e7eb;
+    border-top-style: solid;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  /* Orders */
+  .orders-wrapper {
+    background-color: #ffffff;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  
+  .orders-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+  
+  .mono-text {
+    font-family: monospace;
+  }
+  
+  /* Status */
+  .status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: capitalize;
+  }
+
+  .status-pending {
+    background-color: #fef3c7;
+    color: #92400e;
+  }
+
+  .status-processing {
+    background-color: #dbeafe;
+    color: #1e40af;
+  }
+
+  .status-shipped {
+    background-color: #d1fae5;
+    color: #065f46;
+  }
+
+  .status-delivered {
+    background-color: #dcfce7;
+    color: #166534;
+  }
+
+  .status-cancelled {
+    background-color: #fee2e2;
+    color: #991b1b;
+  }
+
+  .status-default {
+    background-color: #f3f4f6;
+    color: #374151;
+  }
+  
+  /* Buttons */
+  .admin-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: none;
+  }
+  
+  .admin-btn-primary {
+    background-color: #2563eb;
+    color: white;
+  }
+  
+  /* Empty state */
+  .orders-empty {
+    text-align: center;
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: 2rem;
+  }
+  
