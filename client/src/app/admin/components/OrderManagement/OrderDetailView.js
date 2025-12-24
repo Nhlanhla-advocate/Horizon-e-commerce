@@ -19,3 +19,27 @@ export default function OrderDetailView({ selectedOrderId, setSelectedOrderId })
         //eslint-disable-next-line
     }) [selectedOrderId];
 }
+
+const fetchOrderDetails = async (orderId) => {
+    try {
+        setLoading(true);
+        setError(null);
+
+        const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+        if (!token) {
+            throw new Error('Authentication required');
+        }
+
+        const response = await fetch(`${BASE_URL}/dashboard/orders/${orderId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || 'Failed to fetch order details');
+        }
+    }
+}
