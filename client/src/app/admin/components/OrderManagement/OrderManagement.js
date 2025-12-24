@@ -6,15 +6,16 @@ import '../../../assets/css/ordeList.css';
 import '../../../assets/css/orderStatus.css';
 import OrderList from './OrderList';
 import OrderStatus from './OrderStatus';
+import OrderDetailView from './OrderDetailView';
 
 export default function OrderManagement() {
     const [activeSubTab, setActiveSubTab] = useState('list');
-    const [selectwdOrderId, setSelectedOrderId] = useState(null);
+    const [selectedOrderId, setSelectedOrderId] = useState(null);
 
     const subTabs = [
         {
             id: 'list',
-            label: 'Oder List',
+            label: 'Order List',
             component: OrderList
         },
 
@@ -36,10 +37,12 @@ export default function OrderManagement() {
     return (
         <div className="dashboard-container">
             {/*Sub-tab Navigation*/}
-            <div className="order-subtabs" style={{ display: 'flex',
+            <div className="order-subtabs" style={{ 
+                display: 'flex',
                 gap: '0.5rem',
-                marginBottom: '2px solid #e5e7eb',
-                paddingBottom: '0.5rem'
+                borderBottom: '2px solid #e5e7eb',
+                paddingBottom: '0.5rem',
+                marginBottom: '1.5rem'
             }}>
                 {subTabs.map((tab) => (
                     <button 
