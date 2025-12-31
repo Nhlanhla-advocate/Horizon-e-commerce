@@ -6,3 +6,10 @@
 .section-padding {
     padding: 1.5rem;
 }
+
+/*LOADING SPINNER*/
+.spinner-md {
+    width: 2rem;
+    height: 2rem;
+    border-top-color: #2563eb;
+}
