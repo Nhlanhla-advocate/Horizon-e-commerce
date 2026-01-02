@@ -59,3 +59,26 @@
     margin-top: 0.25rem;
 }
 
+/*ORDERS TABLE FOOTER*/
+.table-footer-row {
+    border-top: 2px solid #e5e7eb;
+}
+
+.table-footer-label {
+    text-align: right;
+    font-weight: 600;
+}
+
+.table-footer-total {
+    font-size: 1.125rem;
+}
+
+/*FILTERS*/
+.filters-spqcing {
+    margin-bottom: 1.5rem;
+}
+
+/*SHIPPING ADDRESS*/
+.shipping-text {
+    color: #374151;
+}
