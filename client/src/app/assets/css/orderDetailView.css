@@ -32,3 +32,30 @@
 .info-value {
     font-size: 0.875rem;
 }
+
+.info-total {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #059669;
+}
+
+/*CUSTOMER SECTION*/
+.customer-box {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background-color: #f9fafb;
+    border-radius: 0.5rem;
+}
+
+.section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+/*PRODUCT ID TEXT*/
+.product-id {
+    font-size:0.75rem;
+    margin-top: 0.25rem;
+}
+
