@@ -18,4 +18,30 @@ export default function CategoryManagement() {
         description: '',
         slug: ''
     });
+
+    const fetchCateegories = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+            if (!token) {
+                throw new Error('Authentication required');
+            }
+
+            const queryParams = new URLSearchParams();
+            if (searchTerm) {
+                queryParams.append('search', searchTerm);
+            }
+
+            const response = awaitfetch(`${BASE_URL}/admin/categories?${queryParams}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            
+        }
+    }
 }
