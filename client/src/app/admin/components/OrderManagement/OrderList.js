@@ -28,9 +28,12 @@ export default function OrderList({ onOrderSelect }) {
         startDate: '',
         endDate: '',
         customerId: '',
+        search: '',
         page: 1,
         limit: 20
     });
+    
+    const [cancelingOrderId, setCancelingOrderId] = useState(null);
 
     //Fetch orders with current filters
     const fetchOrders = async () => {
@@ -56,6 +59,9 @@ export default function OrderList({ onOrderSelect }) {
             }
             if (filters.customerId) {
                 queryParams.append('customerId', filters.customerId);
+            }
+            if (filters.search) {
+                queryParams.append('search', filters.search);
             }
             queryParams.append('page', filters.page);
             queryParams.append('limit', filters.limit);
@@ -85,7 +91,7 @@ export default function OrderList({ onOrderSelect }) {
 
     useEffect (() => {
         fetchOrders();
-    }, [filters.page, filters.status, filters.startDate, filters.endDate, filters.customerId]);
+    }, [filters.page, filters.status, filters.startDate, filters.endDate, filters.customerId, filters.search]);
 
     const handleFilterChange = (key, value) => {
         setFilters(prev => ({
@@ -101,9 +107,85 @@ export default function OrderList({ onOrderSelect }) {
             startDate: '',
             endDate: '',
             customerId: '',
+            search: '',
             page: 1,
             limit: 20
         });
+    };
+    
+    const handleCancelOrder = async (orderId, e) => {
+        e.stopPropagation(); // Prevent row click
+        
+        if (!window.confirm('Are you sure you want to cancel this order?')) {
+            return;
+        }
+        
+        try {
+            setCancelingOrderId(orderId);
+            setError(null);
+            
+            const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+            if (!token) {
+                throw new Error('Authentication required');
+            }
+            
+            const response = await fetch(`${BASE_URL}/orders/${orderId}/cancel`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Failed to cancel order');
+            }
+            
+            // Refresh orders list
+            await fetchOrders();
+        } catch (err) {
+            console.error('Error canceling order:', err);
+            setError(err.message);
+        } finally {
+            setCancelingOrderId(null);
+        }
+    };
+    
+    const handleExportOrders = () => {
+        try {
+            // Prepare CSV data
+            const headers = ['Order ID', 'Customer Name', 'Customer Email', 'Items Count', 'Total Price', 'Status', 'Date'];
+            const rows = orders.map(order => [
+                order._id?.toString() || '',
+                order.customer?.name || order.customer?.username || 'Guest',
+                order.customer?.email || 'N/A',
+                order.items?.length || 0,
+                order.totalPrice || 0,
+                order.status || '',
+                formatDate(order.createdAt)
+            ]);
+            
+            // Create CSV content
+            const csvContent = [
+                headers.join(','),
+                ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+            ].join('\n');
+            
+            // Create blob and download
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `orders_export_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (err) {
+            console.error('Error exporting orders:', err);
+            setError('Failed to export orders');
+        }
     };
 
     const formatDate = (dateString) => {
@@ -163,6 +245,34 @@ export default function OrderList({ onOrderSelect }) {
                 {error}
             </div>
         )}
+
+        {/*Search and Export Section*/}
+        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', alignItems: 'flex-end' }}>
+            <div style={{ flex: 1 }}>
+                <label className="filter-label">Search Orders</label>
+                <input
+                    type="text"
+                    placeholder="Search by order ID, customer name, email, or product name"
+                    value={filters.search}
+                    onChange={(e) => handleFilterChange('search', e.target.value)}
+                    className="filter-input"
+                    style={{ width: '100%' }}
+                />
+                <p className="filter-help">Search across order IDs, customer information, and product names</p>
+            </div>
+            <button 
+                onClick={handleExportOrders}
+                className="admin-btn admin-btn-secondary"
+                disabled={orders.length === 0}
+                style={{ 
+                    whiteSpace: 'nowrap',
+                    opacity: orders.length === 0 ? 0.6 : 1,
+                    cursor: orders.length === 0 ? 'not-allowed' : 'pointer'
+                }}
+            >
+                Export to CSV
+            </button>
+        </div>
 
         {/*Filters*/}
         <div className="order-filters">
@@ -243,6 +353,7 @@ export default function OrderList({ onOrderSelect }) {
                                 <th className="orders-th">Total</th>
                                 <th className="orders-th">Status</th>
                                 <th className="orders-th">Date</th>
+                                <th className="orders-th">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -281,6 +392,29 @@ export default function OrderList({ onOrderSelect }) {
                                     </td>
                                     <td className="orders-td mono-text">
                                         {formatDate(order.createdAt)}
+                                    </td>
+                                    <td className="orders-td">
+                                        {order.status !== 'cancelled' && order.status !== 'delivered' && (
+                                            <button
+                                                onClick={(e) => handleCancelOrder(order._id, e)}
+                                                disabled={cancelingOrderId === order._id}
+                                                className="admin-btn admin-btn-secondary"
+                                                style={{
+                                                    padding: '0.375rem 0.75rem',
+                                                    fontSize: '0.875rem',
+                                                    opacity: cancelingOrderId === order._id ? 0.6 : 1,
+                                                    cursor: cancelingOrderId === order._id ? 'not-allowed' : 'pointer'
+                                                }}
+                                            >
+                                                {cancelingOrderId === order._id ? 'Canceling...' : 'Cancel'}
+                                            </button>
+                                        )}
+                                        {order.status === 'cancelled' && (
+                                            <span style={{ color: '#ef4444', fontSize: '0.875rem' }}>Cancelled</span>
+                                        )}
+                                        {order.status === 'delivered' && (
+                                            <span style={{ color: '#6b7280', fontSize: '0.875rem' }}>N/A</span>
+                                        )}
                                     </td>
                                 </tr>
                             ))}
