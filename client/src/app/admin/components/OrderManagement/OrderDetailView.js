@@ -9,6 +9,8 @@ export default function OrderDetailView({ selectedOrderId, setSelectedOrderId })
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [canceling, setCanceling] = useState(false);
+    const [success, setSuccess] = useState(null);
 
     const fetchOrderDetails = async (orderId) => {
         try {
@@ -54,6 +56,50 @@ export default function OrderDetailView({ selectedOrderId, setSelectedOrderId })
             cancelled: 'status-cancelled',
         }[status] || 'status-default');
 
+    const handleCancelOrder = async () => {
+        if (!order || !selectedOrderId) return;
+        
+        if (!window.confirm('Are you sure you want to cancel this order?')) {
+            return;
+        }
+        
+        try {
+            setCanceling(true);
+            setError(null);
+            setSuccess(null);
+            
+            const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+            if (!token) {
+                throw new Error('Authentication required');
+            }
+            
+            const response = await fetch(`${BASE_URL}/orders/${selectedOrderId}/cancel`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Failed to cancel order');
+            }
+            
+            setSuccess('Order cancelled successfully!');
+            // Refresh order details
+            await fetchOrderDetails(selectedOrderId);
+            
+            // Clear success message after 3 seconds
+            setTimeout(() => setSuccess(null), 3000);
+        } catch (err) {
+            console.error('Error canceling order:', err);
+            setError(err.message);
+        } finally {
+            setCanceling(false);
+        }
+    };
+
     useEffect(() => {
         if (selectedOrderId) {
             fetchOrderDetails(selectedOrderId);
@@ -79,13 +125,42 @@ export default function OrderDetailView({ selectedOrderId, setSelectedOrderId })
     <div className="dashboard-container">
       <div className="dashboard-header">
         <h2 className="dashboard-title">Order Details</h2>
-        <button
-          onClick={() => setSelectedOrderId(null)}
-          className="admin-btn admin-btn-secondary"
-        >
-          Back to List
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          {order.status !== 'cancelled' && order.status !== 'delivered' && (
+            <button
+              onClick={handleCancelOrder}
+              disabled={canceling}
+              className="admin-btn"
+              style={{
+                backgroundColor: '#ef4444',
+                color: 'white',
+                opacity: canceling ? 0.6 : 1,
+                cursor: canceling ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {canceling ? 'Canceling...' : 'Cancel Order'}
+            </button>
+          )}
+          <button
+            onClick={() => setSelectedOrderId(null)}
+            className="admin-btn admin-btn-secondary"
+          >
+            Back to List
+          </button>
+        </div>
       </div>
+
+      {error && (
+        <div className="admin-error-message">
+          {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="admin-success-message">
+          {success}
+        </div>
+      )}
 
       <div className="orders-wrapper section-spacing">
         <div className="section-padding">
