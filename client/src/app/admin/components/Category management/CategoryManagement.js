@@ -79,4 +79,50 @@ export default function CategoryManagement() {
         setError(null);
         setSuccess(null);
     };
+
+    //Generate slug from name
+    const generateSlug = (name) => {
+        return name
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/[\s_-]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    };
+
+    //Handle form input change
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => {
+            const updated = { ...prev, [name]: value };
+
+            //Auto-generate slug from nameif slug is empty or matches old name
+            if (name === 'name' && (!prev.slug || prev.slug === generateSlug(prev.name))) {
+                updated.slug = generateSlug(value);
+            }
+            return updated;
+        });
+    };
+
+    //Handle add category
+    const handleAddCategory = async (e) => {
+        e.preventDefault();
+
+        try {
+            setError(null);
+            setSuccess(null);
+
+            const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+            if (!token) {
+                throw new Error('Authenticate required');
+            }
+
+            //Generate slug if not provided
+            const categoryData = {
+                ...formData,
+                slug: formData.slug || generateSlug(formData.name)
+            };
+        
+        }
+    }
 }
