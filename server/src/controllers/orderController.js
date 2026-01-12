@@ -410,7 +410,7 @@ exports.createGuestOrder = async (req, res, next) => {
 // Get all orders with filters (Admin only)
 exports.getAllOrders = async (req, res) => {
   try {
-    const { status, startDate, endDate, customerId, page = 1, limit = 20 } = req.query;
+    const { status, startDate, endDate, customerId, search, page = 1, limit = 20 } = req.query;
     
     // Build filter object
     const filter = {};
@@ -439,6 +439,53 @@ exports.getAllOrders = async (req, res) => {
       filter.customerId = new mongoose.Types.ObjectId(customerId);
     }
     
+    // Search filter - search in order ID, customer name/email, or order items
+    // For search, we need to use aggregation to search in populated fields
+    if (search && search.trim()) {
+      const searchTerm = search.trim();
+      const searchRegex = { $regex: searchTerm, $options: 'i' };
+      
+      // First, try to find matching customers
+      const matchingCustomers = await User.find({
+        $or: [
+          { username: searchRegex },
+          { email: searchRegex },
+          { name: searchRegex }
+        ]
+      }).select('_id').lean();
+      
+      const customerIds = matchingCustomers.map(c => c._id);
+      
+      // Build search conditions
+      const searchConditions = [
+        { 'items.name': searchRegex },
+        { 'guestDetails.name': searchRegex },
+        { 'guestDetails.email': searchRegex }
+      ];
+      
+      // Add customer ID matches if we found any
+      if (customerIds.length > 0) {
+        searchConditions.push({ customerId: { $in: customerIds } });
+      }
+      
+      // If search looks like an ObjectId, also search by order ID
+      if (mongoose.Types.ObjectId.isValid(searchTerm)) {
+        searchConditions.push({ _id: new mongoose.Types.ObjectId(searchTerm) });
+      }
+      
+      // If search is a partial ObjectId (at least 8 characters), search as string
+      if (searchTerm.length >= 8) {
+        searchConditions.push({ 
+          _id: { 
+            $regex: searchTerm, 
+            $options: 'i' 
+          } 
+        });
+      }
+      
+      filter.$or = searchConditions;
+    }
+    
     // Calculate pagination
     const skip = (parseInt(page) - 1) * parseInt(limit);
     
@@ -447,7 +494,7 @@ exports.getAllOrders = async (req, res) => {
     
     // Fetch orders with filters, pagination, and populate customer info
     const orders = await Order.find(filter)
-      .populate('customerId', 'username email')
+      .populate('customerId', 'username email name')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit))
