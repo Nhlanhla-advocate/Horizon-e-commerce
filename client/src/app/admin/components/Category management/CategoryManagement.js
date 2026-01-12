@@ -45,8 +45,13 @@ export default function CategoryManagement() {
                 const errorData = await response.json().catch(() => ({}));
                 throw new Error(errorData.message || 'Failed to fetch categories');
             }
-            
-            
+            const data = await response.json();
+            setCategories(data.categories || data.data || []);
+        } catch (err) {
+            console.error('Error fetching categories:', err);
+            setError(err.message);
+        } finally {
+            setLoading(false);
         }
-    }
+    };
 }
