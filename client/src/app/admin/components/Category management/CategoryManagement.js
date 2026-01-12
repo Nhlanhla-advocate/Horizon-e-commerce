@@ -19,7 +19,7 @@ export default function CategoryManagement() {
         slug: ''
     });
 
-    const fetchCateegories = async () => {
+    const fetchCategories = async () => {
         try {
             setLoading(true);
             setError(null);
@@ -41,6 +41,11 @@ export default function CategoryManagement() {
                 },
             });
 
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Failed to fetch categories');
+            }
+            
             
         }
     }
