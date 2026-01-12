@@ -15,6 +15,7 @@ const {
 } = require('../controllers/adminController');
 
 const { getAllOrders } = require('../controllers/orderController');
+const categoryRoutes = require('./category');
 
 const { authMiddleware } = require('../middleware/authMiddleware');
 
@@ -32,5 +33,8 @@ router.get('/profile', authMiddleware, getAdminProfile);
 
 // Get all orders with filters (protected route - admin only)
 router.get('/orders', authMiddleware, getAllOrders);
+
+// Category management routes (protected route - admin only)
+router.use('/categories', categoryRoutes);
 
 module.exports = router;
