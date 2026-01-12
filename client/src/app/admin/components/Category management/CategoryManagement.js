@@ -68,5 +68,15 @@ export default function CategoryManagement() {
         return () => clearTimeout(searchTimer);
     }, [searchTerm]);
 
-    
+    //Reset form
+    const resetForm = () => {
+        setFormData ({
+            name: '',
+            description: '',
+            slug: ''
+        });
+        setEditingCategory(null);
+        setError(null);
+        setSuccess(null);
+    };
 }
