@@ -122,7 +122,26 @@ export default function CategoryManagement() {
                 ...formData,
                 slug: formData.slug || generateSlug(formData.name)
             };
+
+            const response = await fetch(`${BASE_URL}/admin/categories`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+
+                body:JSON.stringify(categoryData),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Failed to add category');
+            }
         
+            setSuccess('Category added successfully!');
+            await fetchCategories();
+            setShowAddform(false)
+            resetForm();
         }
     }
 }
