@@ -54,4 +54,19 @@ export default function CategoryManagement() {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        fetchCategories();
+    }, [searchTerm]);
+
+    //Debounce search
+    useEffect(() => {
+        const searchTimer = setTimeout(() => {
+            fetchCategories();
+        }, 300);
+
+        return () => clearTimeout(searchTimer);
+    }, [searchTerm]);
+
+    
 }
