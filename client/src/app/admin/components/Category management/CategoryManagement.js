@@ -175,8 +175,8 @@ export default function CategoryManagement() {
             const response = await fetch(`$(BASE_URL)/admin/categories/$(editingCategory._id)`, {
                 method: 'PUT',
                 headers: {
-                    'Authorization': `Bearer $(token)`,
-                    'Content-Type': 'application/jsoon',
+                    Authorization: `Bearer $(token)`,
+                    'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(categoryData),
             });
@@ -199,6 +199,24 @@ export default function CategoryManagement() {
             setError(err.message);
         }
       };
+
+      //Handle delete category
+      const handleDeleteCategory = async (categoryId) => {
+        if (!window.confirm('Are you sure you want to delete this category? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
+            setDeletingCategoryId(categoryId);
+            setError(null);
+            setSuccess(null);
+
+            const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+            if (!token) {
+                throw new Error('Authentication required');
+            }
+        }
+      }
 
       
 
