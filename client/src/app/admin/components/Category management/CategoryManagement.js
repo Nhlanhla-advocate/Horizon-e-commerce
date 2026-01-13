@@ -215,7 +215,24 @@ export default function CategoryManagement() {
             if (!token) {
                 throw new Error('Authentication required');
             }
+
+            const response = await fetch(`$(BASE_URL)/admin/categories/$(categoryId)`, {
+                method: 'DELETE',
+                headers: {
+                    Authorizations: `Bearer $(token)`,
+                    'content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Failed to delete category');
+            }
+
+            setSuccess('Category deleted successfully!');
+            await fetchCategories();
         }
+
       }
 
       
