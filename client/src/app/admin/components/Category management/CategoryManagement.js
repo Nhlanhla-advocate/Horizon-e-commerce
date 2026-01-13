@@ -261,7 +261,27 @@ export default function CategoryManagement() {
         resetForm();
       };
 
-      
+      return  (
+      <div className="dashboard-container">
+        <div className="dashboard-header">
+            <div>
+                <h2 className="dashboard-title">Category Management</h2>
+                <p className="dashboard-subtitle"></p>
+            </div>
+            <button
+              onClick={() => {
+                resetForm();
+                setShowAddform(true);
+              }}
+              className="admin-btn admin-btn-primary"
+              >
+                Add Category
+              </button>
+        </div>
+    </div>
+    
+            )
+
 
          
 
