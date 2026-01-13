@@ -255,6 +255,12 @@ export default function CategoryManagement() {
         setSuccess(null)
       };
 
+      //Handle form close
+      const handleFormClose = () => {
+        setShowAddform(false);
+        resetForm();
+      };
+
       
 
          
