@@ -172,7 +172,38 @@ export default function CategoryManagement() {
                 slug: formData.slug || generateSlug(formData.name)
             };
 
-            
+            const response = await fetch(`$(BASE_URL)/admin/categories/$(editingCategory._id)`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer $(token)`,
+                    'Content-Type': 'application/jsoon',
+                },
+                body: JSON.stringify(categoryData),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Failed to update category');
+            }
+
+            setSuccess('Category updated successfully!');
+
+            await fetchCategories();
+            setShowAddform(false);
+            resetForm();
+
+            //Clear success message after 3 seconds
+            setTimeout(() => setSuccess(null), 3000);
+        } catch (err) {
+            console.error('Error updating category', err);
+            setError(err.message);
         }
+      };
+
+      
+
+         
+
+
     }
 }
