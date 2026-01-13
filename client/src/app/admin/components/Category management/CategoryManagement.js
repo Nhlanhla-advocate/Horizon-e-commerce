@@ -142,6 +142,37 @@ export default function CategoryManagement() {
             await fetchCategories();
             setShowAddform(false)
             resetForm();
+
+            //Clear success message after 3 seconds
+            setTimeout(() => setSuccess(null), 3000);
+        } catch (err) {
+            console.error('Error adding category:', err);
+            setError(err.message);
+        }
+    };
+
+    //Handle edit category
+    const handleEditCategory = async (e) => {
+        e.preventDefault();
+
+        if (!editingCategory) return;
+
+        try {
+            setError(null);
+            setSuccess(null);
+
+            const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+            if (!token) {
+                throw new Error ('Authentication required');
+            }
+
+            //Generate slug if not provided
+            const categoryData = {
+                ...formData,
+                slug: formData.slug || generateSlug(formData.name)
+            };
+
+            
         }
     }
 }
