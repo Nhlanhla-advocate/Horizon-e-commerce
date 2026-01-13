@@ -231,9 +231,29 @@ export default function CategoryManagement() {
 
             setSuccess('Category deleted successfully!');
             await fetchCategories();
-        }
 
-      }
+            //Clear success message after 3 seconds
+            setTimeout(() => setSuccess(null), 3000);
+        } catch (err) {
+            console.error('Error deleting category:', err);
+            setError(err.message);
+        } finally {
+            setDeletingCategoryId(null);
+        }
+      };
+
+      //Handle edit button click
+      const handleEditClick = (category) => {
+        setEditingCategory(category);
+        setFormData({
+            name: category.name || '',
+            description: category.description || '',
+            slug: category.slug || generateSlug(category.name || '')
+        });
+        setShowAddform(true);
+        setError(null);
+        setSuccess(null)
+      };
 
       
 
