@@ -6,14 +6,15 @@ import '../../../assets/css/admin.css';
 //Backend base URL
 const BASE_URL = 'http://localhost:5000';
 
-export default function CategoryManagement() {
+export default function CategoryManagementHierarchy() {
     const [categories, setCategories] = useState([]);
+    const [categoryTree, setCategoryTree] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
     const [showAddForm, setShowAddForm] = useState(false);
     const [editingCategory, setEditingCategory] = useState(null);
-    const [searchTerm, setSearchTerm] = useState('');
+    const [expandedCategories, setExpandedCategories] = useState(new Set());
     const [deletingCategoryId, setDeletingCategoryId] = useState(null);
     const [formData, setFormData] = useState({
         name: '',
@@ -32,12 +33,7 @@ export default function CategoryManagement() {
                 throw new Error('Authentication required');
             }
 
-            const queryParams = new URLSearchParams();
-            if (searchTerm) {
-                queryParams.append('search', searchTerm);
-            }
-
-            const response = await fetch(`${BASE_URL}/admin/categories?${queryParams}`, {
+            const response = await fetch(`${BASE_URL}/admin/categories?hierarchy=true`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
@@ -48,8 +44,10 @@ export default function CategoryManagement() {
                 const errorData = await response.json().catch(() => ({}));
                 throw new Error(errorData.message || 'Failed to fetch categories');
             }
+            
             const data = await response.json();
-            setCategories(data.categories || data.data || []);
+            setCategories(data.flat || []);
+            setCategoryTree(data.categories || []);
         } catch (err) {
             console.error('Error fetching categories:', err);
             setError(err.message);
@@ -60,16 +58,7 @@ export default function CategoryManagement() {
 
     useEffect(() => {
         fetchCategories();
-    }, [searchTerm]);
-
-    //Debounce search
-    useEffect(() => {
-        const searchTimer = setTimeout(() => {
-            fetchCategories();
-        }, 300);
-
-        return () => clearTimeout(searchTimer);
-    }, [searchTerm]);
+    }, []);
 
     //Reset form
     const resetForm = () => {
@@ -108,6 +97,39 @@ export default function CategoryManagement() {
         });
     };
 
+    //Toggle expand/collapse
+    const toggleExpand = (categoryId) => {
+        setExpandedCategories(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(categoryId)) {
+                newSet.delete(categoryId);
+            } else {
+                newSet.add(categoryId);
+            }
+            return newSet;
+        });
+    };
+
+    //Get all parent options (excluding current category and its descendants)
+    const getParentOptions = (excludeId = null) => {
+        const getDescendants = (categoryId) => {
+            const descendants = [categoryId];
+            const findChildren = (parentId) => {
+                categories.forEach(cat => {
+                    if (cat.parent && cat.parent.toString() === parentId.toString()) {
+                        descendants.push(cat._id);
+                        findChildren(cat._id);
+                    }
+                });
+            };
+            if (excludeId) findChildren(excludeId);
+            return descendants;
+        };
+
+        const excludeIds = excludeId ? getDescendants(excludeId) : [];
+        return categories.filter(cat => !excludeIds.some(id => id.toString() === cat._id.toString()));
+    };
+
     //Handle add category
     const handleAddCategory = async (e) => {
         e.preventDefault();
@@ -121,7 +143,6 @@ export default function CategoryManagement() {
                 throw new Error('Authentication required');
             }
 
-            //Generate slug if not provided
             const categoryData = {
                 ...formData,
                 slug: formData.slug || generateSlug(formData.name),
@@ -147,7 +168,6 @@ export default function CategoryManagement() {
             setShowAddForm(false);
             resetForm();
 
-            //Clear success message after 3 seconds
             setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
             console.error('Error adding category:', err);
@@ -170,7 +190,6 @@ export default function CategoryManagement() {
                 throw new Error('Authentication required');
             }
 
-            //Generate slug if not provided
             const categoryData = {
                 ...formData,
                 slug: formData.slug || generateSlug(formData.name),
@@ -192,12 +211,10 @@ export default function CategoryManagement() {
             }
 
             setSuccess('Category updated successfully!');
-
             await fetchCategories();
             setShowAddForm(false);
             resetForm();
 
-            //Clear success message after 3 seconds
             setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
             console.error('Error updating category', err);
@@ -237,7 +254,6 @@ export default function CategoryManagement() {
             setSuccess('Category deleted successfully!');
             await fetchCategories();
 
-            //Clear success message after 3 seconds
             setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
             console.error('Error deleting category:', err);
@@ -267,12 +283,125 @@ export default function CategoryManagement() {
         resetForm();
     };
 
+    //Render category tree
+    const renderCategoryTree = (tree, level = 0) => {
+        return tree.map(category => {
+            const hasChildren = category.children && category.children.length > 0;
+            const isExpanded = expandedCategories.has(category._id.toString());
+            const indent = level * 24;
+
+            return (
+                <div key={category._id} style={{ marginLeft: `${indent}px` }}>
+                    <div 
+                        className="orders-tr" 
+                        style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            padding: '0.75rem',
+                            marginBottom: '0.25rem',
+                            backgroundColor: level % 2 === 0 ? '#ffffff' : '#f9fafb',
+                            border: '1px solid #e5e7eb',
+                            borderRadius: '0.375rem'
+                        }}
+                    >
+                        <div style={{ display: 'flex', alignItems: 'center', flex: 1, gap: '0.75rem' }}>
+                            {hasChildren ? (
+                                <button
+                                    onClick={() => toggleExpand(category._id.toString())}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        cursor: 'pointer',
+                                        padding: '0.25rem',
+                                        fontSize: '0.875rem',
+                                        color: '#6b7280'
+                                    }}
+                                >
+                                    {isExpanded ? '▼' : '▶'}
+                                </button>
+                            ) : (
+                                <span style={{ width: '1.5rem' }}></span>
+                            )}
+                            
+                            <div style={{ flex: 1 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <strong style={{ fontSize: '1rem' }}>{category.name}</strong>
+                                    {category.parent && (
+                                        <span style={{ 
+                                            fontSize: '0.75rem', 
+                                            color: '#6b7280',
+                                            fontStyle: 'italic'
+                                        }}>
+                                            (Child of: {category.parent.name || 'Unknown'})
+                                        </span>
+                                    )}
+                                    <span className={`status-badge status-${category.isActive ? 'active' : 'inactive'}`} style={{
+                                        fontSize: '0.75rem',
+                                        padding: '0.125rem 0.5rem',
+                                        backgroundColor: category.isActive ? '#10b981' : '#ef4444',
+                                        color: 'white'
+                                    }}>
+                                        {category.isActive ? 'Active' : 'Inactive'}
+                                    </span>
+                                </div>
+                                {category.description && (
+                                    <p style={{ fontSize: '0.875rem', color: '#6b7280', marginTop: '0.25rem' }}>
+                                        {category.description}
+                                    </p>
+                                )}
+                                <p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.25rem' }}>
+                                    Slug: <span className="mono-text">{category.slug}</span> | 
+                                    Level: {category.level || 0} | 
+                                    Path: <span className="mono-text">{category.path || category.slug}</span>
+                                </p>
+                            </div>
+                            
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <button
+                                    onClick={() => handleEditClick(category)}
+                                    className="admin-btn admin-btn-secondary"
+                                    style={{
+                                        padding: '0.375rem 0.75rem',
+                                        fontSize: '0.875rem'
+                                    }}
+                                >
+                                    Edit
+                                </button>
+                                <button
+                                    onClick={() => handleDeleteCategory(category._id)}
+                                    disabled={deletingCategoryId === category._id}
+                                    className="admin-btn"
+                                    style={{
+                                        padding: '0.375rem 0.75rem',
+                                        fontSize: '0.875rem',
+                                        backgroundColor: '#ef4444',
+                                        color: 'white',
+                                        opacity: deletingCategoryId === category._id ? 0.6 : 1,
+                                        cursor: deletingCategoryId === category._id ? 'not-allowed' : 'pointer'
+                                    }}
+                                >
+                                    {deletingCategoryId === category._id ? 'Deleting...' : 'Delete'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {hasChildren && isExpanded && (
+                        <div style={{ marginTop: '0.5rem' }}>
+                            {renderCategoryTree(category.children, level + 1)}
+                        </div>
+                    )}
+                </div>
+            );
+        });
+    };
+
     return (
         <div className="dashboard-container">
             <div className="dashboard-header">
                 <div>
-                    <h2 className="dashboard-title">Category Management</h2>
-                    <p className="dashboard-subtitle">Manage product categories</p>
+                    <h2 className="dashboard-title">Category Hierarchy</h2>
+                    <p className="dashboard-subtitle">Manage category tree structure</p>
                 </div>
                 <button
                     onClick={() => {
@@ -298,111 +427,22 @@ export default function CategoryManagement() {
                 </div>
             )}
 
-            {/* Search */}
-            <div style={{ marginBottom: '1.5rem' }}>
-                <label className="filter-label">Search Categories</label>
-                <input
-                    type="text"
-                    placeholder="Search by name or description..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="filter-input"
-                    style={{ width: '100%', maxWidth: '400px' }}
-                />
-            </div>
-
             {/* Loading State */}
-            {loading && categories.length === 0 ? (
+            {loading ? (
                 <div className="dashboard-loading">
                     <div className="admin-spinner"></div>
                 </div>
-            ) : categories.length === 0 ? (
+            ) : categoryTree.length === 0 ? (
                 <div className="orders-empty">
                     <p>No categories found. Add a new category to get started.</p>
                 </div>
             ) : (
-                /* Categories Table */
                 <div className="orders-wrapper">
-                    <div className="orders-table-wrapper">
-                        <table className="orders-table">
-                            <thead>
-                                <tr className="orders-head-row">
-                                    <th className="orders-th">Name</th>
-                                    <th className="orders-th">Parent</th>
-                                    <th className="orders-th">Slug</th>
-                                    <th className="orders-th">Description</th>
-                                    <th className="orders-th">Created</th>
-                                    <th className="orders-th">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {categories.map(category => (
-                                    <tr key={category._id} className="orders-tr">
-                                        <td className="orders-td">
-                                            <strong>{category.name}</strong>
-                                            {category.level > 0 && (
-                                                <span style={{ fontSize: '0.75rem', color: '#6b7280', marginLeft: '0.5rem' }}>
-                                                    (Level {category.level || 0})
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td className="orders-td">
-                                            {category.parent?.name || category.parent ? (
-                                                <span style={{ color: '#2563eb' }}>
-                                                    {category.parent?.name || 'Unknown'}
-                                                </span>
-                                            ) : (
-                                                <span style={{ color: '#6b7280', fontStyle: 'italic' }}>Root</span>
-                                            )}
-                                        </td>
-                                        <td className="orders-td mono-text">
-                                            {category.slug || 'N/A'}
-                                        </td>
-                                        <td className="orders-td">
-                                            {category.description || 'No description'}
-                                        </td>
-                                        <td className="orders-td mono-text">
-                                            {category.createdAt 
-                                                ? new Date(category.createdAt).toLocaleDateString('en-US', {
-                                                    year: 'numeric',
-                                                    month: 'short',
-                                                    day: 'numeric'
-                                                })
-                                                : 'N/A'}
-                                        </td>
-                                        <td className="orders-td">
-                                            <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                                <button
-                                                    onClick={() => handleEditClick(category)}
-                                                    className="admin-btn admin-btn-secondary"
-                                                    style={{
-                                                        padding: '0.375rem 0.75rem',
-                                                        fontSize: '0.875rem'
-                                                    }}
-                                                >
-                                                    Edit
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteCategory(category._id)}
-                                                    disabled={deletingCategoryId === category._id}
-                                                    className="admin-btn"
-                                                    style={{
-                                                        padding: '0.375rem 0.75rem',
-                                                        fontSize: '0.875rem',
-                                                        backgroundColor: '#ef4444',
-                                                        color: 'white',
-                                                        opacity: deletingCategoryId === category._id ? 0.6 : 1,
-                                                        cursor: deletingCategoryId === category._id ? 'not-allowed' : 'pointer'
-                                                    }}
-                                                >
-                                                    {deletingCategoryId === category._id ? 'Deleting...' : 'Delete'}
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                    <div style={{ padding: '1rem' }}>
+                        <h3 style={{ marginBottom: '1rem', fontSize: '1.125rem', fontWeight: '600' }}>
+                            Category Tree Structure
+                        </h3>
+                        {renderCategoryTree(categoryTree)}
                     </div>
                 </div>
             )}
@@ -468,13 +508,11 @@ export default function CategoryManagement() {
                                     style={{ width: '100%' }}
                                 >
                                     <option value="">None (Root Category)</option>
-                                    {categories
-                                        .filter(cat => !editingCategory || cat._id.toString() !== editingCategory._id.toString())
-                                        .map(cat => (
-                                            <option key={cat._id} value={cat._id}>
-                                                {'  '.repeat(cat.level || 0)}{cat.name}
-                                            </option>
-                                        ))}
+                                    {getParentOptions(editingCategory?._id).map(cat => (
+                                        <option key={cat._id} value={cat._id}>
+                                            {'  '.repeat(cat.level || 0)}{cat.name}
+                                        </option>
+                                    ))}
                                 </select>
                                 <p className="filter-help">
                                     Select a parent category to create a subcategory, or leave empty for a root category
