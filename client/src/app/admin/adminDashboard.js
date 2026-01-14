@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardStats from './components/DashboardStats';
 import ProductManagement from './components/Product management/ProductManagement';
+import CategoryManagement from './components/Category management/CategoryManagement';
 import Analytics from './components/Analytics';
 import InventoryAlerts from './components/InventoryAlerts';
 import ReviewManagement from './components/ReviewManagement';
@@ -22,7 +23,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     const handleTabChange = (event) => {
       const tabId = event.detail;
-      const validTabs = ['overview', 'products', 'analytics', 'inventory', 'reviews', 'cache', 'orders'];
+      const validTabs = ['overview', 'products', 'categories', 'analytics', 'inventory', 'reviews', 'cache', 'orders'];
       if (validTabs.includes(tabId)) {
         setActiveTab(tabId);
       }
@@ -143,6 +144,13 @@ const AdminDashboard = () => {
       icon: '',
       component: ProductManagement,
       description: 'Manage inventory'
+    },
+    {
+      id: 'categories',
+      label: 'Categories',
+      icon: '',
+      component: CategoryManagement,
+      description: 'Manage categories'
     },
     {
       id: 'analytics',
