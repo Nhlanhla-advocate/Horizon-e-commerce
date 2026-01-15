@@ -55,3 +55,24 @@
     width: 1.5rem;
 }
 
+/*Category Info Section*/
+.category-info {
+    flex: 1;
+}
+
+.category-info-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.category-name {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.category-parent-label {
+    font-size: 0.75rem;
+    color: #6b7280;
+    font-style: italic;
+}
