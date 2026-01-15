@@ -103,3 +103,27 @@
     color: #9ca3af;
     margin-top: 0.25rem;
 }
+
+/*Category Actions*/
+.category-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.category-action-button {
+    padding: 0.375rem 0.7rem;
+    font-size: 0.875rem;
+}
+
+.category-delete-button {
+    background-color: #ef4444;
+    color: white;
+    opacity: 1;
+    cursor: pointer;
+}
+
+.category-delete-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
