@@ -46,3 +46,12 @@
     color: #6b7280;
     transition: color 0.2s;
 }
+
+.category-expand-button:hover {
+    color: #2563eb;
+}
+
+.category-expand-spacer {
+    width: 1.5rem;
+}
+
