@@ -247,8 +247,14 @@ export default function OrderList({ onOrderSelect }) {
         )}
 
         {/*Search and Export Section*/}
-        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', alignItems: 'flex-end' }}>
-            <div style={{ flex: 1 }}>
+        <div style={{ 
+            display: 'flex', 
+            gap: '1rem', 
+            marginBottom: '1.5rem', 
+            alignItems: 'flex-start',
+            flexWrap: 'wrap'
+        }}>
+            <div style={{ flex: 1, minWidth: '300px' }}>
                 <label className="filter-label">Search Orders</label>
                 <input
                     type="text"
@@ -260,18 +266,27 @@ export default function OrderList({ onOrderSelect }) {
                 />
                 <p className="filter-help">Search across order IDs, customer information, and product names</p>
             </div>
-            <button 
-                onClick={handleExportOrders}
-                className="admin-btn admin-btn-secondary"
-                disabled={orders.length === 0}
-                style={{ 
-                    whiteSpace: 'nowrap',
-                    opacity: orders.length === 0 ? 0.6 : 1,
-                    cursor: orders.length === 0 ? 'not-allowed' : 'pointer'
-                }}
-            >
-                Export to CSV
-            </button>
+            <div style={{ 
+                display: 'flex', 
+                alignItems: 'flex-end',
+                height: 'fit-content',
+                marginTop: '1.5rem'
+            }}>
+                <button 
+                    onClick={handleExportOrders}
+                    className="admin-btn admin-btn-secondary"
+                    disabled={orders.length === 0}
+                    style={{ 
+                        whiteSpace: 'nowrap',
+                        opacity: orders.length === 0 ? 0.6 : 1,
+                        cursor: orders.length === 0 ? 'not-allowed' : 'pointer',
+                        height: 'fit-content',
+                        padding: '0.5rem 1rem'
+                    }}
+                >
+                    Export to CSV
+                </button>
+            </div>
         </div>
 
         {/*Filters*/}
