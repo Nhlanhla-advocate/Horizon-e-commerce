@@ -1,0 +1,12 @@
+/*Category Hierarchy Tree styles*/
+
+.category-hierarchy-tree {
+    padding: 1rem;
+}
+
+.category-hierarchy-title {
+    margin-bottom: 1rem;
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
