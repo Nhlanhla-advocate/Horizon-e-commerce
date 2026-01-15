@@ -1,11 +1,11 @@
-/* Admin Dashboard Styles */
+/* ADMIN DASHBOARD STYLES */
 
-/* Base styles for admin dashboard */
+/*BASE STYLES FOR ADMIN DASHBOARD */
 .admin-dashboard {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
-/* Tab navigation styles */
+/* TAB NAVIGATION STYLES */
 .admin-tabs {
   border-bottom: 1px solid #e5e7eb;
 }
@@ -30,7 +30,7 @@
   border-bottom-color: #2563eb;
 }
 
-/* Card styles */
+/* CARD STYLES */
 .admin-card {
   background: white;
   border-radius: 0.5rem;
@@ -54,7 +54,7 @@
   color: #6b7280;
 }
 
-/* Stats cards */
+/* STATS CARDS */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -135,7 +135,7 @@
   margin-top: 0.125rem;
 }
 
-/* Button styles */
+/* BUTTON STYLES */
 .admin-btn {
   display: inline-flex;
   align-items: center;
@@ -182,7 +182,7 @@
   cursor: not-allowed;
 }
 
-/* Form styles */
+/* FORM STYLES */
 .admin-form-group {
   margin-bottom: 1rem;
   width: 100%;
@@ -249,7 +249,7 @@
   max-width: 100%;
 }
 
-/* Table styles */
+/* TABLE STYLES */
 .admin-table {
   width: 100%;
   max-width: 100%;
@@ -292,7 +292,7 @@
   border-bottom: none;
 }
 
-/* Badge styles */
+/* BADGE STYLES */
 .admin-badge {
   display: inline-flex;
   align-items: center;
@@ -324,7 +324,7 @@
   color: #1e40af;
 }
 
-/* Loading spinner */
+/* LOADING SPINNER */
 .admin-spinner {
   display: inline-block;
   width: 1rem;
@@ -341,7 +341,7 @@
   }
 }
 
-/* Alert styles */
+/* ALERT STYLES */
 .admin-alert {
   padding: 1rem;
   border-radius: 0.5rem;
@@ -372,7 +372,7 @@
   color: #1e40af;
 }
 
-/* Modal styles */
+/* MODAL STYLES */
 .admin-modal-overlay {
   position: fixed;
   top: 0;
@@ -398,7 +398,7 @@
   box-sizing: border-box;
 }
 
-/* Pagination styles */
+/* PAGINATION STYLES */
 .admin-pagination {
   display: flex;
   align-items: center;
@@ -437,7 +437,7 @@
   cursor: not-allowed;
 }
 
-/* Responsive design */
+/* RESPONSIVE DESIGN */
 @media (max-width: 768px) {
   .stats-grid {
     grid-template-columns: 1fr;
@@ -458,7 +458,7 @@
   }
 }
 
-/* Utility classes */
+/* UTILITY CLASSES */
 .text-center {
   text-align: center;
 }
@@ -763,7 +763,7 @@
 }
 
 /* ============================================
-   DARK MODE STYLES
+   DARK MODE STYLES DARK MODE STYLES    
    ============================================ */
 
 :root.dark-mode .admin-layout,
@@ -904,7 +904,7 @@
   color: #fecaca !important; /* red-200 */
 }
 
-/* Search bar dark mode */
+/* SEARCH BAR DARK MODE */
 :root.dark-mode .admin-search-input,
 :root.dark-mode .product-management-search-input,
 :root.dark-mode .review-management-search-input {
@@ -936,7 +936,7 @@
   color: #9ca3af !important; /* gray-400 */
 }
 
-/* Dashboard stats dark mode */
+/* DASHBOARD STATS DARK MODE */
 :root.dark-mode .dashboard-container {
   background-color: transparent !important;
 }
@@ -949,7 +949,7 @@
   color: #9ca3af !important; /* gray-400 */
 }
 
-/* Pagination dark mode */
+/* PAGINATION DARK MODE */
 :root.dark-mode .pagination-button {
   background-color: #1f2937 !important; /* gray-800 */
   border-color: #374151 !important; /* gray-700 */
@@ -965,7 +965,7 @@
   color: white !important;
 }
 
-/* Modal dark mode */
+/* MODAL DARK MODE */
 :root.dark-mode .admin-modal-overlay {
   background-color: rgba(0, 0, 0, 0.75) !important;
 }
@@ -983,7 +983,7 @@
   color: #f9fafb !important; /* gray-50 */
 }
 
-/* Charts dark mode */
+/* CHARTS DARK MODE */
 :root.dark-mode .charts-4box-card {
   background-color: #1f2937 !important; /* gray-800 */
   border-color: #374151 !important; /* gray-700 */

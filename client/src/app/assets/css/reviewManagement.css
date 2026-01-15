@@ -1,13 +1,13 @@
-/* ReviewManagement */
+/* REVIEW MANAGEMENT */
 
-/* Main Container */
+/* MAIN CONTAINER */
 .review-management-container {
   display: flex;
   flex-direction: column;
   gap: 1.5rem; /* space-y-6 */
 }
 
-/* Header Section */
+/* HEADER SECTION */
 .review-management-title {
   font-size: 1.25rem; /* text-xl */
   font-weight: 600; /* font-semibold */
@@ -19,7 +19,7 @@
   color: #6b7280; /* text-gray-500 */
 }
 
-/* Search Bar Container */
+/* SEARCH BAR CONTAINER */
 .review-management-search-container {
   margin-top: 1rem;
   padding-top: 1rem;
@@ -84,7 +84,7 @@
   color: #111827; /* text-gray-900 */
 }
 
-/* Grid Layout */
+/* GRID LAYOUT */
 .review-management-grid {
   display: grid;
   grid-template-columns: 1fr; /* grid-cols-1 */
@@ -117,7 +117,7 @@
   }
 }
 
-/* Products Section */
+/* PRODUCTS SECTION */
 .review-management-section-title {
   font-size: 1.125rem; /* text-lg */
   font-weight: 600; /* font-semibold */
@@ -146,7 +146,7 @@
   overflow-y: auto;
 }
 
-/* Product Button */
+/* PRODUCT BUTTON */
 .review-management-product-button {
   width: 100%; /* w-full */
   text-align: left; /* text-left */
@@ -237,7 +237,7 @@
   font-size: 1.25rem; /* text-xl */
 }
 
-/* Reviews Section */
+/* REVIEWS SECTION */
 .review-management-reviews-header {
   display: flex;
   align-items: center;
@@ -329,7 +329,7 @@
   margin-top: 1.5rem; /* mt-6 */
 }
 
-/* Empty State */
+/* EMPTY STATE */
 .review-management-empty-state {
   text-align: center; /* text-center */
   padding: 3rem 0; /* py-12 */

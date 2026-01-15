@@ -1,6 +1,6 @@
-/* DashboardStats */
+/* DASHBOARD STATS */
 
-/* Loading State */
+/* LOADING STATE */
 .dashboard-loading-container {
   display: flex;
   align-items: center;
@@ -18,7 +18,7 @@
   color: #4b5563; /* text-gray-600 */
 }
 
-/* Error State */
+/* ERROR STATE */
 .dashboard-error-text {
   font-size: 0.875rem; /* text-sm */
 }
@@ -27,7 +27,7 @@
   margin-top: 1rem; /* mt-4 */
 }
 
-/* Main Container */
+/* MAIN CONTAINER */
 .dashboard-container {
   display: flex;
   flex-direction: column;
@@ -41,7 +41,7 @@
   position: relative;
 }
 
-/* Header Section */
+/* HEADER SECTION */
 .dashboard-header {
   display: flex;
   justify-content: space-between;
@@ -78,7 +78,7 @@
   font-size: 0.625rem; /* text-[10px] */
 }
 
-/* Stats Cards */
+/* STATS CARDS */
 .dashboard-stats-grid {
   width: 100%;
   max-width: 100%;
@@ -87,7 +87,7 @@
   overflow-x: hidden;
 }
 
-/* Hover effect for stat cards - pop up on hover */
+/* HOVER EFFECT FOR STAT CARDS - POP UP ON HOVER */
 .dashboard-stats-grid .stat-card {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
@@ -147,7 +147,7 @@
   font-size: 1.125rem; /* text-lg */
 }
 
-/* Charts Section */
+/* CHARTS SECTION */
 .dashboard-charts-section {
   width: 100%;
   max-width: 100%;
@@ -156,7 +156,7 @@
   overflow-x: hidden;
 }
 
-/* Hover effect for chart containers - pop up on hover */
+/* HOVER EFFECT FOR CHART CONTAINERS - POP UP ON HOVER */
 .dashboard-charts-section > div {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -166,7 +166,7 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12), 0 3px 8px rgba(0, 0, 0, 0.08);
 }
 
-/* Recent Orders / Top Rated Products Grid */
+/* RECENT ORDERS / TOP RATED PRODUCTS GRID */
 .dashboard-grid-section {
   display: grid;
   grid-template-columns: 1fr; /* grid-cols-1 */
@@ -183,7 +183,7 @@
   }
 }
 
-/* Card Headers */
+/* CARD HEADERS */
 .dashboard-card-header {
   font-size: 0.75rem; /* text-xs */
   font-weight: 600; /* font-semibold */
@@ -196,10 +196,10 @@
   overflow-y: auto;
   overflow-x: hidden;
   max-height: 160px;
-  /* Custom scrollbar styling to make it less intrusive */
+  /* CUSTOM SCROLLBAR STYLING TO MAKE IT LESS INTRODUCTORY */
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
-  /* Ensure scrollbar is contained within the card */
+  /* ENSURE SCROLLBAR IS CONTAINED WITHIN THE CARD */
   position: relative;
 }
 
@@ -220,14 +220,14 @@
   background-color: #94a3b8;
 }
 
-/* Ensure cards don't create page-level scrollbars */
+/* ENSURE CARDS DON'T CREATE PAGE-LEVEL SCROLLBARS */
 .dashboard-grid-section .admin-card {
   overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
 }
 
-/* Hover effect for admin cards in grid - pop up on hover */
+/* HOVER EFFECT FOR ADMIN CARDS IN GRID - POP UP ON HOVER */
 .dashboard-grid-section .admin-card:hover {
   transform: translateY(-8px) scale(1.02);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15), 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -239,7 +239,7 @@
   gap: 0.25rem; /* space-y-1 */
 }
 
-/* Order/Product Item */
+/* ORDER/PRODUCT ITEM */
 .dashboard-item {
   display: flex;
   align-items: center;
@@ -316,7 +316,7 @@
   color: #6b7280; /* text-gray-500 */
 }
 
-/* Empty State */
+/* EMPTY STATE */
 .dashboard-empty-state {
   text-align: center;
   padding: 0.5rem 0; /* py-2 */
@@ -327,7 +327,7 @@
   font-size: 0.625rem; /* text-[10px] */
 }
 
-/* Dark Mode Styles for Dashboard Stats */
+/* DARK MODE STYLES FOR DASHBOARD STATS */
 :root.dark-mode .dashboard-container {
   background-color: transparent !important;
 }

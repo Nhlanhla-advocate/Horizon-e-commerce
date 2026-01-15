@@ -1,4 +1,4 @@
-/* Theme Toggle Button */
+/* THEME TOGGLE BUTTON */
 
 .admin-theme-toggle {
   display: flex;
@@ -32,7 +32,7 @@
   font-weight: 500;
 }
 
-/* Dark mode styles for the toggle button */
+/* DARK MODE STYLES FOR THE TOGGLE BUTTON */
 :root.dark-mode .admin-theme-toggle {
   background-color: rgba(255, 255, 255, 0.15);
   border-color: rgba(255, 255, 255, 0.25);

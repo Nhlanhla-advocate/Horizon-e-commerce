@@ -85,7 +85,7 @@
   color: #6b7280;
 }
 
-/* Orders table */
+/* ORDERS TABLE */
 .orders-wrapper {
   background-color: #ffffff;
   border-radius: 0.5rem;
@@ -196,7 +196,7 @@
   border-top: 1px solid #e5e7eb;
 }
 
-/* Summary */
+/* SUMMARY */
 .orders-summary {
   margin-top: 1rem;
   padding: 1rem;

@@ -1,13 +1,13 @@
-/* CacheManagement */
+/* CACHE MANAGEMENT*/
 
-/* Main Container */
+/* MAIN CONTAINER */
 .cache-management-container {
   display: flex;
   flex-direction: column;
   gap: 2rem; /* space-y-8 */
 }
 
-/* Header Section */
+/* HEADER SECTION */
 .cache-management-header {
   display: flex;
   flex-direction: column;
@@ -33,7 +33,7 @@
   margin-top: 0.25rem; /* mt-1 */
 }
 
-/* Refresh Button */
+/* REFRESH BUTTON */
 .cache-management-refresh-btn {
   background: linear-gradient(to right, #3b82f6, #9333ea); /* bg-gradient-to-r from-blue-500 to-purple-600 */
   color: white; /* text-white */
@@ -83,7 +83,7 @@
   font-size: 1.125rem; /* text-lg */
 }
 
-/* Error Display */
+/* ERROR DISPLAY */
 .cache-management-error {
   background-color: #fef2f2; /* bg-red-50 */
   border: 1px solid #fecaca; /* border border-red-200 */
@@ -111,7 +111,7 @@
   color: #b91c1c; /* text-red-700 */
 }
 
-/* Cache Status Overview Grid */
+/* CACHE STATUS OVERVIEW GRID */
 .cache-management-overview-grid {
   display: grid;
   grid-template-columns: 1fr; /* grid-cols-1 */
@@ -130,7 +130,7 @@
   }
 }
 
-/* Cache Status Card */
+/* CACHE STATUS CARD */
 .cache-management-status-card {
   background-color: white; /* bg-white */
   overflow: hidden; /* overflow-hidden */
@@ -209,7 +209,7 @@
   margin-right: 0.25rem; /* mr-1 */
 }
 
-/* Cache Details Section */
+/* CACHE DETAILS SECTION */
 .cache-management-details {
   background-color: white; /* bg-white */
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); /* shadow */
@@ -271,7 +271,7 @@
   font-weight: 500; /* font-medium */
 }
 
-/* Cache Actions Section */
+/* CACHE ACTIONS SECTION */
 .cache-management-actions {
   background-color: white; /* bg-white */
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); /* shadow */
@@ -375,7 +375,7 @@
   border-top-color: white; /* border-b-2 border-white */
 }
 
-/* Cache Information Section */
+/* CACHE INFORMATION SECTION */
 .cache-management-info {
   background-color: #eff6ff; /* bg-blue-50 */
   border: 1px solid #bfdbfe; /* border border-blue-200 */
@@ -415,7 +415,7 @@
   gap: 0.25rem; /* space-y-1 */
 }
 
-/* Loading State */
+/* LOADING STATE */
 .cache-management-loading {
   display: flex;
   align-items: center;
@@ -432,7 +432,7 @@
   border-top-color: #3b82f6; /* border-b-2 border-blue-500 */
 }
 
-/* No Cache State */
+/* NO CACHE STATE */
 .cache-management-no-cache {
   background-color: white; /* bg-white */
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); /* shadow */
@@ -467,7 +467,7 @@
   color: #6b7280; /* text-gray-500 */
 }
 
-/* Animations */
+/* ANIMATIONS */
 @keyframes spin {
   from {
     transform: rotate(0deg);

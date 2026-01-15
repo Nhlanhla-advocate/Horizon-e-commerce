@@ -1,4 +1,4 @@
-/* Auth page wrapper for centering */
+/* AUTH PAGE WRAPPER FOR CENTERING */
 .authPageWrapper {
     margin: 0;
     padding: 0;
@@ -9,7 +9,7 @@
     background: #f8fafc;
 }
 
-/* Two-column auth layout */
+/* TWO-COLUMN AUTH LAYOUT */
 .authSplit {
     display: flex;
     align-items: stretch;
@@ -22,7 +22,7 @@
     overflow: hidden;
 }
 
-/* Single column layout for forgot/reset password */
+/* SINGLE COLUMN LAYOUT FOR FORGOT/RESET PASSWORD */
 .authCenter {
     display: flex;
     align-items: center;
@@ -82,7 +82,7 @@
     background: #ffffff;
 }
 
-/* Responsive: stack on small screens */
+/* RESPONSIVE: STACK ON SMALL SCREENS */
 @media (max-width: 900px) {
     .authSplit {
         flex-direction: column;
@@ -94,7 +94,7 @@
     }
 }
 
-/* Existing styles below */
+/* EXISTING STYLES BELOW */
 .container {
     max-width: 400px;
     margin: 0;
@@ -173,7 +173,7 @@
     color: #0056b3;
 }
 
-/* Success message styling */
+/* SUCCESS MESSAGE STYLING */
 .successMessage {
     background-color: #e8f5e9;
     color: #2e7d32;
@@ -183,7 +183,7 @@
     text-align: center;
 }
 
-/* Password input container */
+/* PASSWORD INPUT CONTAINER */
 .passwordInputContainer {
     position: relative;
     display:flex;
@@ -191,7 +191,7 @@
 }
   
 .passwordInputContainer .input {
-    padding-right: 45px; /* Make space for the toggle button */
+    padding-right: 45px; /* MAKE SPACE FOR THE TOGGLE BUTTON */
     width: 100%;
 }
   
@@ -217,7 +217,7 @@
     outline-offset: 2px;
 }
 
-/* signup Redirect */
+/* SIGNUP REDIRECT */
 .signupRedirect {
     text-align: center;
     margin: 0;
@@ -235,7 +235,7 @@
     text-decoration: underline;
 }
 
-/* Signin Redirect */
+/* SIGNIN REDIRECT */
 .LoginRedirect {
     text-align: center;
     margin: 0;

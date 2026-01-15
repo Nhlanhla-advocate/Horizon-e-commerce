@@ -1,11 +1,11 @@
-/* Products Page Container */
+/* PRODUCTS PAGE CONTAINER */
 .products-page-container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem 1rem;
 }
 
-/* Products Controls Section - Filter/Search Bar */
+/* PRODUCTS CONTROLS SECTION - FILTER/SEARCH BAR */
 .products-controls {
   background: white;
   border-radius: 8px;
@@ -149,7 +149,7 @@
   color: #1f2937;
 }
 
-/* Empty State */
+/* EMPTY STATE */
 .empty-state {
   text-align: center;
   padding: 3rem 1rem;
@@ -183,7 +183,7 @@
   font-size: 1.125rem;
 }
 
-/* Products Grid */
+/* PRODUCTS GRID */
 .products-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -191,7 +191,7 @@
   margin-top: 2rem;
 }
 
-/* Product Card */
+/* PRODUCT CARD */
 .product-card {
   background: white;
   border-radius: 8px;
@@ -367,7 +367,7 @@
   height: 16px;
 }
 
-/* Loading state for images */
+/* LOADING STATE FOR IMAGES */
 .product-image.loading {
   opacity: 0.7;
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
@@ -384,9 +384,9 @@
   }
 }
 
-/* ===== RESPONSIVE STYLES ===== */
+/* RESPONSIVE STYLES */
 
-/* Desktop Large (1025px and above) */
+/* DESKTOP LARGE (1025px AND ABOVE) */
 @media (min-width: 1025px) {
   .products-grid {
     grid-template-columns: repeat(4, 1fr);
@@ -394,7 +394,7 @@
   }
 }
 
-/* Tablet Large (769px - 1024px) */
+/* TABLET LARGE (769px - 1024px) */
 @media (min-width: 769px) and (max-width: 1024px) {
   .products-grid {
     grid-template-columns: repeat(3, 1fr);
@@ -406,7 +406,7 @@
   }
 }
 
-/* Tablet (768px and below) */
+/* TABLET (768px AND BELOW) */
 @media (max-width: 768px) {
   .products-page-container {
     margin: 1rem auto;
@@ -523,7 +523,7 @@
   }
 }
 
-/* Mobile Large (640px and below) */
+/* MOBILE LARGE (640px AND BELOW) */
 @media (max-width: 640px) {
   .products-page-container {
     padding: 0.75rem;
@@ -615,7 +615,7 @@
   }
 }
 
-/* Mobile Medium (480px and below) */
+/* MOBILE MEDIUM (480px AND BELOW) */
 @media (max-width: 480px) {
   .products-page-container {
     padding: 0.5rem;
@@ -720,7 +720,7 @@
   }
 }
 
-/* Mobile Small (360px and below) */
+/* MOBILE SMALL (360px AND BELOW) */
 @media (max-width: 360px) {
   .products-grid {
     grid-template-columns: repeat(2, 1fr) !important;

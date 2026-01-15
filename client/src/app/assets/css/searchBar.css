@@ -1,4 +1,4 @@
-/* Admin Search Bar */
+/* ADMIN SEARCH BAR */
 
 .admin-search-header {
   display: flex;
@@ -69,7 +69,7 @@
   color: #111827; /* text-gray-900 */
 }
 
-/* Search Results Dropdown */
+/* SEARCH RESULTS DROPDOWN */
 .admin-search-results {
   position: absolute;
   top: calc(100% + 0.5rem); /* mt-2 */
@@ -86,7 +86,7 @@
   box-sizing: border-box;
 }
 
-/* Search Tabs */
+/* SEARCH TABS */
 .admin-search-tabs {
   display: flex;
   border-bottom: 1px solid #e5e7eb; /* border-b border-gray-200 */
@@ -118,16 +118,18 @@
   color: white; /* text-white */
 }
 
-/* Search Results List */
+/* SEARCH RESULTS LIST */
 .admin-search-results-list {
   max-height: 20rem; /* max-h-80 */
   overflow-y: auto;
 }
 
+/* SEARCH SECTION */
 .admin-search-section {
   padding: 0.5rem 0; /* py-2 */
 }
 
+/* SEARCH SECTION HEADER */
 .admin-search-section-header {
   padding: 0.5rem 1rem; /* px-4 py-2 */
   font-size: 0.75rem; /* text-xs */
@@ -139,6 +141,7 @@
   border-bottom: 1px solid #e5e7eb; /* border-b border-gray-200 */
 }
 
+/* SEARCH RESULT ITEM */
 .admin-search-result-item {
   display: flex;
   align-items: center;
@@ -191,7 +194,7 @@
   white-space: nowrap;
 }
 
-/* Loading State */
+/* LOADING STATE */
 .admin-search-loading {
   display: flex;
   align-items: center;
@@ -202,7 +205,7 @@
   font-size: 0.875rem; /* text-sm */
 }
 
-/* Empty State */
+/* EMPTY STATE */
 .admin-search-empty {
   padding: 2rem; /* p-8 */
   text-align: center;
@@ -210,7 +213,7 @@
   font-size: 0.875rem; /* text-sm */
 }
 
-/* Scrollbar Styling */
+/* SCROLLBAR STYLING */
 .admin-search-results::-webkit-scrollbar,
 .admin-search-results-list::-webkit-scrollbar {
   width: 6px;
@@ -232,7 +235,7 @@
   background: #9ca3af;
 }
 
-/* Responsive */
+/* RESPONSIVE */
 @media (max-width: 768px) {
   .admin-search-container {
     max-width: 100%;

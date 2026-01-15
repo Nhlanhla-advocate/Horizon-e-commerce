@@ -1,6 +1,6 @@
-/* Dashboard Charts Styles */
+/* DASHBOARD CHARTS STYLES */
 
-/* Charts Container */
+/* CHARTS CONTAINER */
 .charts-container {
   width: 100%;
   max-width: 100%;
@@ -8,6 +8,7 @@
   padding: 0;
 }
 
+/* CHARTS WRAPPER */
 .charts-wrapper {
   width: 100%;
   height: 100%;
@@ -16,18 +17,20 @@
   gap: 0.75rem;
 }
 
+/* RESPONSIVE ADJUSTMENTS */
 @media (min-width: 768px) {
   .charts-wrapper {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-/* Period Selector */
+/* PERIOD SELECTOR */
 .charts-period-selector {
   display: flex;
   justify-content: flex-end;
 }
 
+/* PERIOD SELECTOR SELECT */
 .charts-period-select {
   padding: 0.5rem 0.75rem;
   border: 1px solid #d1d5db;
@@ -37,13 +40,14 @@
   transition: all 0.2s;
 }
 
+/* PERIOD SELECTOR SELECT:FOCUS */
 .charts-period-select:focus {
   outline: none;
   border-color: #3b82f6;
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
 }
 
-/* Chart Card */
+/* CHART CARD */
 .chart-card {
   background: white;
   border-radius: 0.5rem;
@@ -60,6 +64,7 @@
   align-items: stretch;
 }
 
+/* CHART CARD COMPACT */
 .chart-card-compact {
   height: 100%;
   display: flex;
@@ -73,7 +78,7 @@
   box-sizing: border-box;
 }
 
-/* Chart Title */
+/* CHART TITLE */
 .chart-title {
   font-size: 0.75rem;
   font-weight: 600;
@@ -81,6 +86,7 @@
   margin-bottom: 0.25rem;
 }
 
+/* CHART TITLE LARGE */
 .chart-title-large {
   font-size: 0.875rem;
   font-weight: 600;
@@ -90,13 +96,13 @@
   line-height: 1.4;
 }
 
-/* Chart Container */
+/* CHART CONTAINER */
 .chart-container {
   flex: 1;
   min-height: 0;
 }
 
-/* Loading State */
+/* LOADING STATE */
 .charts-loading {
   display: flex;
   align-items: center;
@@ -104,6 +110,7 @@
   padding: 3rem 0;
 }
 
+/* CHART LOADING SPINNER */
 .charts-loading-spinner {
   display: inline-block;
   animation: spin 1s linear infinite;
@@ -114,19 +121,21 @@
   border-top-color: #2563eb;
 }
 
+/* CHART LOADING TEXT */
 .charts-loading-text {
   margin-top: 0.5rem;
   font-size: 0.875rem;
   color: #4b5563;
 }
 
+/* ANIMATION FOR SPINNER */
 @keyframes spin {
   to {
     transform: rotate(360deg);
   }
 }
 
-/* Error State */
+/* ERROR STATE */
 .charts-error {
   background-color: #fef2f2;
   border: 1px solid #fecaca;
@@ -134,11 +143,13 @@
   padding: 1rem;
 }
 
+/* CHART ERROR MESSAGE */
 .charts-error-message {
   font-size: 0.875rem;
   color: #dc2626;
 }
 
+/* CHART ERROR RETRY */
 .charts-error-retry {
   margin-top: 0.5rem;
   font-size: 0.875rem;
@@ -148,11 +159,12 @@
   transition: color 0.2s;
 }
 
+/* CHART ERROR RETRY:HOVER */
 .charts-error-retry:hover {
   color: #7f1d1d;
 }
 
-/* Empty State */
+/* EMPTY STATE */
 .charts-empty {
   display: flex;
   align-items: center;
@@ -160,6 +172,7 @@
   color: #6b7280;
 }
 
+/* CHART EMPTY COMPACT */
 .charts-empty-compact {
   height: 180px;
   min-height: 180px;
@@ -168,6 +181,7 @@
   justify-content: center;
 }
 
+/* CHART EMPTY LARGE */
 .charts-empty-large {
   height: 180px;
   min-height: 180px;
@@ -176,7 +190,7 @@
   justify-content: center;
 }
 
-/* Charts Grid */
+/* CHARTS GRID */
 .charts-grid {
   display: flex;
   flex-direction: column;
@@ -187,6 +201,7 @@
   padding: 0;
 }
 
+/* CHARTS GRID ROW */
 .charts-grid-row {
   display: grid;
   grid-template-columns: 1fr;
@@ -198,7 +213,7 @@
   align-items: stretch;
 }
 
-/* Force 2-column layout on tablets and above */
+/* FORCE 2-COLUMN LAYOUT ON TABLETS AND ABOVE */
 @media (min-width: 640px) {
   .charts-grid-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -214,41 +229,45 @@
   }
 }
 
-/* Responsive Container Overrides */
+/* RESPONSIVE CONTAINER OVERRIDES */
 .charts-responsive-container {
   width: 100% !important;
 }
 
+/* CHARTS RESPONSIVE CONTAINER COMPACT */
 .charts-responsive-container-compact {
   height: 180px !important;
   min-height: 180px;
   max-height: 180px;
 }
 
+/* CHARTS RESPONSIVE CONTAINER LARGE */
 .charts-responsive-container-large {
   height: 180px !important;
   min-height: 180px;
   max-height: 180px;
 }
 
+/* CHARTS RESPONSIVE CONTAINER PIE */
 .charts-responsive-container-pie {
   height: 100px !important;
   width: 50% !important;
 }
 
+/* CHARTS RESPONSIVE CONTAINER BAR */
 .charts-responsive-container-bar {
   height: 500px !important;
   width: 50% !important;
 }
 
-/* Chart Tooltip Styles */
+/* CHART TOOLTIP STYLES */
 .recharts-tooltip-wrapper {
   background-color: #fff !important;
   border: 1px solid #e5e7eb !important;
   border-radius: 8px !important;
 }
 
-/* Chart Axis Styles */
+/* CHART AXIS STYLES */
 .recharts-cartesian-axis-tick-value {
   font-size: 10px !important;
   fill: #6b7280 !important;
@@ -258,17 +277,17 @@
   stroke: #6b7280 !important;
 }
 
-/* Chart Grid Styles */
+/* CHART GRID STYLES */
 .recharts-cartesian-grid {
   stroke: #e5e7eb !important;
 }
 
-/* Chart Legend Styles */
+/* CHART LEGEND STYLES */
 .recharts-legend-wrapper {
   font-size: 0.75rem !important;
 }
 
-/* Space Utilities */
+/* SPACE UTILITIES */
 .charts-space-y {
   display: flex;
   flex-direction: column;
@@ -281,7 +300,7 @@
   gap: 0.75rem;
 }
 
-/* Text Utilities */
+/* TEXT UTILITIES */
 .text-center {
   text-align: center;
 }
@@ -310,7 +329,7 @@
   font-weight: 600;
 }
 
-/* Flex Utilities */
+/* FLEX UTILITIES */
 .flex {
   display: flex;
 }
@@ -351,7 +370,7 @@
   margin-top: 0.5rem;
 }
 
-/* Responsive Adjustments */
+/* RESPONSIVE ADJUSTMENTS */
 @media (max-width: 1023px) {
   .charts-responsive-container-pie {
     width: 100% !important;
@@ -362,7 +381,7 @@
   }
 }
 
-/* ===== 4 BOX (2x2) DASHBOARD LAYOUT ===== */
+/* 4 BOX (2x2) DASHBOARD LAYOUT */
 .charts-4box-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -382,7 +401,7 @@
   }
 }
 
-/* Box style */
+/* BOX STYLE */
 .charts-4box-card {
   background: white;
   border-radius: 0.75rem;
@@ -398,7 +417,7 @@
   overflow: hidden;
 }
 
-/* Box title */
+/* BOX TITLE */
 .charts-4box-title {
   font-size: 0.75rem;
   font-weight: 600;
@@ -407,7 +426,7 @@
   line-height: 1.2;
 }
 
-/* Chart container inside box */
+/* CHART CONTAINER INSIDE BOX */
 .charts-4box-body {
   flex: 1;
   min-height: 0;
@@ -416,6 +435,7 @@
   position: relative;
 }
 
+/* CHARTS 4BOX RESPONSIVE */
 .charts-4box-responsive {
   width: 100% !important;
   height: 100% !important;
