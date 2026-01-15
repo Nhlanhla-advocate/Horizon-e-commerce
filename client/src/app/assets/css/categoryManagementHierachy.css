@@ -127,3 +127,7 @@
     cursor: not-allowed;
 }
 
+/*  CHILDREN CONTAINER*/
+.category-children {
+    margin-top: 0.5rem;
+}
