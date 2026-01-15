@@ -1,6 +1,6 @@
-/* InventoryAlerts */
+/* INVENTORY ALERTS */
 
-/* Main Container */
+/* MAIN CONTAINER */
 .inventory-alerts-container {
   display: flex;
   flex-direction: column;
@@ -11,7 +11,7 @@
   overflow-x: hidden;
 }
 
-/* Header Section */
+/* HEADER SECTION */
 .inventory-alerts-header {
   display: flex;
   flex-direction: column;
@@ -37,7 +37,7 @@
   margin-top: 0.25rem; /* mt-1 */
 }
 
-/* Refresh Button */
+/* REFRESH BUTTON */
 .inventory-alerts-refresh-btn {
   background: linear-gradient(to right, #3b82f6, #9333ea); /* bg-gradient-to-r from-blue-500 to-purple-600 */
   color: white; /* text-white */
@@ -87,7 +87,7 @@
   font-size: 1.125rem; /* text-lg */
 }
 
-/* Summary Cards Grid */
+/* SUMMARY CARDS GRID */
 .inventory-alerts-summary-grid {
   display: grid;
   grid-template-columns: 1fr; /* grid-cols-1 */
@@ -106,7 +106,7 @@
   }
 }
 
-/* Summary Card */
+/* SUMMARY CARD */
 .inventory-alerts-summary-card {
   background-color: white; /* bg-white */
   overflow: hidden; /* overflow-hidden */
@@ -223,7 +223,7 @@
   background-color: #60a5fa; /* bg-blue-400 */
 }
 
-/* Filters Section */
+/* FILTERS SECTION */
 .inventory-alerts-filters {
   background-color: white; /* bg-white */
   padding: 1rem; /* p-4 */
@@ -238,7 +238,7 @@
   display: grid;
   grid-template-columns: 1fr; /* grid-cols-1 */
   gap: 1rem; /* gap-4 */
-  align-items: end; /* Align all items to bottom for consistent alignment */
+  align-items: end; /* ALIGN ALL ITEMS TO BOTTOM FOR CONSISTENT ALIGNMENT */
 }
 
 @media (min-width: 640px) {
@@ -251,11 +251,11 @@
 @media (min-width: 1024px) {
   .inventory-alerts-filters-grid {
     grid-template-columns: repeat(4, 1fr); /* lg:grid-cols-4 */
-    gap: 1.25rem; /* Slightly larger gap on large screens */
+    gap: 1.25rem; /* SLIGHTLY LARGER GAP ON LARGE SCREENS */
   }
 }
 
-/* Filter group wrapper for consistent spacing */
+/* FILTER GROUP WRAPPER FOR CONSISTENT SPACING */
 .inventory-alerts-filters-grid > div {
   display: flex;
   flex-direction: column;
@@ -317,7 +317,7 @@
   border-color: #9ca3af;
 }
 
-/* Error Display */
+/* ERROR DISPLAY */
 .inventory-alerts-error {
   background-color: #fef2f2; /* bg-red-50 */
   border: 1px solid #fecaca; /* border border-red-200 */
@@ -330,7 +330,7 @@
   font-size: 0.875rem; /* text-sm */
 }
 
-/* Table Section */
+/* TABLE SECTION */
 .inventory-alerts-table-container {
   background-color: white; /* bg-white */
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); /* shadow */
@@ -473,7 +473,7 @@
   color: #6b7280; /* text-gray-500 */
 }
 
-/* Alert Level Badge */
+/* ALERT LEVEL BADGE */
 .inventory-alerts-badge {
   display: inline-flex; /* inline-flex */
   align-items: center;
@@ -512,7 +512,7 @@
   color: #1f2937; /* text-gray-800 */
 }
 
-/* Empty State */
+/* EMPTY STATE */
 .inventory-alerts-empty {
   text-align: center; /* text-center */
   padding: 2rem 0; /* py-8 */
@@ -527,7 +527,7 @@
   font-size: 0.875rem; /* text-sm */
 }
 
-/* Action Buttons Section */
+/* ACTION BUTTONS SECTION */
 .inventory-alerts-actions {
   background-color: white; /* bg-white */
   padding: 1rem; /* p-4 */
@@ -584,7 +584,7 @@
   background-color: #16a34a; /* hover:bg-green-600 */
 }
 
-/* Animations */
+/* ANIMATIONS */
 @keyframes spin {
   from {
     transform: rotate(0deg);

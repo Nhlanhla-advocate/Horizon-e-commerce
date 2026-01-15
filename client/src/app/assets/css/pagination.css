@@ -1,6 +1,6 @@
-/* Pagination */
+/* PAGINATION */
 
-/* Main Container */
+/* MAIN CONTAINER */
 .pagination-container {
   display: flex;
   flex-direction: column;
@@ -16,7 +16,7 @@
   }
 }
 
-/* Results Info */
+/* RESULTS INFO */
 .pagination-results-info {
   font-size: 0.875rem; /* text-sm */
   color: #4b5563; /* text-gray-600 */
@@ -26,21 +26,21 @@
   font-weight: 500; /* font-medium */
 }
 
-/* Pagination Controls Container */
+/* PAGINATION CONTROLS CONTAINER */
 .pagination-controls {
   display: flex;
   align-items: center;
   gap: 0.5rem; /* gap-2 */
 }
 
-/* Page Numbers Container */
+/* PAGE NUMBERS CONTAINER */
 .pagination-page-numbers {
   display: flex;
   align-items: center;
   gap: 0.25rem; /* gap-1 */
 }
 
-/* Pagination Buttons (Previous, Next, Page Numbers) */
+/* PAGINATION BUTTONS (PREVIOUS, NEXT, PAGE NUMBERS) */
 .pagination-btn {
   padding: 0.5rem 0.75rem; /* px-3 py-2 */
   font-size: 0.875rem; /* text-sm */
@@ -79,13 +79,13 @@
   background-color: #f3f4f6;
 }
 
-/* Ellipsis */
+/* ELLIPSIS */
 .pagination-ellipsis {
   padding: 0 0.5rem; /* px-2 */
   color: #9ca3af; /* text-gray-400 */
 }
 
-/* Items Per Page Container */
+/* ITEMS PER PAGE CONTAINER */
 .pagination-items-per-page {
   display: flex;
   align-items: center;

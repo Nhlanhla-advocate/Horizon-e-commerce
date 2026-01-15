@@ -1,13 +1,13 @@
-/* ProductManagement */
+/* PRODUCT MANAGEMENT */
 
-/* Main Container */
+/* MAIN CONTAINER */
 .product-management-container {
   display: flex;
   flex-direction: column;
   gap: 1.5rem; /* space-y-6 */
 }
 
-/* Header Section */
+/* HEADER SECTION */
 .product-management-header {
   display: flex;
   flex-direction: column;
@@ -33,7 +33,7 @@
   color: #6b7280; /* text-gray-500 */
 }
 
-/* Search Bar Container */
+/* SEARCH BAR CONTAINER */
 .product-management-search-container {
   margin-top: 1rem;
   padding-top: 1rem;
@@ -98,7 +98,7 @@
   color: #111827; /* text-gray-900 */
 }
 
-/* Loading State */
+/* LOADING STATE */
 .product-management-loading {
   display: flex;
   align-items: center;
@@ -106,7 +106,7 @@
   height: 10rem;
 }
 
-/* Empty State */
+/* EMPTY STATE */
 .product-management-empty {
   text-align: center; /* text-center */
 }
@@ -116,7 +116,7 @@
   color: #6b7280; /* text-gray-500 */
 }
 
-/* Table Container */
+/* TABLE CONTAINER */
 .product-management-table-container {
   overflow-x: auto; /* overflow-x-auto */
   border-radius: 0.5rem; /* rounded-lg */
@@ -124,7 +124,7 @@
   background-color: white; /* bg-white */
 }
 
-/* Table Cell Styles */
+/* TABLE CELL STYLES */
 .product-management-table-cell-primary {
   color: #111827; /* text-gray-900 */
 }
@@ -137,14 +137,14 @@
   text-align: right; /* text-right */
 }
 
-/* Action Buttons Container */
+/* ACTION BUTTONS CONTAINER */
 .product-management-actions {
   display: flex;
   justify-content: flex-end; /* justify-end */
   gap: 0.5rem; /* gap-2 */
 }
 
-/* Form Section */
+/* FORM SECTION */
 .product-management-form-header {
   display: flex;
   align-items: center;
@@ -203,7 +203,7 @@
   }
 }
 
-/* Form field wrapper to prevent overflow */
+/* FORM FIELD WRAPPER TO PREVENT OVERFLOW */
 .product-management-form > div {
   width: 100%;
   max-width: 100%;

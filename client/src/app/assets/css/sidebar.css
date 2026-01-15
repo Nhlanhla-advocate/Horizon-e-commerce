@@ -1,6 +1,6 @@
-/* Sidebar Styles */
+/* SIDEBAR STYLES */
 
-/* Main Sidebar Container */
+/* MAIN SIDEBAR CONTAINER */
 .admin-sidebar {
   position: fixed;
   top: 0;
@@ -26,14 +26,14 @@
   transform: translateX(0);
 }
 
-/* Sidebar Inner Container */
+/* SIDEBAR INNER CONTAINER */
 .admin-sidebar-container {
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 
-/* Navigation Area */
+/* NAVIGATION AREA */
 .admin-sidebar-nav {
   flex: 1;
   padding: 1rem;
@@ -41,7 +41,7 @@
   flex-direction: column;
 }
 
-/* Sidebar Tab Button */
+/* SIDEBAR TAB BUTTON */
 .admin-sidebar-tab {
   width: 100%;
   display: flex;
@@ -64,7 +64,7 @@
   background-color: rgba(29, 78, 216, 0.4); /* blue-700 with opacity */
 }
 
-/* Tab Content */
+/* TAB CONTENT */
 .admin-sidebar-tab-content {
   flex: 1;
 }
@@ -82,7 +82,7 @@
   color: white;
 }
 
-/* Sidebar Footer */
+/* SIDEBAR FOOTER */
 .admin-sidebar-footer {
   padding: 1rem;
   border-top: 1px solid rgba(59, 130, 246, 0.5); /* border-blue-500 */
@@ -118,7 +118,7 @@
   }
 }
 
-/* Mobile Overlay */
+/* MOBILE OVERLAY */
 .admin-sidebar-overlay {
   position: fixed;
   top: 0;
@@ -134,13 +134,13 @@
     display: none;
   }
   
-  /* Main content area margin for fixed sidebar */
+  /* MAIN CONTENT AREA MARGIN FOR FIXED SIDEBAR */
   .admin-main-content {
     margin-left: 16rem; /* w-64 - sidebar width */
   }
 }
 
-/* Dark Mode Styles for Sidebar */
+/* DARK MODE STYLES FOR SIDEBAR */
 :root.dark-mode .admin-sidebar {
   background-color: #1e3a8a !important; /* blue-800 - darker blue for dark mode */
 }

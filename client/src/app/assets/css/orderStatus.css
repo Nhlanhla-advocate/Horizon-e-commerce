@@ -68,7 +68,7 @@
     font-family: monospace;
   }
   
-  /* Loading */
+  /* lOADING*/
   .dashboard-loading {
     display: flex;
     justify-content: center;
@@ -88,7 +88,7 @@
     }
   }
   
-  /* Orders */
+  /* ORDERS */
   .orders-wrapper {
     background-color: #ffffff;
     border-radius: 0.75rem;
@@ -105,7 +105,7 @@
     font-family: monospace;
   }
   
-  /* Status */
+  /* STATUS */
   .status-badge {
     display: inline-block;
     padding: 0.25rem 0.5rem;
@@ -145,7 +145,7 @@
     color: #374151;
   }
   
-  /* Buttons */
+  /* BUTTONS */
   .admin-btn {
     display: inline-flex;
     align-items: center;
@@ -161,7 +161,7 @@
     color: white;
   }
   
-  /* Empty state */
+  /* EMPTY STATE */
   .orders-empty {
     text-align: center;
     font-size: 0.875rem;
