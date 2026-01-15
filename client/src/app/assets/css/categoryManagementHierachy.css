@@ -76,3 +76,24 @@
     color: #6b7280;
     font-style: italic;
 }
+
+.category-status-badge {
+    font-size: 0.75rem;
+    padding: 0.125rem 0.5rem;
+    color: white;
+    border-radius: 0.25rem;
+}
+
+.category-status-badge.active {
+    background-color: #10b981;
+}
+
+.category-status-badge.inactive {
+    background-color: #ef4444;
+}
+
+.category-description {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+}
