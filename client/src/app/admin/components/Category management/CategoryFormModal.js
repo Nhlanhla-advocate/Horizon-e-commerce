@@ -27,5 +27,21 @@ export default function categoryFormModal({
                 alignItems: 'center',
                 zIndex:
             }}
+        >
+            <div 
+                className="admin-modal"
+                onClick={ (e) => e.stopProopagation()}
+                style={{
+                    backgroundColor: 'white',
+                    borderRadius: '0.5rem',
+                    padding: '2rem',
+                    maxWidth: '500px',
+                    width: '90%',
+                    maxHeight: '90vh',
+                    overFlowy: 'auto',
+                    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+                }}
+                >
+        </div>
     )
 }
