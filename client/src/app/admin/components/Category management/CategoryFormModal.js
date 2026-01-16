@@ -42,6 +42,13 @@ export default function categoryFormModal({
                     boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
                 }}
                 >
+                    <div style={{ marginBottom: '1.5rem', display: 'flex',
+                        justifyContent: 'space-between', alignItems: 'center'
+                    }}>
+                        <h3 style={{ fontSize: '1.25rem', fontWeight: '600'}}>
+                            {editingCategory ? 'Edit Category' : 'Add New Category'}
+                        </h3>
+                    </div>
         </div>
     )
 }
