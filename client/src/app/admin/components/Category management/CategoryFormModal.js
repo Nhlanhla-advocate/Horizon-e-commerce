@@ -88,6 +88,24 @@ export default function categoryFormModal({
                             ))
                             }
                             </select>
+
+                            <p className="filter-help">
+                                Select a parent category to create a subcategory, or leave empty for a root category.
+                            </p>
+                        </div>
+
+                        <div style={{ marginBottom: '1rem' }}>
+                            <label className="filter-label">Category Name*</label>
+                            <input 
+                                type="text"
+                                name="name"
+                                value={formData.name}
+                                onChange={onInputChange}
+                                className="filter-input"
+                                required
+                                placeholder="Enter category name"
+                                style={{ width: '100%' }}
+                                />
                         </div>
                     </form>
         </div>
