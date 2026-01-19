@@ -79,7 +79,14 @@ export default function categoryFormModal({
                                     <option key={cat._id} value={cat._id}>
                                         {' '.repeat(cat.level || 0)}{cat.name}
                                     </option>
-                                ))}
+                                ))
+                                : categories.filter(cat => !editingCategory || cat._id.toString() 
+                            !== editingCategory._id.toString()).map(cat => (
+                                <option key={cat._id} value={cat._id}>
+                                    {' '.repeat(cat.level || 0)}{cat.name}
+                                </option>
+                            ))
+                            }
                             </select>
                         </div>
                     </form>
