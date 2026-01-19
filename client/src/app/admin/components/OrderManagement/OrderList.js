@@ -16,7 +16,7 @@ const ORDER_STATUSES = [
     { value: 'cancelled', label: 'Cancelled' }
 ];
 
-export default function OrderList({ onOrderSelect }) {
+export default function OrderList({ onOrderSelect, onUpdateStatus }) {
     const [orders, setOrders] = useState ([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -376,8 +376,6 @@ export default function OrderList({ onOrderSelect }) {
                                 <tr 
                                     key={order._id} 
                                     className="orders-tr"
-                                    onClick={() => onOrderSelect && onOrderSelect(order._id)}
-                                    style={{ cursor: onOrderSelect ? 'pointer' : 'default' }}
                                 >
                                     <td className="orders-td">
                                         <span className="mono-text">
@@ -409,27 +407,53 @@ export default function OrderList({ onOrderSelect }) {
                                         {formatDate(order.createdAt)}
                                     </td>
                                     <td className="orders-td">
-                                        {order.status !== 'cancelled' && order.status !== 'delivered' && (
+                                        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                                             <button
-                                                onClick={(e) => handleCancelOrder(order._id, e)}
-                                                disabled={cancelingOrderId === order._id}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    if (onOrderSelect) onOrderSelect(order._id);
+                                                }}
                                                 className="admin-btn admin-btn-secondary"
                                                 style={{
                                                     padding: '0.375rem 0.75rem',
-                                                    fontSize: '0.875rem',
-                                                    opacity: cancelingOrderId === order._id ? 0.6 : 1,
-                                                    cursor: cancelingOrderId === order._id ? 'not-allowed' : 'pointer'
+                                                    fontSize: '0.875rem'
                                                 }}
                                             >
-                                                {cancelingOrderId === order._id ? 'Canceling...' : 'Cancel'}
+                                                View
                                             </button>
-                                        )}
-                                        {order.status === 'cancelled' && (
-                                            <span style={{ color: '#ef4444', fontSize: '0.875rem' }}>Cancelled</span>
-                                        )}
-                                        {order.status === 'delivered' && (
-                                            <span style={{ color: '#6b7280', fontSize: '0.875rem' }}>N/A</span>
-                                        )}
+                                            {onUpdateStatus && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        onUpdateStatus(order._id);
+                                                    }}
+                                                    className="admin-btn admin-btn-primary"
+                                                    style={{
+                                                        padding: '0.375rem 0.75rem',
+                                                        fontSize: '0.875rem'
+                                                    }}
+                                                >
+                                                    Update Status
+                                                </button>
+                                            )}
+                                            {order.status !== 'cancelled' && order.status !== 'delivered' && (
+                                                <button
+                                                    onClick={(e) => handleCancelOrder(order._id, e)}
+                                                    disabled={cancelingOrderId === order._id}
+                                                    className="admin-btn"
+                                                    style={{
+                                                        padding: '0.375rem 0.75rem',
+                                                        fontSize: '0.875rem',
+                                                        backgroundColor: '#ef4444',
+                                                        color: 'white',
+                                                        opacity: cancelingOrderId === order._id ? 0.6 : 1,
+                                                        cursor: cancelingOrderId === order._id ? 'not-allowed' : 'pointer'
+                                                    }}
+                                                >
+                                                    {cancelingOrderId === order._id ? 'Canceling...' : 'Cancel'}
+                                                </button>
+                                            )}
+                                        </div>
                                     </td>
                                 </tr>
                             ))}

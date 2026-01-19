@@ -5,7 +5,7 @@ import '../../../assets/css/admin.css';
 
 const BASE_URL = 'http://localhost:5000';
 
-export default function OrderDetailView({ selectedOrderId, setSelectedOrderId }) {
+export default function OrderDetailView({ selectedOrderId, setSelectedOrderId, onClose, onOrderUpdated }) {
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -90,6 +90,11 @@ export default function OrderDetailView({ selectedOrderId, setSelectedOrderId })
             // Refresh order details
             await fetchOrderDetails(selectedOrderId);
             
+            // Call callback to refresh order list if provided
+            if (onOrderUpdated) {
+                onOrderUpdated();
+            }
+            
             // Clear success message after 3 seconds
             setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
@@ -133,15 +138,15 @@ export default function OrderDetailView({ selectedOrderId, setSelectedOrderId })
 
   if (!order) {
     return (
-      <div className="dashboard-container">
+      <div style={{ padding: '2rem' }}>
         <div className="orders-empty">
           <p>No order selected. Please select an order from the list.</p>
           <button
-            onClick={() => setSelectedOrderId(null)}
+            onClick={onClose || (() => setSelectedOrderId(null))}
             className="admin-btn admin-btn-secondary"
             style={{ marginTop: '1rem' }}
           >
-            Back to List
+            Close
           </button>
         </div>
       </div>
@@ -149,8 +154,8 @@ export default function OrderDetailView({ selectedOrderId, setSelectedOrderId })
   }
 
   return (
-    <div className="dashboard-container">
-      <div className="dashboard-header">
+    <div style={{ padding: '2rem' }}>
+      <div className="dashboard-header" style={{ marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid #e5e7eb' }}>
         <div>
           <h2 className="dashboard-title">Order Details</h2>
           <p className="dashboard-subtitle">Order ID: {order._id?.toString() || 'N/A'}</p>
@@ -172,10 +177,10 @@ export default function OrderDetailView({ selectedOrderId, setSelectedOrderId })
             </button>
           )}
           <button
-            onClick={() => setSelectedOrderId(null)}
+            onClick={onClose || (() => setSelectedOrderId(null))}
             className="admin-btn admin-btn-secondary"
           >
-            Back to List
+            Close
           </button>
         </div>
       </div>
@@ -192,8 +197,8 @@ export default function OrderDetailView({ selectedOrderId, setSelectedOrderId })
         </div>
       )}
 
-      <div className="orders-wrapper section-spacing">
-        <div className="section-padding">
+      <div className="orders-wrapper section-spacing" style={{ marginTop: 0 }}>
+        <div className="section-padding" style={{ padding: 0 }}>
           {/* Order Summary */}
           <div className="order-info-grid" style={{ marginBottom: '2rem' }}>
             <div>
