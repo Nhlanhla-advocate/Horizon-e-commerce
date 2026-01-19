@@ -108,6 +108,19 @@ export default function categoryFormModal({
                                 />
                                 <p className="filter-help">URL-friendly identifier(auto-generated if left empty).</p>
                         </div>
+
+                        <div style={{ marginBottom: '1.5rem' }}>
+                            <label className="filter-label">Description</label>
+                            <textarea 
+                                name="description"
+                                value={formData.description}
+                                onChange={onInputChange}
+                                className="filter-input"
+                                rows="4"
+                                placeholder="Enter category description..."
+                                style={{ width:'100%', resize: 'vertical' }}
+                                />
+                        </div>
                     </form>
         </div>
     )
