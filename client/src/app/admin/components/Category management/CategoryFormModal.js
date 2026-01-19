@@ -51,7 +51,7 @@ export default function categoryFormModal({
                         <button 
                              onClick={onClose}
                              style={{
-                                baclground: 'none',
+                                background: 'none',
                                 border: 'none',
                                 fontSize: '1.5rem',
                                 cursor: 'pointer',
@@ -65,6 +65,22 @@ export default function categoryFormModal({
                     <form onSubmit={onSubmit}>
                         <div style={{ marginBottom: '1rem' }}>
                             <label className="filter-label">Parent Category</label>
+                            <select 
+                                name="parent"
+                                value={formData.parent}
+                                onChange={onInputChange}
+                                className="filter-select"
+                                style={{ width: '100%' }}
+                            >
+
+                                <option value="">None (Root Category</option>
+                                {getParentOptions?
+                                getParentOptions(editingCategory?._id) .map(cat=> (
+                                    <option key={cat._id} value={cat._id}>
+                                        {' '.repeat(cat.level || 0)}{cat.name}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                     </form>
         </div>
