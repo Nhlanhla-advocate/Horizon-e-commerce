@@ -106,6 +106,7 @@ export default function categoryFormModal({
                                 placeholder="Enter category name"
                                 style={{ width: '100%' }}
                                 />
+                                <p className="filter-help">URL-friendly identifier(auto-generated if left empty).</p>
                         </div>
                     </form>
         </div>
