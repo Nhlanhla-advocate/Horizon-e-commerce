@@ -12,7 +12,7 @@ const ORDER_STATUSES = [
     { value: 'cancelled', label: 'Cancelled' }
 ];
 
-export default function OrderStatus ({ selectedOrderId, setSelectedOrderId}) {
+export default function OrderStatus ({ selectedOrderId, setSelectedOrderId, onClose, onStatusUpdated }) {
     const [orderId, setOrderId] = useState(selectedOrderId || '');
     const [newStatus, setNewStatus] = useState('');
     const [order, setOrder] = useState(null);
@@ -110,10 +110,20 @@ export default function OrderStatus ({ selectedOrderId, setSelectedOrderId}) {
 
             const data = await response.json();
             setSuccess('Order status updated successfully!');
-            setOrder(data.data || order);
+            setOrder(data.data || data);
 
-            //Clear success message after 3 seconds
-            setTimeout(() => setSuccess(null), 3000);
+            // Call callback to refresh order list if provided
+            if (onStatusUpdated) {
+                onStatusUpdated();
+            }
+
+            //Clear success message after 3 seconds and close modal
+            setTimeout(() => {
+                setSuccess(null);
+                if (onClose) {
+                    onClose();
+                }
+            }, 2000);
         } catch (err) {
             console.error('Error updating order status:', err);
             setError(err.message);
@@ -153,10 +163,28 @@ export default function OrderStatus ({ selectedOrderId, setSelectedOrderId}) {
     };
 
     return (
-    <div className="dashboard-container">
-        <div className="dashboard-header">
-            <h2 className="dashboard-title">Update Order status</h2>
-            <p className="dashboard-subtitle">Change the status of an order</p>
+    <div style={{ padding: '2rem' }}>
+        <div className="dashboard-header" style={{ marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+                <h2 className="dashboard-title">Update Order Status</h2>
+                <p className="dashboard-subtitle">Change the status of an order</p>
+            </div>
+            {onClose && (
+                <button
+                    onClick={onClose}
+                    style={{
+                        background: 'none',
+                        border: 'none',
+                        fontSize: '1.5rem',
+                        cursor: 'pointer',
+                        color: '#6b7280',
+                        padding: '0.25rem',
+                        lineHeight: 1
+                    }}
+                >
+                    ×
+                </button>
+            )}
         </div>
 
         {error && (
