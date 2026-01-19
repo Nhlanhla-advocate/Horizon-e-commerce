@@ -48,7 +48,25 @@ export default function categoryFormModal({
                         <h3 style={{ fontSize: '1.25rem', fontWeight: '600'}}>
                             {editingCategory ? 'Edit Category' : 'Add New Category'}
                         </h3>
+                        <button 
+                             onClick={onClose}
+                             style={{
+                                baclground: 'none',
+                                border: 'none',
+                                fontSize: '1.5rem',
+                                cursor: 'pointer',
+                                color: '#6b7280'
+                             }}
+                        >
+                            ×
+                        </button>
                     </div>
+
+                    <form onSubmit={onSubmit}>
+                        <div style={{ marginBottom: '1rem' }}>
+                            <label className="filter-label">Parent Category</label>
+                        </div>
+                    </form>
         </div>
     )
 }
