@@ -16,3 +16,13 @@ import {
     ResponsiveContainer
  } from 'recharts';
 import '../../../assets/css/charts.css';
+
+const BASE_URL = 'http://localhost:5000';
+
+const COLORS = {
+    revenue: '#3b82f6',
+    revenueSecondary: '#60a5fa',
+    orders: '#9333ea',
+    gradientStart: '#3b82f6',
+    gradientEnd: '#60a5fa'
+};
