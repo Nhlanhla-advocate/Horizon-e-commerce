@@ -27,6 +27,29 @@ export default function VisualAnalyticsReports() {
                     <p className="analytics-header-subtitle">Comprehensive visual insights into your business perfomance</p>
                 </div>
             </div>
+
+            {/*Tab Navigation*/}
+            <div className="analytics-tabs-container">
+                <nav className="analytics-tabs-nav">
+                    {tabs.map((tab) =>(
+                        <button
+                           key={tab.id}
+                           onClick={() => setActiveTab(tab.id)}
+                           className={`analytics-tab-button ${activeTab === tab.id 
+                            ? 'analytics-tab-button-active' 
+                            : 'analytics-tab-button-inactive'
+                        }`}
+                    >
+                        {tab.label}
+                    </button>
+                    ))}
+                </nav>
+            </div>
+
+            {/*Content*/}
+            <div className = 'analytics-content'>
+                {ActiveComponent && <ActiveComponent />}
+            </div>
         </div>
-    )
+    );
 }
