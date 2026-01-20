@@ -10,6 +10,7 @@ import InventoryAlerts from './components/InventoryAlerts';
 import ReviewManagement from './components/ReviewManagement';
 import CacheManagement from './components/CacheManagement';
 import OrderManagement from './components/OrderManagement/OrderManagement';
+import VisualAnalyticsReports from './components/Visual analytics and reports/VisualAnalyticsReports';
 import Sidebar from './components/Sidebar';
 
 const AdminDashboard = () => {
@@ -23,7 +24,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     const handleTabChange = (event) => {
       const tabId = event.detail;
-      const validTabs = ['overview', 'products', 'categories', 'analytics', 'inventory', 'reviews', 'cache', 'orders'];
+      const validTabs = ['overview', 'products', 'categories', 'analytics', 'inventory', 'reviews', 'cache', 'orders', 'visual-analytics'];
       if (validTabs.includes(tabId)) {
         setActiveTab(tabId);
       }
@@ -158,6 +159,13 @@ const AdminDashboard = () => {
       icon: '',
       component: Analytics,
       description: 'Sales insights'
+    },
+    {
+      id: 'visual-analytics',
+      label: 'Visual Analytics',
+      icon: '',
+      component: VisualAnalyticsReports,
+      description: 'Visual reports and charts'
     },
     {
       id: 'inventory',
