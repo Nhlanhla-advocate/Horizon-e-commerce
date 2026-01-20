@@ -376,6 +376,8 @@ export default function OrderList({ onOrderSelect, onUpdateStatus }) {
                                 <tr 
                                     key={order._id} 
                                     className="orders-tr"
+                                    onClick={() => onOrderSelect && onOrderSelect(order._id)}
+                                    style={{ cursor: onOrderSelect ? 'pointer' : 'default' }}
                                 >
                                     <td className="orders-td">
                                         <span className="mono-text">
