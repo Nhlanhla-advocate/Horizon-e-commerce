@@ -105,5 +105,16 @@ export default function RevenueCharts() {
    } catch (err) {
     setError(err.message);
     console.error('Error fetching chart data:', err);
+    //Use placeholder data or error
+    const totalRevenue = placeholderData.reduce((sum, item) => sum + item.revenue, 0);
+    const totalOrders = placeholderData.reduce((sum, item) => sum + item.orders, 0);
+    setSummary((
+        totalRevenue,
+        totalOrders,
+        avgOrderValue: totalOrders > 0 ? totalRevenue / totalOrders : 0,
+        maxRevenue.Math.max(...placeholderData.map(item => item.revenue)),
+    ));
+   } finally {
+    setLoading(false);
    }
-}
+};
