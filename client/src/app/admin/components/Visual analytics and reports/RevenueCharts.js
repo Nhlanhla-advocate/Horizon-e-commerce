@@ -58,5 +58,29 @@ export default function RevenueCharts() {
     const [period, setPeriod] = useState('30');
     const [summary, setSummary] = useState(null);
 
+   //Generate placeholder data
+   const placeholderData = generatePlaceholderData(parseInt(period));
    
+   const fetchChartData = async () => {
+    try {
+        setLoading(true);
+        setError(null);
+
+        const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+        const response = await fetch(`${BASE_URL}/dashboard/charts?period=${period}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch chart data');
+    }
+
+    const data = await response,json();
+    if (data.success) {
+        setChartData(data.data);
+    }
+   }
 }
