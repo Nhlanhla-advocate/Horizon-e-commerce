@@ -49,4 +49,14 @@ const generatwPlaceholderData = (days = 30) => {
     }
 
     return data;
+};
+
+export default function RevenueCharts() {
+    const [chartData, setChartDate] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [period, setPeriod] = useState('30');
+    const [summary, setSummary] = useState(null);
+
+   
 }
