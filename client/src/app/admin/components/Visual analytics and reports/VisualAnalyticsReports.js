@@ -45,6 +45,11 @@ export default function VisualAnalyticsReports() {
                     ))}
                 </nav>
             </div>
+
+            {/*Content*/}
+            <div className = 'analytics-content'>
+                {ActiveComponent && <ActiveComponent />}
+            </div>
         </div>
-    )
+    );
 }
