@@ -35,5 +35,18 @@ const generatwPlaceholderData = (days = 30) => {
     for (let i = days - 1; i >= 0; i--) {
         const date = new Date(today);
         date.setDate(date.getDate() - i);
+
+        //Generate realistic-looking data with some variation
+        const baseRevenue = 5000 + Math.random() * 3000;
+        const baseOrders = 10 + Math.floor(Math.random() * 150);
+
+        data.push({
+            date: date.toISOString().split('T')[0],
+            revenue: Math.round(baseRevenue + Math.sin(i/5) * 1000),
+            orders: baseOrders,
+            avgOrderValue: Math.round((baseRevenue + Math.sin(i / 5) * 1000) / baseOrders)
+        });
     }
+
+    return data;
 }
