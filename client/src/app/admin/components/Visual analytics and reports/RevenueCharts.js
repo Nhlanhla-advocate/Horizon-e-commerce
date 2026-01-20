@@ -136,3 +136,8 @@ const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-ZA', { month: 'short', day: 'numeric'});})
 };
+
+//Use actual data if available, otherwise use placeholder
+const revenueData = chartData?.revenueOverTime?.length > 0
+? chartData.revenueOverTime
+: placeholderData;
