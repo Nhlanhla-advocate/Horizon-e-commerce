@@ -26,3 +26,14 @@ const COLORS = {
     gradientStart: '#3b82f6',
     gradientEnd: '#60a5fa'
 };
+
+//Generate placeholder data for revenue charts
+const generatwPlaceholderData = (days = 30) => {
+    const data = [];
+    const today = new Date();
+
+    for (let i = days - 1; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+    }
+}
