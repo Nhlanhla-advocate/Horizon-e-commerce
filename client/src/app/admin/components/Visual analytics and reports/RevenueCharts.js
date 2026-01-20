@@ -78,9 +78,32 @@ export default function RevenueCharts() {
             throw new Error('Failed to fetch chart data');
     }
 
-    const data = await response,json();
+    const data = await response.json();
     if (data.success) {
         setChartData(data.data);
+
+        //Calculate summary statistics
+        const revenueData = data.data.revenueOverTime || {};
+        if (revenueData.length > 0) {
+            const totalRevenue = revenueData.reduce((sum, item) => sum + (item.revenue || 0), 0);
+            const totalOrders = revenueData.reduce((sum, item) => sum + (item.orders || 0), 0);
+            const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrrders : 0;
+            const maxRevenue = Math.max(...revenueData.map(item => item.revenue || 0));
+            const minRevenue = Math.min(...revenueData.map(item => item.revenue || 0));
+
+            setSummary({
+                totalRevenue,
+                totalOrders,
+                avgOrderValue,
+                maxRevenue,
+                minRevenue
+            });
+        }
+    } else {
+        throw new Error(data.error || 'Failed to fetch chart data');
     }
+   } catch (err) {
+    setError(err.message);
+    console.error('Error fetching chart data:', err);
    }
 }
