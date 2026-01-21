@@ -147,3 +147,15 @@ const combinedData = revenueData.map(item => ({
     ...item,
     revenueFormatted: formatCurrency(item.revenue)
 }));
+
+if (loading) {
+    return (
+        <div className="charts-loading">
+            <div className="text-center">
+                <div className="charts-loading-spinner">
+                    <p className="charts-loading-text"></p>
+                </div>
+            </div>
+        </div>
+    )
+}
