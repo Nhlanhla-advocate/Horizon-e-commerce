@@ -173,3 +173,29 @@ if (error && !chartData) {
         </div>
     );
 }
+
+return (
+    <div className="analytics-page-container">
+        {/*Header*/}
+        <div className="analytics-header">
+            <div>
+                <h2 className="analytics-header-title">Revenue Analytics</h2>
+                <p className="analytics-header-subtitle">Comprehensive revenue insights and trends</p>
+            </div>
+            <div className="charts-period-selector">
+                <select
+                value={period}
+                onChange={(e) => setPeriod(e.target.value)}
+                className="charts-period-select"
+            >
+                <option value="7">Last 7 days</option>
+                <option value="30">Last 30 days</option>
+                <option value="90">Last 90 days</option>
+                <option value="180">Last 6 months</option>
+                <option value="365">Last year</option>
+            </select>
+            </div>
+        </div>
+        
+    </div>
+)
