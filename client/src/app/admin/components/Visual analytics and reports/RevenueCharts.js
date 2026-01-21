@@ -152,10 +152,24 @@ if (loading) {
     return (
         <div className="charts-loading">
             <div className="text-center">
-                <div className="charts-loading-spinner">
+                <div className="charts-loading-spinner"> </div>
                     <p className="charts-loading-text"></p>
-                </div>
+
             </div>
         </div>
-    )
+    );
+}
+
+if (error && !chartData) {
+    return(
+        <div className="charts-error">
+            <p className="charts-error-message">Error loading charts: {error}</p>
+            <button
+            onClick={fetchChartData}
+            className="charts-error-retry"
+        >
+            Retry
+        </button>
+        </div>
+    );
 }
