@@ -196,6 +196,24 @@ return (
             </select>
             </div>
         </div>
-        
+
+        {/*SummaryCards*/}
+        {summary && (
+            <div className="performance-summary-grid">
+                <div className="perfomance-stat-card performance-stat-card-blue">
+                    <div className="perfomance-stat-value perfomance-stat-value-blue">{formatCurrency(summary.totalRevenue)}
+                    </div>
+                    <div className="perfomance-stat-label perfomance-stat-label-blue">Total Revenue</div>
+                </div>
+                <div className="perfomance-stat-card performance-stat-card-green">
+                    <div className="perfomance-stat-value perfomance-stat-value-green">{summary.totalOrders}</div>
+                    <div className="perfomance-stat-label perfomance-stat-label-green">Total Orders</div>
+                </div>
+                <div className="perfomance-stat-card performance-stat-card-yellow">
+                    <div className="perfomance-stat-value perfomance-stat-value-yellow">{formatCurrency(summary.avgOrderValue)}</div>
+                    <div className="perfomance-stat-label perfomance-stat-label-yellow">Average Order Value</div>
+                </div>
+            </div>
+        )}
     </div>
 )
