@@ -141,3 +141,9 @@ const formatDate = (dateString) => {
 const revenueData = chartData?.revenueOverTime?.length > 0
 ? chartData.revenueOverTime
 : placeholderData;
+
+//Calculate revenue with orders for combined chart
+const combinedData = revenueData.map(item => ({
+    ...item,
+    revenueFormatted: formatCurrency(item.revenue)
+}));
