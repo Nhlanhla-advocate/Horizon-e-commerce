@@ -83,5 +83,23 @@ export default function SalesTrends() {
                 setLoading(false);
             }
         };
+
+        useEffect(() => {
+            fetchChartData();
+            //eslint=disable-next-line react-hooks/exhaustive-deps
+        }, [period]);
+
+        const formatCurrency = (value) => {
+            return new Intl.NumberFormat('en-ZA', {
+                style: 'currency',
+                currency: 'ZAR',
+                minimumFractionDigits: 0
+            }).format(value);
+        };
+
+        const formatDate = (dateString) => {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-ZA', { month: 'short', day: 'numeric' });
+        };
     }
 }
