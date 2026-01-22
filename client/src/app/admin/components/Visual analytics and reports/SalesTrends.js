@@ -101,5 +101,11 @@ export default function SalesTrends() {
             const date = new Date(dateString);
             return date.toLocaleDateString('en-ZA', { month: 'short', day: 'numeric' });
         };
+
+        const revenueData = chartData?.revenueOverTime?.length > 0
+        ? chartData.revenueOverTime
+        : placeholderData;
+
+        
     }
 }
