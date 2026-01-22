@@ -14,3 +14,10 @@ import {
     ResponsiveContainer
 } from 'rechartss';
 import '../../../assets/css/charts.css';
+
+const BASE_URL = 'http://localhost:5000';
+
+const COLORS = {
+    revenue: '#3b82f6',
+    orders: '#9333ea'
+};
