@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect} from 'react';
+import { useState, useEffect } from 'react';
 import {
     LineChart,
     Line,
@@ -12,7 +12,7 @@ import {
     Tooltip,
     Legend,
     ResponsiveContainer
-} from 'rechartss';
+} from 'recharts';
 import '../../../assets/css/charts.css';
 
 const BASE_URL = 'http://localhost:5000';
@@ -27,7 +27,7 @@ const generatePlaceholderData = (days = 30) => {
     const data = [];
     const today = new Date();
 
-    for (let i = days - 1; i >= 0;i--) {
+    for (let i = days - 1; i >= 0; i--) {
         const date = new Date(today);
         date.setDate(date.getDate() - i);
 
@@ -61,51 +61,73 @@ export default function SalesTrends() {
             const response = await fetch(${BASE_URL}/DashboardCharts/charts?period=${period},
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`,
+                        'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     },
                 }); 
 
-                if (response.ok) {
-                    throw new Error('Failed to fetch chart data');
-                }
-
-                const data = await response.json();
-                if (data.success) {
-                    setChartData(data.data);
-                } else {
-                    throw new Error(data error || 'Failed to fetch chart data');
-                }
-            } catch (err) {
-                setError(err.message);
-                console.error('Error fetching chart data:', err);
-            } finally {
-                setLoading(false);
+            if (!response.ok) {
+                throw new Error('Failed to fetch chart data');
             }
-        };
 
-        useEffect(() => {
-            fetchChartData();
-            //eslint=disable-next-line react-hooks/exhaustive-deps
-        }, [period]);
+            const data = await response.json();
+            if (data.success) {
+                setChartData(data.data);
+            } else {
+                throw new Error(data.error || 'Failed to fetch chart data');
+            }
+        } catch (err) {
+            setError(err.message);
+            console.error('Error fetching chart data:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-        const formatCurrency = (value) => {
-            return new Intl.NumberFormat('en-ZA', {
-                style: 'currency',
-                currency: 'ZAR',
-                minimumFractionDigits: 0
-            }).format(value);
-        };
+    useEffect(() => {
+        fetchChartData();
+        //eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [period]);
 
-        const formatDate = (dateString) => {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('en-ZA', { month: 'short', day: 'numeric' });
-        };
+    const formatCurrency = (value) => {
+        return new Intl.NumberFormat('en-ZA', {
+            style: 'currency',
+            currency: 'ZAR',
+            minimumFractionDigits: 0
+        }).format(value);
+    };
 
-        const revenueData = chartData?.revenueOverTime?.length > 0
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-ZA', { month: 'short', day: 'numeric' });
+    };
+
+    const revenueData = chartData?.revenueOverTime?.length > 0
         ? chartData.revenueOverTime
         : placeholderData;
 
-        
+    if (loading) {
+        return (
+            <div className="charts-loading">
+                <div className="text-center">
+                    <div className="charts-loading-spinner"></div>
+                    <p className="charts-loading-text">Loading sales trends...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error && !chartData) {
+        return (
+            <div className="charts-error">
+                <p className="charts-error-message">Error loading charts: {error}</p>
+                <button
+                    onClick={fetchChartData}
+                    className="charts-error-retry"
+                >
+                    Retry
+                </button>
+            </div>
+        );
     }
 }
