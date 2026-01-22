@@ -65,6 +65,23 @@ export default function SalesTrends() {
                         'Content-Type': 'application/json'
                     },
                 }); 
-        }
+
+                if (response.ok) {
+                    throw new Error('Failed to fetch chart data');
+                }
+
+                const data = await response.json();
+                if (data.success) {
+                    setChartData(data.data);
+                } else {
+                    throw new Error(data error || 'Failed to fetch chart data');
+                }
+            } catch (err) {
+                setError(err.message);
+                console.error('Error fetching chart data:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
     }
 }
