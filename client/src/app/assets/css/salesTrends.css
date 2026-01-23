@@ -35,6 +35,12 @@
 
 .sales-trends-header-subtitle {
     color: #4b5563;
-    margin-to: 0.25rem;
+    margin-top: 0.25rem;
     font-size: 0.875rem;
+}
+
+/*PERIOD SELECTOR*/
+.sales-trends-period-selector {
+    display: flex;
+    justify-content: flex-end;
 }
