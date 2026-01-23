@@ -10,3 +10,10 @@
     box-sizing: bordr-box;
     overflow-x: hidden;
 }
+
+/*HEADER SECTION*/
+.sales-trends-header {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
