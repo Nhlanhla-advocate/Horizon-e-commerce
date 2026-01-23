@@ -130,4 +130,30 @@ export default function SalesTrends() {
             </div>
         );
     }
+
+    return (
+        <div className="analytics-page-container">
+            {/*Header*/}
+            <div className="analytics-header"></div>
+            <div>
+                <h2 className="analytics-header-title">Category performance</h2>
+                <p className="analytics-header-subtitle">Track sales perfomance and identity trends</p>
+            </div>
+            <div className="charts-period-selector">
+                <select
+                    value={period}
+                    onChange={(e) => setPeriod(e.target.value)}
+                    className="charts-period-select"
+                >
+                    <option value="7">Last 7 days</option>
+                    <option value="30">Last 30 days</option>
+                    <option value="90">Last 90 days</option>
+                    <option value="180">Last 6 months</option>
+                    <option value="365">Last year</option>
+                </select>
+            </div>
+        </div>
+
+          
+    )
 }
