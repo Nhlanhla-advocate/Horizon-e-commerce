@@ -32,3 +32,9 @@
     color: #111827;
     margin: 0;
 }
+
+.sales-trends-header-subtitle {
+    color: #4b5563;
+    margin-to: 0.25rem;
+    font-size: 0.875rem;
+}
