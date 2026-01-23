@@ -100,3 +100,18 @@
     box-sizing: border-box;
     overflow: hidden;
 }
+
+.sales-trends-chart-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 0.5rem;
+    margin-top: 0;
+    line-height: 1.4;
+}
+
+.sales-trends-chart-container {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+}
