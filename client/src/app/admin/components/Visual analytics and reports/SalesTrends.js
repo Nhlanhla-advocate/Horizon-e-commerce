@@ -14,6 +14,7 @@ import {
     ResponsiveContainer
 } from 'recharts';
 import '../../../assets/css/charts.css';
+import '../../../assets/css/salesTrends.css';
 
 const BASE_URL = 'http://localhost:5000';
 
@@ -58,13 +59,12 @@ export default function SalesTrends() {
             setError(null);
 
             const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
-            const response = await fetch(${BASE_URL}/DashboardCharts/charts?period=${period},
-                {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                }); 
+            const response = await fetch(`${BASE_URL}/dashboard/charts?period=${period}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
 
             if (!response.ok) {
                 throw new Error('Failed to fetch chart data');
@@ -108,10 +108,10 @@ export default function SalesTrends() {
 
     if (loading) {
         return (
-            <div className="charts-loading">
-                <div className="text-center">
-                    <div className="charts-loading-spinner"></div>
-                    <p className="charts-loading-text">Loading sales trends...</p>
+            <div className="sales-trends-loading">
+                <div className="sales-trends-text-center">
+                    <div className="sales-trends-loading-spinner"></div>
+                    <p className="sales-trends-loading-text">Loading sales trends...</p>
                 </div>
             </div>
         );
@@ -119,11 +119,11 @@ export default function SalesTrends() {
 
     if (error && !chartData) {
         return (
-            <div className="charts-error">
-                <p className="charts-error-message">Error loading charts: {error}</p>
+            <div className="sales-trends-error">
+                <p className="sales-trends-error-message">Error loading charts: {error}</p>
                 <button
                     onClick={fetchChartData}
-                    className="charts-error-retry"
+                    className="sales-trends-error-retry"
                 >
                     Retry
                 </button>
@@ -132,28 +132,106 @@ export default function SalesTrends() {
     }
 
     return (
-        <div className="analytics-page-container">
+        <div className="sales-trends-container">
             {/*Header*/}
-            <div className="analytics-header"></div>
-            <div>
-                <h2 className="analytics-header-title">Category performance</h2>
-                <p className="analytics-header-subtitle">Track sales perfomance and identity trends</p>
+            <div className="sales-trends-header">
+                <div>
+                    <h2 className="sales-trends-header-title">Sales Trends</h2>
+                    <p className="sales-trends-header-subtitle">Track sales performance and identify trends</p>
+                </div>
+                <div className="sales-trends-period-selector">
+                    <select
+                        value={period}
+                        onChange={(e) => setPeriod(e.target.value)}
+                        className="sales-trends-period-select"
+                    >
+                        <option value="7">Last 7 days</option>
+                        <option value="30">Last 30 days</option>
+                        <option value="90">Last 90 days</option>
+                        <option value="180">Last 6 months</option>
+                        <option value="365">Last year</option>
+                    </select>
+                </div>
             </div>
-            <div className="charts-period-selector">
-                <select
-                    value={period}
-                    onChange={(e) => setPeriod(e.target.value)}
-                    className="charts-period-select"
-                >
-                    <option value="7">Last 7 days</option>
-                    <option value="30">Last 30 days</option>
-                    <option value="90">Last 90 days</option>
-                    <option value="180">Last 6 months</option>
-                    <option value="365">Last year</option>
-                </select>
+
+            {/*Charts Grid*/}
+            <div className="sales-trends-charts-grid">
+                {/*Sales Trend - Line Chart*/}
+                <div className="sales-trends-chart-card">
+                    <h3 className="sales-trends-chart-title">Sales Trend Over Time</h3>
+                    <div className="sales-trends-chart-container">
+                        {revenueData.length > 0 ? (
+                            <ResponsiveContainer width="100%" height={300}>
+                                <LineChart data={revenueData}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                                    <XAxis 
+                                        dataKey="date" 
+                                        tick={{ fontSize: 12 }}
+                                        tickFormatter={formatDate}
+                                    />
+                                    <YAxis 
+                                        tick={{ fontSize: 12 }}
+                                        tickFormatter={(v) => `R${(v / 1000).toFixed(0)}k`}
+                                    />
+                                    <Tooltip 
+                                        formatter={(value) => formatCurrency(value)}
+                                        labelFormatter={(label) => formatDate(label)}
+                                    />
+                                    <Legend />
+                                    <Line
+                                        type="monotone"
+                                        dataKey="revenue"
+                                        stroke={COLORS.revenue}
+                                        strokeWidth={3}
+                                        dot={{ r: 4 }}
+                                        name="Revenue"
+                                    />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div className="sales-trends-empty">
+                                No sales data available
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Orders Trend */}
+                <div className="sales-trends-chart-card">
+                    <h3 className="sales-trends-chart-title">Orders Trend</h3>
+                    <div className="sales-trends-chart-container">
+                        {revenueData.length > 0 ? (
+                            <ResponsiveContainer width="100%" height={300}>
+                                <LineChart data={revenueData}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                                    <XAxis 
+                                        dataKey="date" 
+                                        tick={{ fontSize: 12 }}
+                                        tickFormatter={formatDate}
+                                    />
+                                    <YAxis tick={{ fontSize: 12 }} />
+                                    <Tooltip 
+                                        labelFormatter={(label) => formatDate(label)}
+                                    />
+                                    <Legend />
+                                    <Line
+                                        type="monotone"
+                                        dataKey="orders"
+                                        stroke={COLORS.orders}
+                                        strokeWidth={3}
+                                        dot={{ r: 4 }}
+                                        name="Orders"
+                                    />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div className="sales-trends-empty">
+                                No orders data available
+                            </div>
+                        )}
+                    </div>
+                </div>
             </div>
         </div>
-
-          
-    )
+    );
 }
