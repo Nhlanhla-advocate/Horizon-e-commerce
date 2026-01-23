@@ -65,3 +65,22 @@
 .sales-trends-period-select:hover {
     border-color: #9ca3af;
 }
+
+{/*CHARTS GRID*/}
+.sales-trends-charts-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+@media (min-width: 640px) {
+    .sales-trends-charts-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+    }
+}
