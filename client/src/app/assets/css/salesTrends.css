@@ -44,3 +44,14 @@
     display: flex;
     justify-content: flex-end;
 }
+
+.sales-trends-period-selector {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    outline: none;
+    transition: all 0.2s;
+    background-color: white;
+    cursor: pointer;
+}
