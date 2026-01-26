@@ -170,3 +170,22 @@
     background: none;
     padding: 0;
 }
+
+.sales-trends-error-retry:hover {
+    color: #7f1d1d;
+}
+
+/*EMPTY STATE*/
+.sales-trends-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+    height: 180px;
+    min-height: 180px;
+}
+
+/*TEXT CENTER UTILITY*/
+.sales-trends-text-center {
+    text-align: center;
+}
