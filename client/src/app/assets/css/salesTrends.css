@@ -7,7 +7,7 @@
     gap: 2rem;
     width: 100%;
     max-width: 100%;
-    box-sizing: bordr-box;
+    box-sizing: border-box;
     overflow-x: hidden;
 }
 
@@ -45,7 +45,7 @@
     justify-content: flex-end;
 }
 
-.sales-trends-period-selector {
+.sales-trends-period-select {
     padding: 0.5rem 0.75rem;
     border: 1px solid #d1d5db;
     border-radius: 0.5rem;
@@ -59,19 +59,19 @@
 .sales-trends-period-select:focus {
     outline: none;
     border-color: #3b82f6;
-    box-shadow: 0.0.0 2px rgba(59, 130, 246, 0.2);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
 .sales-trends-period-select:hover {
     border-color: #9ca3af;
 }
 
-{/*CHARTS GRID*/}
+/*CHARTS GRID*/
 .sales-trends-charts-grid {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    width: 100;
+    width: 100%;
     max-width: 100%;
     margin: 0;
     padding: 0;
@@ -127,7 +127,7 @@
 .sales-trends-loading-spinner {
     display: inline-block;
     animation: spin 1s linear infinite;
-    border-radius: 9999x;
+    border-radius: 9999px;
     height: 2rem;
     width: 2rem;
     border: 2px solid transparent;
@@ -142,7 +142,7 @@
 
 @keyframes spin {
     to {
-        transform: rotate(360eg);
+        transform: rotate(360deg);
     }
 }
 
@@ -168,6 +168,7 @@
     cursor: pointer;
     transition: color 0.2s;
     background: none;
+    border: none;
     padding: 0;
 }
 
