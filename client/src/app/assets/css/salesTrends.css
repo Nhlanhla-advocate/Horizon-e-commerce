@@ -145,3 +145,11 @@
         transform: rotate(360eg);
     }
 }
+
+/*ERROR STATE*/
+.sales-trends-error {
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 0.5rem;
+    padding: 1rem;
+}
