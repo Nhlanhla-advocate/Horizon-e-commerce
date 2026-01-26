@@ -86,5 +86,16 @@ if (error) {
     );
 }
 
+return (
+    <div className="category-perfomance-container">
+        {/*Header*/}
+        <div className="category-perfomance-header">
+            <div>
+                <h2 className="category-perfomance-header-title">Category Perfomance</h2>
+                <p className="category-perfomance-header-subtitle">Analyze perfomance across product categories</p>
+            </div>
+        </div>
+    </div>
+)
 
 }
