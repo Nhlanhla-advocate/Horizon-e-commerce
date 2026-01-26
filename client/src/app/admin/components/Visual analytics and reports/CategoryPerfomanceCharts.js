@@ -39,5 +39,24 @@ const fetchChartData = async () => {
                 'Content-Type': 'application/json',
             },
         });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch data');
+        }
+
+        const data = await response.json();
+        if (data.success) {
+            setChartData(data.data);
+        } else {
+            throw new Error(data.error || 'Failed to fetch data');
+        }
+    } catch (err) {
+        setError(err.message);
+        console.error('Error fetching chart data:', err);
+    } finally {
+        setLoading(false);
     }
+};
+
+
 }
