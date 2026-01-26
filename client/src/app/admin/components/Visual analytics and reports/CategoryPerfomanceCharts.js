@@ -58,5 +58,22 @@ const fetchChartData = async () => {
     }
 };
 
+useEffect(() =>{
+    fetchChartData();
+}, []);
+
+const caegoryData = chartData?.categoryBreakdown || [];
+
+if (loading) {
+    return (
+        <div className="category-perfomance-loading">
+        <div className="category-perfomance-text-center">
+        <div className="category-perfomance-loading-spinner"></div>
+        <p className="category-perfomance-loading-text">Loading category perfomance charts...</p>
+        </div>
+    </div>
+    );
+}
+
 
 }
