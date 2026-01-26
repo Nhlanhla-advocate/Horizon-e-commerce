@@ -26,3 +26,18 @@ export default function CategoryPerfomanceCharts() {
     const [loading, setLoading] = useState(true);
     const [error,setError] = useState(null);
 }
+
+const fetchChartData = async () => {
+    try {
+        setLoading(true);
+        setError(null);
+
+        const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+        const response = await fetch(${BASE_URL}/dashboard/charts?period=365, {
+            headers: {
+                'Authorization': Bearer ${token},
+                'Content-Type': 'application/json',
+            },
+        });
+    }
+}
