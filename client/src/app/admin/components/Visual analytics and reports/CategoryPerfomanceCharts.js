@@ -75,5 +75,16 @@ if (loading) {
     );
 }
 
+if (error) {
+    return (
+        <div className="category-perfomance-error">
+        <div className="category-perfomance-text-center">
+        <div className="category-perfomance-loading-spinner"></div>
+        <p className="category-perfomance-loading-text">Loading category perormance charts...</p>
+        </div>
+     </div>
+    );
+}
+
 
 }
