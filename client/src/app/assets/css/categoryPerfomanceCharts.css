@@ -1,7 +1,7 @@
 /*CATEGORY PERFORMANCE CHARTS STYLES*/
 
 /*CONTAINER*/
-.category-perfomance-container {
+.category-performance-container {
     display: flex;
     flex-direction: column;
     gap: 2rem;
@@ -11,3 +11,17 @@
     overflow-x: hidden;
 }
 
+/*HEADER SECTION*/
+.category-perfomance-header {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+@media (min-width: 640px) {
+    .category-perfomance-header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+}
