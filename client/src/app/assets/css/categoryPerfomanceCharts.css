@@ -1,7 +1,7 @@
 /*CATEGORY PERFORMANCE CHARTS STYLES*/
 
 /*CONTAINER*/
-.category-performance-container {
+.category-perfomance-container {
     display: flex;
     flex-direction: column;
     gap: 2rem;
@@ -24,4 +24,11 @@
         justify-content: space-between;
         align-items: center;
     }
+}
+
+.category-perfomance-header-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
 }
