@@ -82,3 +82,11 @@
     margin-top: 0;
     line-height: 1.4;
 }
+
+/*LOADING STATE*/
+.category-perfomance-chart-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 0;
+}
