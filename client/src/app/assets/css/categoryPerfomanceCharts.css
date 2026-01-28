@@ -90,3 +90,13 @@
     justify-content: center;
     padding: 3rem 0;
 }
+
+.category-perfomance-loading-spinner {
+    display: inline-block;
+    animation: spin 1s linear infinite;
+    border-radius: 9999px;
+    height: 2rem;
+    width: 2rem;
+    border: 2px solid transparent;
+    border-top-color: #2563eb;
+}
