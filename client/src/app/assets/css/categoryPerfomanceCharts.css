@@ -112,3 +112,11 @@
         transform: rotate(360deg);
     }
 }
+
+/*ERROR STATE*/
+.category-perfomance-error {
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 0.5rem;
+    padding: 1rem;
+}
