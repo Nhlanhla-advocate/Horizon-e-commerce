@@ -120,3 +120,9 @@
     border-radius: 0.5rem;
     padding: 1rem;
 }
+
+.category-perfomance-error-message {
+    font-size: 0.875rem;
+    color: #dc2626;
+    margin-bottom: 0.5rem;
+}
