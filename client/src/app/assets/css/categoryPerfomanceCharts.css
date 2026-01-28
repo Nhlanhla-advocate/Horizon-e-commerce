@@ -138,3 +138,7 @@
     border: none;
     padding: 0;
   }
+
+  .category-perfomance-error-retry:hover {
+    color: #7f1d1d;
+  }
