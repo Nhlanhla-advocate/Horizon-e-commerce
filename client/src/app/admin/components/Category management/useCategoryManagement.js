@@ -70,6 +70,25 @@ export function useCategoryManagement({ includeHierachy = false, enableSearch = 
                 },
             });
             
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Failed to fetch categories');
+            }
+
+            const data = await response.json();
+
+            if (includeHierachy && data.categories) {
+                //if hierarchy is requested, use the tree structure
+                setCategoryTree(data.categories);
+                setCategories(data.flat || []);
+            } else {
+                //Flat list
+                setCategories(data.categories || []);
+                if (includeHierachy) {
+                    setCategoryTree(buildCategoryTree(data.categories || []));
+                }
+            }
+            }
         }
     })
 }
