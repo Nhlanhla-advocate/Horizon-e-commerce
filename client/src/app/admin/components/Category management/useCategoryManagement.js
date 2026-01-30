@@ -42,7 +42,26 @@ export function useCategoryManagement({ includeHierachy = false, enableSearch = 
             ...cat,
             children: buildCategoryTree(categoriesList, cat._id)
         }));
-    }
+    };
+
+    //Fetch categories
+    const fetchCategories = useCallback(async() =>{
+        try {
+            setLoading(true);
+            setError(null);
+
+            const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+            const queryParams = new URLSearchParams();
+
+            if (includeHierachy) {
+                queryParams.append('hierarchy', 'true');
+            }
+
+            if (enableSearch && searchTerm.trim()) {
+                queryParams.append('search', searchTerm.trim());
+            }
+        }
+    })
 }
    
     }
