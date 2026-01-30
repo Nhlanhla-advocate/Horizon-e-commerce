@@ -67,7 +67,7 @@ export function useCategoryManagement({ includeHierachy = false, enableSearch = 
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
-                },
+                }
             });
             
             if (!response.ok) {
@@ -88,8 +88,15 @@ export function useCategoryManagement({ includeHierachy = false, enableSearch = 
                     setCategoryTree(buildCategoryTree(data.categories || []));
                 }
             }
+            } catch (err) {
+                console.error('Error fetching categories', err);
+                setError(err.message || 'Failed to fetch categories');
+            } finally {
+                setLoading(false);
             }
-        }
+
+        },[includeHierarchy, enableSearch, searchTerm]);
+    }    
     })
 }
    
