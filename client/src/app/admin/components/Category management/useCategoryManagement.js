@@ -31,6 +31,19 @@ export function useCategoryManagement({ includeHierachy = false, enableSearch = 
         .replace(/^-+|-+$/g, '');
     };
 
+    //Helper function to build category tree
+    const buildCategoryTree = (categoriesList, parentId = null) => {
+        return categoriesList
+        .filter(cat => {
+            if (parentId === null) return !cat.parent;
+            return cat.parent && cat.parent.toString() === parentId.toString();
+        })
+        .map(cat => ({
+            ...cat,
+            children: buildCategoryTree(categoriesList, cat._id)
+        }));
+    }
+}
    
     }
 }
