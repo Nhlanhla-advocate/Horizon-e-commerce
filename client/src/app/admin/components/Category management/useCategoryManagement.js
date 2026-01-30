@@ -96,6 +96,11 @@ export function useCategoryManagement({ includeHierachy = false, enableSearch = 
             }
 
         },[includeHierarchy, enableSearch, searchTerm]);
+
+        //Fetch categories on mount and when dependencies change
+        useEffect(() => {
+            fetchCategories();
+        },[fetchCategories]);
     }    
     })
 }
