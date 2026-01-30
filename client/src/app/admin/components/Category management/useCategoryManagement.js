@@ -60,6 +60,16 @@ export function useCategoryManagement({ includeHierachy = false, enableSearch = 
             if (enableSearch && searchTerm.trim()) {
                 queryParams.append('search', searchTerm.trim());
             }
+
+            const url = `${BASE_URL}/dashboard/categories?${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+            
         }
     })
 }
