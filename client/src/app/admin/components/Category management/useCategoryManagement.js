@@ -122,6 +122,14 @@ export function useCategoryManagement({ includeHierachy = false, enableSearch = 
                 ...prev,
                 [name]: value
             }));
+
+            //Auto-generaate slug from name if slug is empty or matches the old name
+            if (name === 'name' && (!formData.slug || formData.slug === generateSllug(editingCategory?.name || ''))) {
+                setFormData(prev => ({
+                    ...prev,
+                    slug: generateSlug(value)
+                }));
+            }
         }
     }    
     })
