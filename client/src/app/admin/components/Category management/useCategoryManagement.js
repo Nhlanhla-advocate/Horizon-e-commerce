@@ -148,6 +148,26 @@ export function useCategoryManagement({ includeHierachy = false, enableSearch = 
                         slug: formData.slug.trim() || generateSlug(formData.name),
                         parent: formData.parent || null
                     };
+
+                    const response = await fetch(`${BASE_URL}/dashboard/categories`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(categoryData)
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.message || 'Failed to create category');
+                    }
+
+                    setSuccess(data.message || 'Category created successfully');
+                    resetForm();
+                    setShowAddForm(false);
+                    
             }
         }
     }    
