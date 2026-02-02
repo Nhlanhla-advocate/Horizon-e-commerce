@@ -114,6 +114,15 @@ export function useCategoryManagement({ includeHierachy = false, enableSearch = 
             setError(null);
             setSuccess(null);
         };
+
+        //Handle input change
+        const handleInputChange = (e) => {
+            const { name, value } = e.target;
+            setFormData(prev => ({
+                ...prev,
+                [name]: value
+            }));
+        }
     }    
     })
 }
