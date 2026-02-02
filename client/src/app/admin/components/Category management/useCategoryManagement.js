@@ -130,6 +130,25 @@ export function useCategoryManagement({ includeHierachy = false, enableSearch = 
                     slug: generateSlug(value)
                 }));
             }
+        };
+
+        //Handle add category
+        const handleAddCategory = async (e) => {
+            e.preventDefault();
+
+            try {
+                setError(null);
+                setSuccess(null);
+
+                const token = localStorage.getItem('adminToken') || localStorage.getItem('token';
+
+                    const categoryData = {
+                        name: formData.name.trim(),
+                        description: formData.description.trim(),
+                        slug: formData.slug.trim() || generateSlug(formData.name),
+                        parent: formData.parent || null
+                    };
+            }
         }
     }    
     })
