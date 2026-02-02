@@ -299,8 +299,7 @@ exports.adminSignIn = async (req, res) => {
         console.error("Admin sign in error:", error);
         res.status(500).json({ 
             success: false,
-            error: "Server error", 
-            message: error.message 
+            error: error.message || "Sign in failed" 
         });
     }
 };

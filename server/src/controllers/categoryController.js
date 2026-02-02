@@ -11,10 +11,23 @@ const generateSlug = (name) => {
     .replace(/^-+|-+$/g, '');
 };
 
+// Helper function to build category tree
+const buildCategoryTree = (categories, parentId = null) => {
+  return categories
+    .filter(cat => {
+      if (parentId === null) return !cat.parent;
+      return cat.parent && cat.parent.toString() === parentId.toString();
+    })
+    .map(cat => ({
+      ...cat,
+      children: buildCategoryTree(categories, cat._id)
+    }));
+};
+
 // Get all categories
 exports.getAllCategories = async (req, res) => {
   try {
-    const { search } = req.query;
+    const { search, hierarchy } = req.query;
     
     const filter = {};
     
@@ -28,8 +41,19 @@ exports.getAllCategories = async (req, res) => {
     }
     
     const categories = await Category.find(filter)
-      .sort({ createdAt: -1 })
+      .populate('parent', 'name slug')
+      .sort({ level: 1, createdAt: -1 })
       .lean();
+    
+    // If hierarchy is requested, return tree structure
+    if (hierarchy === 'true') {
+      const tree = buildCategoryTree(categories);
+      return res.status(200).json({
+        success: true,
+        categories: tree,
+        flat: categories
+      });
+    }
     
     res.status(200).json({
       success: true,
@@ -83,7 +107,7 @@ exports.getCategory = async (req, res) => {
 // Create category
 exports.createCategory = async (req, res) => {
   try {
-    const { name, description, slug } = req.body;
+    const { name, description, slug, parent } = req.body;
     
     // Validate required fields
     if (!name || !name.trim()) {
@@ -91,6 +115,23 @@ exports.createCategory = async (req, res) => {
         success: false,
         message: 'Category name is required'
       });
+    }
+    
+    // Validate parent if provided
+    if (parent) {
+      if (!mongoose.Types.ObjectId.isValid(parent)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid parent category ID'
+        });
+      }
+      const parentCategory = await Category.findById(parent);
+      if (!parentCategory) {
+        return res.status(404).json({
+          success: false,
+          message: 'Parent category not found'
+        });
+      }
     }
     
     // Generate slug if not provided
@@ -118,10 +159,14 @@ exports.createCategory = async (req, res) => {
       name: name.trim(),
       slug: categorySlug,
       description: description?.trim() || '',
+      parent: parent || null,
       createdBy: req.user?._id
     });
     
     await category.save();
+    
+    // Populate parent for response
+    await category.populate('parent', 'name slug');
     
     res.status(201).json({
       success: true,
@@ -161,7 +206,7 @@ exports.createCategory = async (req, res) => {
 exports.updateCategory = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, slug, isActive } = req.body;
+    const { name, description, slug, isActive, parent } = req.body;
     
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
@@ -177,6 +222,42 @@ exports.updateCategory = async (req, res) => {
         success: false,
         message: 'Category not found'
       });
+    }
+    
+    // Prevent circular reference (category cannot be its own parent or descendant)
+    if (parent) {
+      if (parent === id) {
+        return res.status(400).json({
+          success: false,
+          message: 'Category cannot be its own parent'
+        });
+      }
+      
+      // Check if parent is a descendant of this category
+      const checkDescendant = async (categoryId, targetId) => {
+        const children = await Category.find({ parent: categoryId });
+        for (const child of children) {
+          if (child._id.toString() === targetId) return true;
+          if (await checkDescendant(child._id, targetId)) return true;
+        }
+        return false;
+      };
+      
+      if (await checkDescendant(id, parent)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Cannot set parent to a descendant category'
+        });
+      }
+      
+      // Validate parent exists
+      const parentCategory = await Category.findById(parent);
+      if (!parentCategory) {
+        return res.status(404).json({
+          success: false,
+          message: 'Parent category not found'
+        });
+      }
     }
     
     // Check if name or slug conflicts with existing category
@@ -208,9 +289,11 @@ exports.updateCategory = async (req, res) => {
     if (slug) category.slug = slug;
     else if (name) category.slug = generateSlug(name.trim());
     if (isActive !== undefined) category.isActive = isActive;
+    if (parent !== undefined) category.parent = parent || null;
     category.updatedBy = req.user?._id;
     
     await category.save();
+    await category.populate('parent', 'name slug');
     
     res.status(200).json({
       success: true,
@@ -264,6 +347,15 @@ exports.deleteCategory = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'Category not found'
+      });
+    }
+    
+    // Check if category has children
+    const childrenCount = await Category.countDocuments({ parent: id });
+    if (childrenCount > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot delete category. It has ${childrenCount} subcategory(ies). Please delete or move them first.`
       });
     }
     
