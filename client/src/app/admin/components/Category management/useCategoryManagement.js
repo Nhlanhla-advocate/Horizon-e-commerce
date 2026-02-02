@@ -101,6 +101,19 @@ export function useCategoryManagement({ includeHierachy = false, enableSearch = 
         useEffect(() => {
             fetchCategories();
         },[fetchCategories]);
+
+        //Reset form
+        const resetForm = () => {
+            setFormData({
+                name: '',
+                slug: '',
+                description: '',
+                parent: ''
+            });
+            setEditingCategory(null);
+            setError(null);
+            setSuccess(null);
+        };
     }    
     })
 }

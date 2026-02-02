@@ -127,8 +127,34 @@ exports.signIn = async (req, res) => {
             });
         }
         
-        if (!user || !(await user.comparePassword(password))) {
-            return res.status(400).json({ error: "Invalid login credentials" });
+        // Check if user exists first
+        if (!user) {
+            // Check if this email exists in Admin collection
+            const Admin = require('../models/admin');
+            const adminCheck = await Admin.findOne({ 
+                $or: [
+                    { email: normalizedEmail },
+                    { email: { $regex: new RegExp(`^${normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } }
+                ]
+            });
+            
+            if (adminCheck) {
+                return res.status(400).json({ 
+                    error: "This email is registered as an admin. Please use the admin sign-in page at /admin/signin" 
+                });
+            }
+            
+            return res.status(400).json({ 
+                error: "No account found with this email. Please sign up first or check your email address." 
+            });
+        }
+        
+        // Validate password
+        const passwordMatch = await user.comparePassword(password);
+        if (!passwordMatch) {
+            return res.status(400).json({ 
+                error: "Incorrect password. Please check your password and try again." 
+            });
         }
         
         // CRITICAL CHECK: If user has admin role, they must use admin signin

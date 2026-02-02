@@ -5,7 +5,7 @@ mongoose.set('strictQuery', true);
 
 // CONNECTING TO MONGODB
 async function connectToMongoDB() {
-  const connection = 'mongodb+srv://roykeane888:n3RNZWBK5lfocsed@horizon.alzof.mongodb.net/?retryWrites=true&w=majority&appName=Horizon';
+  const connection = 'mongodb+srv://roykeane888:4656464Swagger@horizon.alzof.mongodb.net/?retryWrites=true&w=majority&appName=Horizon';
   try {
     await mongoose.connect(connection);
     console.log("Successfully Connected to MongoDB");
