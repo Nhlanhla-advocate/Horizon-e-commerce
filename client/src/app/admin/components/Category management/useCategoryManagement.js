@@ -167,12 +167,17 @@ export function useCategoryManagement({ includeHierachy = false, enableSearch = 
                     setSuccess(data.message || 'Category created successfully');
                     resetForm();
                     setShowAddForm(false);
-                    
-            }
+
+                    //Refresh categories
+                    await fetchCategories();
+
+                    //Clear success message after 3 seconds
+                    setTimeout(() => setSuccess(null), 3000);
+                } catch (err) {
+                    setError(err.message || 'Failed to create category');
+                    console.error('Error creating category', err);
+                }
+            };
         }
-    }    
-    })
-}
-   
     }
 }
