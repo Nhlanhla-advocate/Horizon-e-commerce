@@ -220,6 +220,20 @@ export function useCategoryManagement({ includeHierachy = false, enableSearch = 
                     setDeletingCategoryId(null);
                 }
             };
+
+            //Handle edit click
+            const handleEditClick = (category) => {
+                setEditingCategory(category);
+                setFormData({
+                    name: category.name || '',
+                    slug: category.slug || '',
+                    description: category.description || '',
+                    parent: category.parent?._id?.toString() || category.parent?.toString() || ''
+                });
+                setShowAddForm(true);
+                setError(null);
+                setSuccess(null);
+            };
         }
     }
 }
