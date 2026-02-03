@@ -178,6 +178,30 @@ export function useCategoryManagement({ includeHierachy = false, enableSearch = 
                     console.error('Error creating category', err);
                 }
             };
+
+            //Handle delete category
+            const handleDeleteCategory = async (categoryId) => {
+                if (!window.confirm('Are you sure you want to delete this category? This action cannot be undone.')) {
+                    return;
+                }
+
+                try {
+                    setError(null);
+                    setSuccess(null);
+                    setDeletingCategoryId(categoryId);
+
+                    const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+
+                    const response = await fetch(`${BASE_URL}/dashboard/categories/${categoryId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                }
+            }
         }
     }
 }
