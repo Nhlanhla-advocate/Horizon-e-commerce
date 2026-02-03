@@ -199,9 +199,27 @@ export function useCategoryManagement({ includeHierachy = false, enableSearch = 
                             'Content-Type': 'application/json'
                         }
                     });
+                    
+                    const data = await response.json();
 
+                    if (!response.ok) {
+                        throw new Error(data.message || 'Failed to delete category');
+                    }
+
+                    setSuccess(data.message || 'Category deleted successfully');
+
+                    //Refresh categories
+                    await fetchCategories();
+
+                    //Clear success message after 3 seconds
+                    setTimeout(() => setSuccess(null), 3000);
+                } catch (err) {
+                    console.error('Error deleting category', err);
+                    setError(err.message || 'Failed to delete category');
+                } finally {
+                    setDeletingCategoryId(null);
                 }
-            }
+            };
         }
     }
 }
