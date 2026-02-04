@@ -1,6 +1,7 @@
 'use client';
 
 import '../../../assets/css/admin.css';
+import '../../../assets/css/productManagement.css';
 import { useCategoryManagement } from './useCategoryManagement';
 import CategoryFormModal from './CategoryFormModal';
 
@@ -27,21 +28,59 @@ export default function CategoryManagement() {
     } = useCategoryManagement({ includeHierarchy: false, enableSearch: true });
 
     return (
-        <div className="dashboard-container">
-            <div className="dashboard-header">
-                <div>
-                    <h2 className="dashboard-title">Category Management</h2>
-                    <p className="dashboard-subtitle">Manage product categories</p>
+        <div className="product-management-container">
+            <div className="admin-card" style={{ borderRadius: '0.75rem' }}>
+                <div className="product-management-header">
+                    <div>
+                        <h2 className="product-management-title">Category Management</h2>
+                        <p className="product-management-subtitle">Manage product categories and keep your catalog organized.</p>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            resetForm();
+                            setShowAddForm(true);
+                        }}
+                        className="admin-btn admin-btn-primary"
+                    >
+                        Add Category
+                    </button>
                 </div>
-                <button
-                    onClick={() => {
-                        resetForm();
-                        setShowAddForm(true);
-                    }}
-                    className="admin-btn admin-btn-primary"
-                >
-                    Add Category
-                </button>
+
+                {/* Search bar - same layout as Product Management */}
+                <div className="product-management-search-container">
+                    <div className="product-management-search-wrapper">
+                        <svg
+                            className="product-management-search-icon"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                        >
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                        <input
+                            type="text"
+                            className="product-management-search-input"
+                            placeholder="Search categories by name, slug, or description..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                        {searchTerm && (
+                            <button
+                                type="button"
+                                className="product-management-search-clear"
+                                onClick={() => setSearchTerm('')}
+                                aria-label="Clear search"
+                            >
+                                ×
+                            </button>
+                        )}
+                    </div>
+                </div>
             </div>
 
             {/* Messages */}
@@ -56,19 +95,6 @@ export default function CategoryManagement() {
                     {success}
                 </div>
             )}
-
-            {/* Search */}
-            <div style={{ marginBottom: '1.5rem' }}>
-                <label className="filter-label">Search Categories</label>
-                <input
-                    type="text"
-                    placeholder="Search by name or description..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="filter-input"
-                    style={{ width: '100%', maxWidth: '400px' }}
-                />
-            </div>
 
             {/* Loading State */}
             {loading && categories.length === 0 ? (
