@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-//Backend base Url
-const BASE_URL = 'http://localhost:5000';
+// Use same origin so Next.js rewrites /admin/* to the backend (avoids CORS and ensures categories are fetched)
+const getBaseUrl = () => (typeof window !== 'undefined' ? '' : 'http://localhost:5000');
 
 export function useCategoryManagement({ includeHierarchy = false, enableSearch = true } = {}) {
     const [categories, setCategories] = useState([]);
@@ -46,12 +46,18 @@ export function useCategoryManagement({ includeHierarchy = false, enableSearch =
     };
 
     //Fetch categories
-    const fetchCategories = useCallback(async() =>{
+    const fetchCategories = useCallback(async () => {
         try {
             setLoading(true);
             setError(null);
 
             const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+            if (!token) {
+                setError('Please sign in to load categories.');
+                setLoading(false);
+                return;
+            }
+
             const queryParams = new URLSearchParams();
 
             if (includeHierarchy) {
@@ -62,7 +68,8 @@ export function useCategoryManagement({ includeHierarchy = false, enableSearch =
                 queryParams.append('search', searchTerm.trim());
             }
 
-            const url = `${BASE_URL}/dashboard/categories${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+            const baseUrl = getBaseUrl();
+            const url = `${baseUrl}/admin/categories${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
 
             const response = await fetch(url, {
                 headers: {
@@ -76,17 +83,23 @@ export function useCategoryManagement({ includeHierarchy = false, enableSearch =
                 throw new Error(errorData.message || 'Failed to fetch categories');
             }
 
-            const data = await response.json();
+            const contentType = response.headers.get('content-type');
+            const data = contentType && contentType.includes('application/json')
+                ? await response.json()
+                : {};
 
-            if (includeHierarchy && data.categories) {
-                //if hierarchy is requested, use the tree structure
+            const list = Array.isArray(data.categories) ? data.categories : [];
+            if (response.ok && !contentType?.includes('application/json')) {
+                setError('Server did not return a valid response. Please try again.');
+            }
+
+            if (includeHierarchy && Array.isArray(data.categories)) {
                 setCategoryTree(data.categories);
-                setCategories(data.flat || []);
+                setCategories(Array.isArray(data.flat) ? data.flat : list);
             } else {
-                //Flat list
-                setCategories(data.categories || []);
+                setCategories(list);
                 if (includeHierarchy) {
-                    setCategoryTree(buildCategoryTree(data.categories || []));
+                    setCategoryTree(buildCategoryTree(list));
                 }
             }
         } catch (err) {
@@ -149,7 +162,7 @@ export function useCategoryManagement({ includeHierarchy = false, enableSearch =
                         parent: formData.parent || null
                     };
 
-                    const response = await fetch(`${BASE_URL}/dashboard/categories`, {
+                    const response = await fetch(`${getBaseUrl()}/admin/categories`, {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${token}`,
@@ -158,10 +171,10 @@ export function useCategoryManagement({ includeHierarchy = false, enableSearch =
                         body: JSON.stringify(categoryData)
                     });
 
-                    const data = await response.json();
+                    const data = await response.json().catch(() => ({}));
 
                     if (!response.ok) {
-                        throw new Error(data.message || 'Failed to create category');
+                        throw new Error(data.message || response.statusText || 'Failed to create category');
                     }
 
                     setSuccess(data.message || 'Category created successfully');
@@ -196,7 +209,7 @@ export function useCategoryManagement({ includeHierarchy = false, enableSearch =
                     parent: formData.parent || null
                 };
 
-                const response = await fetch(`${BASE_URL}/dashboard/categories/${editingCategory._id}`, {
+                const response = await fetch(`${getBaseUrl()}/admin/categories/${editingCategory._id}`, {
                     method: 'PUT',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -205,9 +218,9 @@ export function useCategoryManagement({ includeHierarchy = false, enableSearch =
                     body: JSON.stringify(categoryData)
                 });
 
-                const data = await response.json();
+                const data = await response.json().catch(() => ({}));
                 if (!response.ok) {
-                    throw new Error(data.message || 'Failed to update category');
+                    throw new Error(data.message || response.statusText || 'Failed to update category');
                 }
 
                 setSuccess(data.message || 'Category updated successfully');
@@ -234,7 +247,7 @@ export function useCategoryManagement({ includeHierarchy = false, enableSearch =
 
                     const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
 
-                    const response = await fetch(`${BASE_URL}/dashboard/categories/${categoryId}`, {
+                    const response = await fetch(`${getBaseUrl()}/admin/categories/${categoryId}`, {
                         method: 'DELETE',
                         headers: {
                             'Authorization': `Bearer ${token}`,
@@ -242,10 +255,10 @@ export function useCategoryManagement({ includeHierarchy = false, enableSearch =
                         }
                     });
                     
-                    const data = await response.json();
+                    const data = await response.json().catch(() => ({}));
 
                     if (!response.ok) {
-                        throw new Error(data.message || 'Failed to delete category');
+                        throw new Error(data.message || response.statusText || 'Failed to delete category');
                     }
 
                     setSuccess(data.message || 'Category deleted successfully');

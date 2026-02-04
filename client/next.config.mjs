@@ -6,6 +6,10 @@ const nextConfig = {
         source: '/dashboard/:path*',
         destination: 'http://localhost:5000/dashboard/:path*',
       },
+      {
+        source: '/admin/:path*',
+        destination: 'http://localhost:5000/admin/:path*',
+      },
     ];
   },
 };
