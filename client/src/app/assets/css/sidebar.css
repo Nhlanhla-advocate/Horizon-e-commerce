@@ -16,6 +16,12 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
+@media (min-width: 1024px) {
+  .admin-mobile-header {
+    display: none;
+  }
+}
+
 /* MAIN SIDEBAR CONTAINER - hidden off-screen on small/medium, visible on lg+ */
 .admin-sidebar {
   position: fixed;
