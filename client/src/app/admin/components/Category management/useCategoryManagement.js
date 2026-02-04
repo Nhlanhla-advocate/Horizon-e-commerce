@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
-//Backend base Url
-const BASE_URL = 'http://localhost:5000';
+// Use same origin so Next.js rewrites /admin/* to the backend (avoids CORS and ensures categories are fetched)
+const getBaseUrl = () => (typeof window !== 'undefined' ? '' : 'http://localhost:5000');
 
-export function useCategoryManagement({ includeHierachy = false, enableSearch = true } = {}) {
+export function useCategoryManagement({ includeHierarchy = false, enableSearch = true } = {}) {
     const [categories, setCategories] = useState([]);
     const [categoryTree, setCategoryTree] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -13,6 +13,7 @@ export function useCategoryManagement({ includeHierachy = false, enableSearch = 
     const [success, setSuccess] = useState(null);
     const [showAddForm, setShowAddForm] = useState(false);
     const [editingCategory, setEditingCategory] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
     const [deletingCategoryId, setDeletingCategoryId] = useState(null);
     const [formData, setFormData] = useState({
         name: '',
@@ -45,15 +46,21 @@ export function useCategoryManagement({ includeHierachy = false, enableSearch = 
     };
 
     //Fetch categories
-    const fetchCategories = useCallback(async() =>{
+    const fetchCategories = useCallback(async () => {
         try {
             setLoading(true);
             setError(null);
 
             const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+            if (!token) {
+                setError('Please sign in to load categories.');
+                setLoading(false);
+                return;
+            }
+
             const queryParams = new URLSearchParams();
 
-            if (includeHierachy) {
+            if (includeHierarchy) {
                 queryParams.append('hierarchy', 'true');
             }
 
@@ -61,7 +68,8 @@ export function useCategoryManagement({ includeHierachy = false, enableSearch = 
                 queryParams.append('search', searchTerm.trim());
             }
 
-            const url = `${BASE_URL}/dashboard/categories?${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+            const baseUrl = getBaseUrl();
+            const url = `${baseUrl}/admin/categories${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
 
             const response = await fetch(url, {
                 headers: {
@@ -75,27 +83,32 @@ export function useCategoryManagement({ includeHierachy = false, enableSearch = 
                 throw new Error(errorData.message || 'Failed to fetch categories');
             }
 
-            const data = await response.json();
+            const contentType = response.headers.get('content-type');
+            const data = contentType && contentType.includes('application/json')
+                ? await response.json()
+                : {};
 
-            if (includeHierachy && data.categories) {
-                //if hierarchy is requested, use the tree structure
+            const list = Array.isArray(data.categories) ? data.categories : [];
+            if (response.ok && !contentType?.includes('application/json')) {
+                setError('Server did not return a valid response. Please try again.');
+            }
+
+            if (includeHierarchy && Array.isArray(data.categories)) {
                 setCategoryTree(data.categories);
-                setCategories(data.flat || []);
+                setCategories(Array.isArray(data.flat) ? data.flat : list);
             } else {
-                //Flat list
-                setCategories(data.categories || []);
-                if (includeHierachy) {
-                    setCategoryTree(buildCategoryTree(data.categories || []));
+                setCategories(list);
+                if (includeHierarchy) {
+                    setCategoryTree(buildCategoryTree(list));
                 }
             }
-            } catch (err) {
-                console.error('Error fetching categories', err);
-                setError(err.message || 'Failed to fetch categories');
-            } finally {
-                setLoading(false);
-            }
-
-        },[includeHierarchy, enableSearch, searchTerm]);
+        } catch (err) {
+            console.error('Error fetching categories', err);
+            setError(err.message || 'Failed to fetch categories');
+        } finally {
+            setLoading(false);
+        }
+    }, [includeHierarchy, enableSearch, searchTerm]);
 
         //Fetch categories on mount and when dependencies change
         useEffect(() => {
@@ -124,7 +137,7 @@ export function useCategoryManagement({ includeHierachy = false, enableSearch = 
             }));
 
             //Auto-generaate slug from name if slug is empty or matches the old name
-            if (name === 'name' && (!formData.slug || formData.slug === generateSllug(editingCategory?.name || ''))) {
+            if (name === 'name' && (!formData.slug || formData.slug === generateSlug(editingCategory?.name || ''))) {
                 setFormData(prev => ({
                     ...prev,
                     slug: generateSlug(value)
@@ -140,7 +153,7 @@ export function useCategoryManagement({ includeHierachy = false, enableSearch = 
                 setError(null);
                 setSuccess(null);
 
-                const token = localStorage.getItem('adminToken') || localStorage.getItem('token';
+                const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
 
                     const categoryData = {
                         name: formData.name.trim(),
@@ -149,7 +162,7 @@ export function useCategoryManagement({ includeHierachy = false, enableSearch = 
                         parent: formData.parent || null
                     };
 
-                    const response = await fetch(`${BASE_URL}/dashboard/categories`, {
+                    const response = await fetch(`${getBaseUrl()}/admin/categories`, {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${token}`,
@@ -158,10 +171,10 @@ export function useCategoryManagement({ includeHierachy = false, enableSearch = 
                         body: JSON.stringify(categoryData)
                     });
 
-                    const data = await response.json();
+                    const data = await response.json().catch(() => ({}));
 
                     if (!response.ok) {
-                        throw new Error(data.message || 'Failed to create category');
+                        throw new Error(data.message || response.statusText || 'Failed to create category');
                     }
 
                     setSuccess(data.message || 'Category created successfully');
@@ -177,7 +190,49 @@ export function useCategoryManagement({ includeHierachy = false, enableSearch = 
                     setError(err.message || 'Failed to create category');
                     console.error('Error creating category', err);
                 }
-            };
+        };
+
+        //Handle edit category
+        const handleEditCategory = async (e) => {
+            e.preventDefault();
+            if (!editingCategory) return;
+
+            try {
+                setError(null);
+                setSuccess(null);
+
+                const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+                const categoryData = {
+                    name: formData.name.trim(),
+                    description: formData.description.trim(),
+                    slug: formData.slug.trim() || generateSlug(formData.name),
+                    parent: formData.parent || null
+                };
+
+                const response = await fetch(`${getBaseUrl()}/admin/categories/${editingCategory._id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(categoryData)
+                });
+
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(data.message || response.statusText || 'Failed to update category');
+                }
+
+                setSuccess(data.message || 'Category updated successfully');
+                resetForm();
+                setShowAddForm(false);
+                await fetchCategories();
+                setTimeout(() => setSuccess(null), 3000);
+            } catch (err) {
+                console.error('Error updating category', err);
+                setError(err.message || 'Failed to update category');
+            }
+        };
 
             //Handle delete category
             const handleDeleteCategory = async (categoryId) => {
@@ -192,7 +247,7 @@ export function useCategoryManagement({ includeHierachy = false, enableSearch = 
 
                     const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
 
-                    const response = await fetch(`${BASE_URL}/dashboard/categories/${categoryId}`, {
+                    const response = await fetch(`${getBaseUrl()}/admin/categories/${categoryId}`, {
                         method: 'DELETE',
                         headers: {
                             'Authorization': `Bearer ${token}`,
@@ -200,10 +255,10 @@ export function useCategoryManagement({ includeHierachy = false, enableSearch = 
                         }
                     });
                     
-                    const data = await response.json();
+                    const data = await response.json().catch(() => ({}));
 
                     if (!response.ok) {
-                        throw new Error(data.message || 'Failed to delete category');
+                        throw new Error(data.message || response.statusText || 'Failed to delete category');
                     }
 
                     setSuccess(data.message || 'Category deleted successfully');
@@ -234,6 +289,32 @@ export function useCategoryManagement({ includeHierachy = false, enableSearch = 
                 setError(null);
                 setSuccess(null);
             };
-        }
+
+            //Handle form close
+            const handleFormClose = () => {
+                resetForm();
+                setShowAddForm(false);
+            };
+
+            return {
+                categories,
+                categoryTree,
+                loading,
+                error,
+                success,
+                showAddForm,
+                editingCategory,
+                searchTerm,
+                deletingCategoryId,
+                formData,
+                setSearchTerm,
+                setShowAddForm,
+                resetForm,
+                handleInputChange,
+                handleAddCategory,
+                handleEditCategory,
+                handleDeleteCategory,
+                handleEditClick,
+                handleFormClose,
+            };
     }
-}
