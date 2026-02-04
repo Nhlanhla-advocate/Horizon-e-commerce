@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+
+const SEARCH_DEBOUNCE_MS = 350;
 
 // Use same origin so Next.js rewrites /admin/* to the backend (avoids CORS and ensures categories are fetched)
 const getBaseUrl = () => (typeof window !== 'undefined' ? '' : 'http://localhost:5000');
@@ -110,10 +112,19 @@ export function useCategoryManagement({ includeHierarchy = false, enableSearch =
         }
     }, [includeHierarchy, enableSearch, searchTerm]);
 
-        //Fetch categories on mount and when dependencies change
-        useEffect(() => {
+    // Fetch on mount and when search/hierarchy options change; debounce when only searchTerm changes
+    const isMountedRef = useRef(false);
+    useEffect(() => {
+        if (!isMountedRef.current) {
+            isMountedRef.current = true;
             fetchCategories();
-        },[fetchCategories]);
+            return;
+        }
+        const timeoutId = setTimeout(() => {
+            fetchCategories();
+        }, SEARCH_DEBOUNCE_MS);
+        return () => clearTimeout(timeoutId);
+    }, [searchTerm, includeHierarchy, enableSearch, fetchCategories]);
 
         //Reset form
         const resetForm = () => {
