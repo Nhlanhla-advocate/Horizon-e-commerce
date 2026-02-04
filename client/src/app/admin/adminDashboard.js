@@ -211,6 +211,21 @@ const AdminDashboard = () => {
           setSidebarOpen={setSidebarOpen}
         />
 
+        {/* Mobile / small-screen header with hamburger - visible only below lg (1024px) */}
+        <div className="admin-mobile-header">
+          <button
+            type="button"
+            className="admin-hamburger-btn"
+            onClick={() => setSidebarOpen((prev) => !prev)}
+            aria-label="Toggle menu"
+          >
+            <span className="admin-hamburger-line" />
+            <span className="admin-hamburger-line" />
+            <span className="admin-hamburger-line" />
+          </button>
+          <span className="admin-mobile-header-title">Admin</span>
+        </div>
+
         {/* Main Content Area */}
         <div className="flex-1 admin-main-content" style={{ width: '100%', maxWidth: '100%', minWidth: 0, boxSizing: 'border-box', overflow: 'hidden' }}>
           {/* Main Content */}

@@ -1,6 +1,8 @@
 /* SIDEBAR STYLES */
 
-/* MAIN SIDEBAR CONTAINER */
+
+
+/* MAIN SIDEBAR CONTAINER - hidden off-screen on small/medium, visible on lg+ */
 .admin-sidebar {
   position: fixed;
   top: 0;
@@ -11,14 +13,13 @@
   z-index: 30;
   transition: transform 0.3s ease-in-out;
   transform: translateX(-100%);
+  height: 100vh;
+  overflow-y: auto;
 }
 
 @media (min-width: 1024px) {
   .admin-sidebar {
-    position: fixed;
     transform: translateX(0);
-    height: 100vh;
-    overflow-y: auto;
   }
 }
 
@@ -133,16 +134,21 @@
   .admin-sidebar-overlay {
     display: none;
   }
-  
-  /* MAIN CONTENT AREA MARGIN FOR FIXED SIDEBAR */
+
+  /* Main content margin for fixed sidebar on desktop; no extra top padding (no mobile header) */
   .admin-main-content {
     margin-left: 16rem; /* w-64 - sidebar width */
+    padding-top: 0;
   }
 }
 
-/* DARK MODE STYLES FOR SIDEBAR */
+/* DARK MODE STYLES FOR SIDEBAR AND MOBILE HEADER */
 :root.dark-mode .admin-sidebar {
   background-color: #1e3a8a !important; /* blue-800 - darker blue for dark mode */
+}
+
+:root.dark-mode .admin-mobile-header {
+  background-color: #1e3a8a;
 }
 
 :root.dark-mode .admin-sidebar-tab:hover {
