@@ -62,6 +62,13 @@
   color: white;
 }
 
+/*ADD TOP PADDING TO MAIN CONTENT ON SMALL SCREENS SO IT SITS BELOW THE MOBILE HEADER*/
+@media (max-width: 1023px) {
+  .admin-main-content {
+    padding-top: 3.5rem;
+  }
+}
+
 /* MAIN SIDEBAR CONTAINER - hidden off-screen on small/medium, visible on lg+ */
 .admin-sidebar {
   position: fixed;
