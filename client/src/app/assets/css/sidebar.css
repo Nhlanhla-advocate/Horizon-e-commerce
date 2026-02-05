@@ -47,6 +47,15 @@
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5)
 }
 
+.admin-hamburger-line {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background-color: currentColor;
+  border-radius: 1px;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
 /* MAIN SIDEBAR CONTAINER - hidden off-screen on small/medium, visible on lg+ */
 .admin-sidebar {
   position: fixed;
