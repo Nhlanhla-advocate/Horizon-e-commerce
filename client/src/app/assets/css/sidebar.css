@@ -38,6 +38,10 @@
   transition: background-color 0.2s;
 }
 
+.admin-hamburger-btn-hover {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
 /* MAIN SIDEBAR CONTAINER - hidden off-screen on small/medium, visible on lg+ */
 .admin-sidebar {
   position: fixed;
