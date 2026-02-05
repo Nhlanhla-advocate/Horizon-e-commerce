@@ -56,6 +56,12 @@
   transition: transform 0.2s, opacity 0.2s;
 }
 
+.admin-mobile-header-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: white;
+}
+
 /* MAIN SIDEBAR CONTAINER - hidden off-screen on small/medium, visible on lg+ */
 .admin-sidebar {
   position: fixed;
