@@ -14,4 +14,17 @@ const getBaseUrl = () => (
         const [searchTerm, setSearchTerm] = useState('');
         const [roleFilter, setRoleFilter] = useState('');
         const [statusFilter, setStatusFilter] = useState('');
+
+        const fetchUsers = useCallback(async () => {
+            try {
+                setLoading(true);
+                setError(null);
+                const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+                if (!token) {
+                    setError('Please sin in to view users.');
+                    setLoading(false);
+                    return;
+                }
+            }
+        })
     }
