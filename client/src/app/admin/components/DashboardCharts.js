@@ -18,7 +18,8 @@ import {
 } from 'recharts';
 import '../../assets/css/charts.css';
 
-const BASE_URL = 'http://localhost:5000';
+// Same origin so Next.js rewrites /dashboard/* to the backend (avoids CORS / Failed to fetch)
+const getBaseUrl = () => (typeof window !== 'undefined' ? '' : 'http://localhost:5000');
 
 const COLORS = {
   revenue: '#3b82f6',
@@ -72,7 +73,7 @@ export default function DashboardCharts({ showCharts = null }) {
       setError(null);
 
       const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
-      const response = await fetch(`${BASE_URL}/dashboard/charts?period=${period}`, {
+      const response = await fetch(`${getBaseUrl()}/dashboard/charts?period=${period}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',

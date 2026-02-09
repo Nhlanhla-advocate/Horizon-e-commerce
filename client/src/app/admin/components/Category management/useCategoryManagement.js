@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 
 const SEARCH_DEBOUNCE_MS = 350;
 
-// Use same origin so Next.js rewrites /admin/* to the backend (avoids CORS and ensures categories are fetched)
+// Use same origin so Next.js rewrites /dashboard/* to the backend (avoids CORS and ensures categories are fetched)
 const getBaseUrl = () => (typeof window !== 'undefined' ? '' : 'http://localhost:5000');
 
 export function useCategoryManagement({ includeHierarchy = false, enableSearch = true } = {}) {
@@ -71,7 +71,7 @@ export function useCategoryManagement({ includeHierarchy = false, enableSearch =
             }
 
             const baseUrl = getBaseUrl();
-            const url = `${baseUrl}/admin/categories${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+            const url = `${baseUrl}/dashboard/categories${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
 
             const response = await fetch(url, {
                 headers: {
@@ -173,7 +173,7 @@ export function useCategoryManagement({ includeHierarchy = false, enableSearch =
                         parent: formData.parent || null
                     };
 
-                    const response = await fetch(`${getBaseUrl()}/admin/categories`, {
+                    const response = await fetch(`${getBaseUrl()}/dashboard/categories`, {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${token}`,
@@ -220,7 +220,7 @@ export function useCategoryManagement({ includeHierarchy = false, enableSearch =
                     parent: formData.parent || null
                 };
 
-                const response = await fetch(`${getBaseUrl()}/admin/categories/${editingCategory._id}`, {
+                const response = await fetch(`${getBaseUrl()}/dashboard/categories/${editingCategory._id}`, {
                     method: 'PUT',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -258,7 +258,7 @@ export function useCategoryManagement({ includeHierarchy = false, enableSearch =
 
                     const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
 
-                    const response = await fetch(`${getBaseUrl()}/admin/categories/${categoryId}`, {
+                    const response = await fetch(`${getBaseUrl()}/dashboard/categories/${categoryId}`, {
                         method: 'DELETE',
                         headers: {
                             'Authorization': `Bearer ${token}`,
