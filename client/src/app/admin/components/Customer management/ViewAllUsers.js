@@ -21,7 +21,7 @@ const getBaseUrl = () => (
                 setError(null);
                 const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
                 if (!token) {
-                    setError('Please sin in to view users.');
+                    setError('Please sign in to view users.');
                     setLoading(false);
                     return;
                 }
@@ -30,14 +30,33 @@ const getBaseUrl = () => (
                 if (searchTerm.trim()) params.set('search', searchTerm.trim());
                 if (roleFilter)params.set('role',roleFilter);
                 if (statusFilter)params.set('status',statusFilter);
-                const url = ${getBaseurl()}/dashboard/users${params.toString() ? `?${params.toString()} :''}`;
+                const url = `${getBaseUrl()}/dashboard/users${params.toString() ? `?${params.toString()}` : ''}`;
                 const response = await fetch(url, {
                     headers: {
-                        'Authorization': Bearer ${token},
+                        'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json',
-                    };
+                    },
                 });
-                
+                if (!response.ok) throw new Error('Failed to fetch users');
+                const data = await response.json();
+                if (data.success && Array.isArray(data.data)) {
+                    setUsers(data.data);
+                } else {
+                    setUsers([]);
+                }
+            } catch (err) {
+                setError(err.message || 'Failed to fetch users');
+                setUsers([]);
+            } finally {
+                setLoading(false);
             }
-        })
+        }, [searchTerm, roleFilter, statusFilter]);
+
+        useEffect(() => {
+            const t = setTimeout(fetchUsers, 300);
+            return () => clearTimeout(t);
+          }, [fetchUsers]);
+
+       
+        );
     }
