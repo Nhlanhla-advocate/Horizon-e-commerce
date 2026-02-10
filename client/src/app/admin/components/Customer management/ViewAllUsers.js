@@ -57,6 +57,17 @@ const getBaseUrl = () => (
             return () => clearTimeout(t);
           }, [fetchUsers]);
 
-       
+          return (
+            <div className="product-management-container">
+                <div className="admin-card" style={{ borderRadius: '0.75rem' }}>
+                    <div className="product-management-header">
+                    </div>
+                    <h2 className="product-management-title">Customer Management</h2>
+                    <p className="product-management-subtitle">View all registered users on the site.</p>
+                </div>
+            </div>
+        </div>
+
+          )
         );
     }
