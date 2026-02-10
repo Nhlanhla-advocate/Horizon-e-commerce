@@ -25,6 +25,19 @@ const getBaseUrl = () => (
                     setLoading(false);
                     return;
                 }
+
+                const params = new URLSearchParams();
+                if (searchTerm.trim()) params.set('search', searchTerm.trim());
+                if (roleFilter)params.set('role',roleFilter);
+                if (statusFilter)params.set('status',statusFilter);
+                const url = ${getBaseurl()}/dashboard/users${params.toString() ? `?${params.toString()} :''}`;
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': Bearer ${token},
+                        'Content-Type': 'application/json',
+                    };
+                });
+                
             }
         })
     }
