@@ -66,8 +66,22 @@ const getBaseUrl = () => (
                     <p className="product-management-subtitle">View all registered users on the site.</p>
                 </div>
             </div>
+            </div>
+       <div className="product-management-search-container">
+        <div className="product-management-search-wrapper" style={{ marginBottom: '0.75rem' }}>
+            <svg
+            className="product-management-search-icon"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            >
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+            </svg>
         </div>
-
-          )
-        );
-    }
+       </div>
+    );
+}
