@@ -112,6 +112,20 @@ const getBaseUrl = () => (
                     <option value="super_admin">Super Admin</option>
                 </select>
             </div>
+            <div>
+                <label className="filter-label" style={{ marginRight: '0.5rem' }}>Status</label>
+                <select
+                className="filter-select"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                style={{ minWidth: '100px'}}
+                >
+
+                    <option value="">All</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+            </div>
         </div>
     );
 }
