@@ -97,6 +97,20 @@ const getBaseUrl = () => (
                         </button>
                     )}
                 </div>
+                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignments: 'center'}}>
+                </div>
+                <label className="filter-label" style={{ marginRight: '0.5rem'}}>Role</label>
+                <select 
+                className="filter-select"
+                value={roleFilter}
+                onChange={(e) => setRoleFilter(e.target.value)}
+                style={{ minWidth: '120px'}}
+                >
+                    <option value="">All Roles</option>
+                    <option value="admin">Admin</option>
+                    <option value="user">User</option>
+                    <option value="super_admin">Super Admin</option>
+                </select>
             </div>
         </div>
     );
