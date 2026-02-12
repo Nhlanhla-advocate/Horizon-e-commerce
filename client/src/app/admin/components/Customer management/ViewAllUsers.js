@@ -65,23 +65,39 @@ const getBaseUrl = () => (
                     <h2 className="product-management-title">Customer Management</h2>
                     <p className="product-management-subtitle">View all registered users on the site.</p>
                 </div>
+                <div className="product-management-search-container">
+                <div className="product-management-search-wrapper" style={{ marginBottom: '0.75rem' }}>
+                    <svg
+                        className="product-management-search-icon"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                    >
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                    <input 
+                    type="text"
+                    className="product-management-search-input"
+                    placeholder="Search by username or email..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                    {searchTerm && (
+                        <button
+                        type="button"
+                        className="product-management-search-clear"
+                        onClick={() => setSearchTerm('')}
+                        aria-label="Clear search"
+                        >
+                            x
+                        </button>
+                    )}
+                </div>
             </div>
-            </div>
-       <div className="product-management-search-container">
-        <div className="product-management-search-wrapper" style={{ marginBottom: '0.75rem' }}>
-            <svg
-            className="product-management-search-icon"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            >
-            <circle cx="11" cy="11" r="8"></circle>
-            <path d="m21 21-4.35-4.35"></path>
-            </svg>
         </div>
-       </div>
     );
 }
