@@ -97,35 +97,113 @@ const getBaseUrl = () => (
                         </button>
                     )}
                 </div>
-                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignments: 'center'}}>
+                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                    <div>
+                        <label className="filter-label" style={{ marginRight: '0.5rem' }}>Role</label>
+                        <select
+                            className="filter-select"
+                            value={roleFilter}
+                            onChange={(e) => setRoleFilter(e.target.value)}
+                            style={{ minWidth: '120px' }}
+                        >
+                            <option value="">All Roles</option>
+                            <option value="admin">Admin</option>
+                            <option value="user">User</option>
+                            <option value="super_admin">Super Admin</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="filter-label" style={{ marginRight: '0.5rem' }}>Status</label>
+                        <select
+                            className="filter-select"
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            style={{ minWidth: '100px' }}
+                        >
+                            <option value="">All</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
                 </div>
-                <label className="filter-label" style={{ marginRight: '0.5rem'}}>Role</label>
-                <select 
-                className="filter-select"
-                value={roleFilter}
-                onChange={(e) => setRoleFilter(e.target.value)}
-                style={{ minWidth: '120px'}}
-                >
-                    <option value="">All Roles</option>
-                    <option value="admin">Admin</option>
-                    <option value="user">User</option>
-                    <option value="super_admin">Super Admin</option>
-                </select>
             </div>
-            <div>
-                <label className="filter-label" style={{ marginRight: '0.5rem' }}>Status</label>
-                <select
-                className="filter-select"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                style={{ minWidth: '100px'}}
-                >
 
-                    <option value="">All</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                </select>
-            </div>
+            {error && (
+                <div className="admin-error-message">{error}</div>
+            )}
+
+            {loading && users.length === 0 ? (
+                <div className="dashboard-loading">
+                    <div className="admin-spinner"></div>
+                </div>
+            ) : users.length === 0 ? (
+                <div className="orders-empty">
+                    <p>No users found. Try adjusting your search or filters.</p>
+                </div>
+            ) : (
+                <div className="orders-wrapper">
+                    <div className="orders-table-wrapper">
+                        <table className="orders-table">
+                            <thead>
+                                <tr className="orders-head-row">
+                                    <th className="orders-th">Username</th>
+                                    <th className="orders-th">Email</th>
+                                    <th className="orders-th">Role</th>
+                                    <th className="orders-th">Status</th>
+                                    <th className="orders-th">Registered</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {users.map((user) => (
+                                    <tr key={user._id} className="orders-tr">
+                                        <td className="orders-td">
+                                            <strong>{user.username || '—'}</strong>
+                                        </td>
+                                        <td className="orders-td">{user.email || '—'}</td>
+                                        <td className="orders-td">
+                                            <span
+                                                style={{
+                                                    padding: '0.25rem 0.5rem',
+                                                    borderRadius: '0.25rem',
+                                                    fontSize: '0.875rem',
+                                                    backgroundColor:
+                                                        user.role === 'super_admin'
+                                                            ? '#7c3aed'
+                                                            : user.role === 'admin'
+                                                                ? '#2563eb'
+                                                                : '#6b7280',
+                                                    color: '#fff',
+                                                }}
+                                            >
+                                                {user.role || 'user'}
+                                            </span>
+                                        </td>
+                                        <td className="orders-td">
+                                            <span
+                                                style={{
+                                                    color: user.status === 'active' ? '#059669' : '#dc2626',
+                                                    fontWeight: 500,
+                                                }}
+                                            >
+                                                {user.status || 'active'}
+                                            </span>
+                                        </td>
+                                        <td className="orders-td mono-text">
+                                            {user.createdAt
+                                                ? new Date(user.createdAt).toLocaleDateString('en-US', {
+                                                    year: 'numeric',
+                                                    month: 'short',
+                                                    day: 'numeric',
+                                                })
+                                                : '—'}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
