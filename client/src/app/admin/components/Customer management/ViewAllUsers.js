@@ -37,8 +37,10 @@ const getBaseUrl = () => (
                         'Content-Type': 'application/json',
                     },
                 });
-                if (!response.ok) throw new Error('Failed to fetch users');
-                const data = await response.json();
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(data.error || data.message || `Failed to fetch users (${response.status})`);
+                }
                 if (data.success && Array.isArray(data.data)) {
                     setUsers(data.data);
                 } else {
