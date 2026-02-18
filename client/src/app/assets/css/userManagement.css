@@ -1,0 +1,3 @@
+/* USER / CUSTOMER MANAGEMENT - reuses product-management layout styles */
+/* Import shared management styles so ViewAllUsers can use product-management-* classes */
+@import './productManagement.css';
