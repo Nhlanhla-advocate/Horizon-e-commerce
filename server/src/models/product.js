@@ -7,8 +7,8 @@ const productSchema = new mongoose.Schema({
     },
     category: { 
         type: String, 
-        required: true,
-        enum: ['jewelry', 'electronics', 'consoles', 'computers']
+        required: true
+        /* Must match a category name from the Category collection (validated in controller) */
     },
     description: { 
         type: String, 
