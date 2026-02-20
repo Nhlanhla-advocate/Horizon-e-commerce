@@ -1,7 +1,9 @@
 const Product = require('../models/product');
+const Category = require('../models/category');
 const Review = require('../models/review');
 const User = require('../models/user');
 const Order = require('../models/order');
+const Cart = require('../models/cart');
 const Dashboard = require('../models/dashboard');
 const mongoose = require('mongoose');
 
@@ -181,7 +183,7 @@ class DashboardController {
     try {
       const {
         name, 
-        category,
+        category: categoryInput,
         description,
         price,
         stock,
@@ -192,12 +194,25 @@ class DashboardController {
       } = req.body;
 
       // Validate required fields
-      if(!name || !category || !description || !price || stock === undefined) {
+      if(!name || !categoryInput || !description || !price || stock === undefined) {
         return res.status(400).json({
           success: false,
           error: 'Missing required fields: name, category, description, price, and stock are required'
         });
       }
+
+      // Validate category exists in Category collection (match by name or slug); store name
+      const categories = await Category.find({}).select('name slug').lean();
+      const categoryMatch = categories.find(
+        (c) => c.name === categoryInput.trim() || c.slug === categoryInput.trim().toLowerCase()
+      );
+      if (!categoryMatch) {
+        return res.status(400).json({
+          success: false,
+          error: `Invalid category. Choose a category from Category Management, or add it there first.`
+        });
+      }
+      const category = categoryMatch.name;
 
       const product = new Product({
         name,
@@ -256,15 +271,20 @@ class DashboardController {
         });
       }
 
-      // Validate category if provided
+      // Validate category if provided (must exist in Category collection; store name)
+      let categoryToSave = category;
       if (category) {
-        const validCategories = ['jewelry', 'electronics', 'consoles', 'computers'];
-        if (!validCategories.includes(category)) {
+        const categories = await Category.find({}).select('name slug').lean();
+        const categoryMatch = categories.find(
+          (c) => c.name === category.trim() || c.slug === category.trim().toLowerCase()
+        );
+        if (!categoryMatch) {
           return res.status(400).json({
             success: false,
-            error: `Invalid category. Must be one of: ${validCategories.join(', ')}`
+            error: 'Invalid category. Choose a category from Category Management, or add it there first.'
           });
         }
+        categoryToSave = categoryMatch.name;
       }
 
       // Update the product
@@ -272,7 +292,7 @@ class DashboardController {
         id,
         {
           ...(name && { name }),
-          ...(category && { category }),
+          ...(categoryToSave !== undefined && { category: categoryToSave }),
           ...(description && { description }),
           ...(price && { price }),
           ...(stock !== undefined && { stock }),
@@ -1273,6 +1293,102 @@ class DashboardController {
       return res.status(500).json({
         success: false,
         error: `Error fetching chart data: ${error.message}`
+      });
+    }
+  }
+
+  // Get all registered users (admin only; excludes password)
+  // Get a single user's cart (admin only)
+  async getUserCart(req, res) {
+    try {
+      const { userId } = req.params;
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(400).json({ success: false, message: 'Invalid user ID' });
+      }
+      const cart = await Cart.findOne({ customerId: userId })
+        .populate('items.product', 'name price')
+        .lean();
+      if (!cart) {
+        return res.json({ success: true, data: { items: [], totalPrice: 0 } });
+      }
+      return res.json({ success: true, data: cart });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        error: `Error fetching user cart: ${error.message}`
+      });
+    }
+  }
+
+  // Get reviews written by a user
+  async getUserReviews(req, res) {
+    try {
+      const { userId } = req.params;
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(400).json({ success: false, message: 'Invalid user ID' });
+      }
+      const reviews = await Review.find({ user: userId })
+        .populate('product', 'name')
+        .sort({ createdAt: -1 })
+        .lean();
+      return res.json({ success: true, data: reviews });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        error: `Error fetching user reviews: ${error.message}`
+      });
+    }
+  }
+
+  // Get orders for a user (by customerId)
+  async getUserOrders(req, res) {
+    try {
+      const { userId } = req.params;
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(400).json({ success: false, message: 'Invalid user ID' });
+      }
+      const orders = await Order.find({ customerId: userId, isGuestOrder: { $ne: true } })
+        .populate('customerId', 'username email')
+        .sort({ createdAt: -1 })
+        .lean();
+      return res.json({ success: true, data: orders });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        error: `Error fetching user orders: ${error.message}`
+      });
+    }
+  }
+
+  async getAllUsers(req, res) {
+    try {
+      const { search, role, status } = req.query;
+      const filter = {};
+
+      if (search && search.trim()) {
+        filter.$or = [
+          { email: { $regex: search.trim(), $options: 'i' } },
+          { username: { $regex: search.trim(), $options: 'i' } }
+        ];
+      }
+      if (role && role.trim()) filter.role = role.trim();
+      if (status && status.trim()) filter.status = status.trim();
+
+      const users = await User.find(filter)
+        .select('-password -refreshToken -refreshTokenExpiry -tokenBlacklist -resetPasswordToken -resetPasswordExpires')
+        .sort({ createdAt: -1 })
+        .lean();
+
+      return res.status(200).json({
+        success: true,
+        data: users,
+        total: users.length
+      });
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      return res.status(500).json({
+        success: false,
+        error: `Error fetching users: ${error.message}`
       });
     }
   }

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const dashboardController = require('../controllers/dashboardController');
 const productController = require('../controllers/productController');
+const categoryRoutes = require('./category');
 const { authMiddleware, isAdmin } = require('../middleware/authMiddleware');
 const {
   validate,
@@ -23,9 +24,18 @@ const {
 router.use(authMiddleware);
 router.use(isAdmin);
 
+// Category management (same as admin; allows product modal and category management to use /dashboard/categories)
+router.use('/categories', categoryRoutes);
+
 // Dashboard overview and statistics
 router.get('/stats', (req, res) => dashboardController.getDashboardStats(req, res));
 router.get('/charts', (req, res) => dashboardController.getChartData(req, res));
+
+// Customer / user management (admin only)
+router.get('/users', (req, res) => dashboardController.getAllUsers(req, res));
+router.get('/users/:userId/cart', (req, res) => dashboardController.getUserCart(req, res));
+router.get('/users/:userId/reviews', (req, res) => dashboardController.getUserReviews(req, res));
+router.get('/users/:userId/orders', (req, res) => dashboardController.getUserOrders(req, res));
 
 // Cache management routes
 router.post('/cache/refresh', (req, res) => dashboardController.refreshDashboardCache(req, res));

@@ -9,6 +9,7 @@ const getBaseUrl = () => (
 
 const getAuthHeaders = () => {
     const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+    if (!token) return null;
     return {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
@@ -33,24 +34,18 @@ export default function ViewAllUsers() {
         try {
             setLoading(true);
             setError(null);
-            const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
-            if (!token) {
+            const headers = getAuthHeaders();
+            if (!headers) {
                 setError('Please sign in to view users.');
                 setLoading(false);
                 return;
             }
-
-                const params = new URLSearchParams();
-                if (searchTerm.trim()) params.set('search', searchTerm.trim());
-                if (roleFilter)params.set('role',roleFilter);
-                if (statusFilter)params.set('status',statusFilter);
-                const url = `${getBaseUrl()}/dashboard/users${params.toString() ? `?${params.toString()}` : ''}`;
-                const response = await fetch(url, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                    },
-                });
+            const params = new URLSearchParams();
+            if (searchTerm.trim()) params.set('search', searchTerm.trim());
+            if (roleFilter) params.set('role', roleFilter);
+            if (statusFilter) params.set('status', statusFilter);
+            const url = `${getBaseUrl()}/dashboard/users${params.toString() ? `?${params.toString()}` : ''}`;
+            const response = await fetch(url, { headers });
                 if (!response.ok) throw new Error('Failed to fetch users');
                 const data = await response.json();
                 if (data.success && Array.isArray(data.data)) {
@@ -72,17 +67,28 @@ export default function ViewAllUsers() {
     }, [fetchUsers]);
 
     const fetchUserDetails = useCallback(async (userId) => {
+        const headers = getAuthHeaders();
+        if (!headers) {
+            setError('Please sign in to view user details.');
+            setDetailLoading(false);
+            return;
+        }
         const base = getBaseUrl();
         setDetailLoading(true);
         setUserCart(null);
         setUserReviews([]);
         setUserOrders([]);
+        setError(null);
         try {
             const [cartRes, reviewsRes, ordersRes] = await Promise.all([
-                fetch(`${base}/dashboard/users/${userId}/cart`, { headers: getAuthHeaders() }),
-                fetch(`${base}/dashboard/users/${userId}/reviews`, { headers: getAuthHeaders() }),
-                fetch(`${base}/dashboard/users/${userId}/orders`, { headers: getAuthHeaders() }),
+                fetch(`${base}/dashboard/users/${userId}/cart`, { headers }),
+                fetch(`${base}/dashboard/users/${userId}/reviews`, { headers }),
+                fetch(`${base}/dashboard/users/${userId}/orders`, { headers }),
             ]);
+            if (cartRes.status === 401 || reviewsRes.status === 401 || ordersRes.status === 401) {
+                setError('Session expired or invalid. Please sign in again.');
+                return;
+            }
             const cartData = cartRes.ok ? await cartRes.json() : null;
             const reviewsData = reviewsRes.ok ? await reviewsRes.json() : null;
             const ordersData = ordersRes.ok ? await ordersRes.json() : null;
@@ -91,6 +97,7 @@ export default function ViewAllUsers() {
             if (ordersData?.success && Array.isArray(ordersData.data)) setUserOrders(ordersData.data);
         } catch (err) {
             console.error('Error fetching user details:', err);
+            setError(err.message || 'Failed to load user details.');
         } finally {
             setDetailLoading(false);
         }

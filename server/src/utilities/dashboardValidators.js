@@ -25,8 +25,8 @@ const validateAddProduct = [
     .trim()
     .notEmpty()
     .withMessage('Category is required')
-    .isIn(['jewelry', 'electronics', 'consoles', 'computers'])
-    .withMessage('Category must be one of: jewelry, electronics, consoles, computers'),
+    .isLength({ min: 1, max: 100 })
+    .withMessage('Category must be between 1 and 100 characters'),
   
   body('description')
     .trim()
@@ -92,8 +92,8 @@ const validateUpdateProduct = [
     .trim()
     .notEmpty()
     .withMessage('Category cannot be empty')
-    .isIn(['jewelry', 'electronics', 'consoles', 'computers'])
-    .withMessage('Category must be one of: jewelry, electronics, consoles, computers'),
+    .isLength({ min: 1, max: 100 })
+    .withMessage('Category must be between 1 and 100 characters'),
   
   body('description')
     .optional()
@@ -212,7 +212,8 @@ const validateQueryParams = [
   
   query('category')
     .optional()
-    .isIn(['jewelry', 'electronics', 'consoles', 'computers'])
+    .trim()
+    .isLength({ min: 1, max: 100 })
     .withMessage('Invalid category'),
   
   query('status')
@@ -302,8 +303,8 @@ const validateCreateProduct = [
     .trim()
     .notEmpty()
     .withMessage('Category is required')
-    .isIn(['jewelry', 'electronics', 'consoles', 'computers'])
-    .withMessage('Category must be one of: jewelry, electronics, consoles, computers'),
+    .isLength({ min: 1, max: 100 })
+    .withMessage('Category must be between 1 and 100 characters'),
   
   body('featured')
     .optional()
@@ -358,8 +359,8 @@ const validateAdminUpdateProduct = [
     .trim()
     .notEmpty()
     .withMessage('Category cannot be empty')
-    .isIn(['jewelry', 'electronics', 'consoles', 'computers'])
-    .withMessage('Category must be one of: jewelry, electronics, consoles, computers'),
+    .isLength({ min: 1, max: 100 })
+    .withMessage('Category must be between 1 and 100 characters'),
   
   body('featured')
     .optional()
@@ -414,8 +415,8 @@ const validateCategoryParam = [
     .trim()
     .notEmpty()
     .withMessage('Category is required')
-    .isIn(['jewelry', 'electronics', 'consoles', 'computers'])
-    .withMessage('Category must be one of: jewelry, electronics, consoles, computers'),
+    .isLength({ min: 1, max: 200 })
+    .withMessage('Category must be between 1 and 200 characters'),
 ];
 
 // Validation schema for bulk updating products (productController.bulkUpdateProducts)
@@ -513,7 +514,8 @@ const validateTopSellingQuery = [
   
   query('category')
     .optional()
-    .isIn(['jewelry', 'electronics', 'consoles', 'computers'])
+    .trim()
+    .isLength({ min: 1, max: 100 })
     .withMessage('Invalid category'),
   
   query('minRevenue')
@@ -541,7 +543,8 @@ const validateLowSellingQuery = [
   
   query('category')
     .optional()
-    .isIn(['jewelry', 'electronics', 'consoles', 'computers'])
+    .trim()
+    .isLength({ min: 1, max: 100 })
     .withMessage('Invalid category'),
   
   query('maxSales')
@@ -564,7 +567,8 @@ const validateLowStockAlertsQuery = [
   
   query('category')
     .optional()
-    .isIn(['jewelry', 'electronics', 'consoles', 'computers'])
+    .trim()
+    .isLength({ min: 1, max: 100 })
     .withMessage('Invalid category'),
 ];
 

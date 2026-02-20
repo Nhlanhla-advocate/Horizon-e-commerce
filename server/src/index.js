@@ -1,5 +1,7 @@
-// Load environment variables first, before any other imports
-require("dotenv").config({ path: "./server/.env" });
+// Load environment variables first (from project root .env when you run npm run app)
+const path = require("path");
+require("dotenv").config({ path: path.resolve(process.cwd(), ".env") });
+require("dotenv").config({ path: path.resolve(process.cwd(), "server", ".env") });
 
 const express = require("express");
 const app = express();
