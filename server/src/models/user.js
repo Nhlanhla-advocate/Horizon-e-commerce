@@ -5,20 +5,25 @@ const userSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     username: { type: String, required: true },
-    role: { 
-        type: String, 
-        enum: ['user', 'admin', 'super_admin'],
+    role: {
+        type: String,
+        enum: ['user', 'admin', 'manager', 'support', 'super_admin'],
         default: 'user'
     },
+    permissions: [{ type: String }], // e.g. 'manage_products', 'manage_orders', 'handle_refunds'
     wishlist: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Wishlist'
       }, 
     status: {
         type: String,
-        enum: ['active', 'inactive'],
+        enum: ['active', 'inactive', 'suspended', 'banned'],
         default: 'active'
     },
+    suspendedAt: { type: Date },
+    suspensionReason: { type: String },
+    bannedAt: { type: Date },
+    banReason: { type: String },
     cart: { type: mongoose.Schema.Types.ObjectId, ref: 'Cart' },
     refreshToken: { type: String },
     refreshTokenExpiry: { type: Date },

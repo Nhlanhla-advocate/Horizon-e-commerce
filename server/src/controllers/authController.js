@@ -156,10 +156,20 @@ exports.signIn = async (req, res) => {
                 error: "Incorrect password. Please check your password and try again." 
             });
         }
+
+        // Block suspended or banned users
+        if (user.status === 'suspended' || user.status === 'banned') {
+            return res.status(403).json({
+                success: false,
+                error: user.status === 'banned'
+                    ? "This account has been banned. Contact support if you believe this is an error."
+                    : "This account is suspended. Contact support for more information."
+            });
+        }
         
         // CRITICAL CHECK: If user has admin role, they must use admin signin
         // Check role field in User document
-        if (user.role === 'admin' || user.role === 'super_admin') {
+        if (['admin', 'super_admin', 'manager', 'support'].includes(user.role)) {
             console.log('[USER SIGNIN] ⚠️ User has admin role:', user.role);
             console.log('[USER SIGNIN] 🚫 BLOCKING: User with admin role attempting to use user endpoint - returning 403');
             return res.status(403).json({ 
