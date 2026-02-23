@@ -1307,6 +1307,7 @@ class DashboardController {
       }
       const cart = await Cart.findOne({ customerId: userId })
         .populate('items.product', 'name price')
+        .populate('items.productId', 'name price')
         .lean();
       if (!cart) {
         return res.json({ success: true, data: { items: [], totalPrice: 0 } });

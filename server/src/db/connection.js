@@ -7,14 +7,16 @@ mongoose.set('strictQuery', true);
 async function connectToMongoDB() {
   const connection = process.env.MONGODB_URL;
   if (!connection) {
-    console.error("Error: MONGODB_URL is not set in .env");
-    return;
+    const err = new Error("MONGODB_URL is not set in .env");
+    console.error("Error:", err.message);
+    throw err;
   }
   try {
     await mongoose.connect(connection);
     console.log("Successfully Connected to MongoDB");
   } catch (error) {
     console.error("Error connecting to MongoDB:", error);
+    throw error;
   }
 }
 

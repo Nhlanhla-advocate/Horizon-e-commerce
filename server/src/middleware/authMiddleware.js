@@ -59,10 +59,9 @@ const authMiddleware = async (req, res, next) => {
                     console.log('[AUTH MIDDLEWARE] User role value:', userRole, 'Type:', typeof userRole);
                     
                     // Check both direct comparison and normalized comparison
-                    const isAdminDirect = userRole === 'admin' || userRole === 'super_admin';
                     const roleNormalized = userRole?.toString().toLowerCase().trim();
-                    const isAdminNormalized = roleNormalized === 'admin' || roleNormalized === 'super_admin';
-                    const isAdmin = isAdminDirect || isAdminNormalized;
+                    const adminRoles = ['admin', 'super_admin', 'manager', 'support'];
+                    const isAdmin = adminRoles.includes(userRole) || adminRoles.includes(roleNormalized);
                     
                     // Explicitly block users with role "user"
                     const isUserRole = userRole === 'user' || roleNormalized === 'user';
@@ -123,8 +122,9 @@ const authMiddleware = async (req, res, next) => {
                 });
             }
 
-            // Check admin status (works for both Admin and User models)
-            if (account.status !== "active") {
+            // Check admin status (works for both Admin and User models) - inactive/suspended/banned cannot access
+            const activeStatuses = ['active'];
+            if (!activeStatuses.includes(account.status)) {
                 return res.status(403).json({ 
                     success: false,
                     message: "Admin account is inactive. Please contact administrator." 
@@ -139,9 +139,9 @@ const authMiddleware = async (req, res, next) => {
                 });
             }
             
-            // Final check: Ensure account has admin or super_admin role
-            const hasAdminRole = accountRole === 'admin' || accountRole === 'super_admin' || 
-                                roleNormalized === 'admin' || roleNormalized === 'super_admin';
+            // Final check: Ensure account has an admin-level role (admin, super_admin, manager, support)
+            const adminRoles = ['admin', 'super_admin', 'manager', 'support'];
+            const hasAdminRole = adminRoles.includes(accountRole) || adminRoles.includes(roleNormalized);
             if (!hasAdminRole) {
                 console.log('[AUTH MIDDLEWARE] ❌ Access denied - account does not have admin role. Role:', accountRole);
                 return res.status(403).json({ 
@@ -203,7 +203,8 @@ const authMiddleware = async (req, res, next) => {
 
 // Middleware to check if user is admin (works for both User and Admin models)
 const isAdmin = (req, res, next) => {
-    if (req.user && (req.user.role === 'admin' || req.user.role === 'super_admin')) {
+    const adminRoles = ['admin', 'super_admin', 'manager', 'support'];
+    if (req.user && adminRoles.includes(req.user.role)) {
         next();
     } else {
         res.status(403).json({ 
@@ -213,4 +214,47 @@ const isAdmin = (req, res, next) => {
     }
 };
 
-module.exports = { authMiddleware, isAdmin };
+// Only super_admin can proceed (create/delete admins, assign roles, view audit logs, etc.)
+const requireSuperAdmin = (req, res, next) => {
+    if (req.user && req.user.role === 'super_admin') {
+        next();
+    } else {
+        res.status(403).json({ 
+            success: false,
+            message: "Access denied. Super admin only." 
+        });
+    }
+};
+
+// Role-based permissions: who can access what
+const ROLES_WITH_PERMISSION = {
+    manage_products: ['admin', 'super_admin', 'manager'],
+    manage_orders: ['admin', 'super_admin', 'manager', 'support'],
+    view_users: ['admin', 'super_admin', 'manager', 'support'],
+    manage_users: ['super_admin'],
+    handle_refunds: ['admin', 'super_admin', 'manager', 'support'],
+    manage_admins: ['super_admin'],
+    view_audit_logs: ['super_admin'],
+    view_system_activity: ['super_admin'],
+    view_failed_payments: ['super_admin'],
+    suspend_ban_users: ['super_admin'],
+    override_orders: ['super_admin']
+};
+
+const requirePermission = (permission) => {
+    return (req, res, next) => {
+        if (!req.user) {
+            return res.status(401).json({ success: false, message: "Authentication required." });
+        }
+        const role = req.user.role;
+        const allowedRoles = ROLES_WITH_PERMISSION[permission];
+        const hasRole = allowedRoles && allowedRoles.includes(role);
+        const hasExplicitPermission = req.user.permissions && Array.isArray(req.user.permissions) && req.user.permissions.includes(permission);
+        if (hasRole || hasExplicitPermission || role === 'super_admin') {
+            return next();
+        }
+        res.status(403).json({ success: false, message: `Access denied. Missing permission: ${permission}.` });
+    };
+};
+
+module.exports = { authMiddleware, isAdmin, requireSuperAdmin, requirePermission, ROLES_WITH_PERMISSION };
