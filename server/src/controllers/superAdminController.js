@@ -108,3 +108,35 @@ async function deleteAdmin(req, res) {
         return res.status(500).json({ success: false, error: err.message });
     }
 }
+
+//Assign roles and permissions
+async function assignRole(req, res) {
+    try {
+        const { adminId } = req.params;
+        const { role, permissions } = req.body;
+        if (!mongoose.Types.ObjectId.isValid(adminId)) {
+            return res.status(400).json({ success: false, message: 'invalid admin ID.'});
+        }
+        const admin = await User.findById(adminId);
+        if(!admin) {
+            return res.status(404).json({ success: false, message: 'User not found.'});
+        }
+        if (admin.role ==='super_admin') {
+            return res.status(403).json({ success: false, message: 'Cannot change supoer admin role.'});
+        }
+        if (!role && ROLES.includes(role)) {
+            admin.role = role;
+        }
+        if (Array.isArray(permissions)) {
+            admin.permissions = permissions;
+        }
+        await admin.save();
+        await logAudit(req.user._id, 'assign_role', 'user', admin._id, { role: admin.role, permissions: admin.permissions }, req);
+        const out = admin.toObject();
+        delete out.password;
+        return res.json({ success: true, data: out });
+    } catch (err) {
+        console.error('assignRole error:', err);
+        return res.status(500).json({ success: false, error: err.message });
+    }
+}
