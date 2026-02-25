@@ -29,5 +29,22 @@ async function createAdmin(req, res) {
         if (existing) {
             return res.status(400).json({ success: false, message: 'User with this email or username already exists.'});
         }
+        const admin = await User.create({
+            email,
+            username,
+            password,
+            role: assignedRole,
+            permissions: Array.isArray(permissions) ? permissions : [],
+            status: 'active'
+        });
+        await logAudit(req.user._id,'create_admin','user',admin._id, { email, username, role: assignedRole }, req);
+        const out = admin.toObject();
+        delete out.password;
+        delete out.refreshToken;
+        delete out.tokenBlacklist;
+        return res.status(201).json({ success: true, data: out });
+    } catch (err) {
+        console.error('createAdmin error:', err);
+        return res.status(500).json({ success: false, error: err.message });
     }
 }
