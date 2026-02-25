@@ -82,3 +82,29 @@ async function updateAdmin(req, res) {
         return res.status(500).json({ success: false, error: err.message });
     }
 }
+
+async function deleteAdmin(req, res) {
+    try {
+        const { adminId } = req.params;
+        if (!mongoose.Types.ObjectId.isValid(adminId)) {
+            return res.status(400).json({ success: false, message: 'invalid adminID.'});
+        }
+        const admin = await User.findById(adminId);
+        if (!admin) {
+            return res.status(404).json({ success: false, message: 'Admin not found.'});
+        }
+        if (admin.role === 'super_admin') {
+            return res.status(403).json({ success: false, message: 'Cannot delete a super admin.'});
+        }
+        const staffRoles = ['admin', 'manager', 'support'];
+        if (!staffRoles.includes(admin.role)) {
+            return res.status(400).json({ success: false, message: 'Target user is not an admin.'});
+        }
+        await User.findByIdAndDelete(adminId);
+        await logAudit(req.user._id, 'delete_admin', 'user', adminId, { email: admin.email }, req);
+        return res.json({ success: true, message: 'Admin deleted successfully.'});
+    } catch (err) {
+        console.error('deleteAdmin error:', err);
+        return res.status(500).json({ success: false, error: err.message });
+    }
+}
