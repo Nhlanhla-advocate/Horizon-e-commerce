@@ -109,7 +109,7 @@ async function deleteAdmin(req, res) {
     }
 }
 
-//Assign roles and permissions
+//---2. Assign roles and permissions---
 async function assignRole(req, res) {
     try {
         const { adminId } = req.params;
@@ -137,6 +137,21 @@ async function assignRole(req, res) {
         return res.json({ success: true, data: out });
     } catch (err) {
         console.error('assignRole error:', err);
+        return res.status(500).json({ success: false, error: err.message });
+    }
+}
+
+//---3. List admins (who can access what is enforced by requireSuperAdmin on route)---
+async function listAdmins(req, res) {
+    try {
+        const filter = { role: { $in: ['admin', 'manager', 'support', 'super_admin']}};
+        const admins = await User.find(filter)
+        .select('-password -refreshToken -tokenBlacklist -resetPasswordToken -resetPasswordExpires')
+        .sort({ createdAt: -1 })
+        .lean();
+        return res.json({ success: true, data: admins });
+    } catch (err) {
+        console.error('listAdmins error:', err);
         return res.status(500).json({ success: false, error: err.message });
     }
 }
