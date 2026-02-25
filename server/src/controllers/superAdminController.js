@@ -65,5 +65,20 @@ async function updateAdmin(req, res) {
         } else {
             return res.status(400).json({ success: false, message: 'Target user is not an admin.'});
         }
+        if (username != null) admin.username = username;
+        if (email != null) admin.email = email;
+        if (role != null && ROLES.includes(role)) admin.role = role;
+        if (Array.isArray(permissions)) admin.permissions = permissions;
+        if (status != null && ['active', 'inactive'].includes(status)) admin.status = status;
+        await admin.save();
+        await logAudit(req.user._id, 'update_admin', 'user', admin._id, { email: admin.email, role: admin.role },req);
+        const out = admin.toObject();
+        delete out.password;
+        delete out.refreshToken;
+        delete out.tokenBlacklist;
+        return res.json({ success: true, data: out });
+    } catch (err) {
+        console.error('updateAdmin error:', err);
+        return res.status(500).json({ success: false, error: err.message });
     }
 }
