@@ -48,3 +48,22 @@ async function createAdmin(req, res) {
         return res.status(500).json({ success: false, error: err.message });
     }
 }
+
+async function updateAdmin(req, res) {
+    try {
+        const { adminId } = req.params;
+        const { username, email, role, permissions, status } = req.body;
+        if (!mongoose.Types.ObjectId.isValid(adminId)) {
+            return res.status(400).json({ success: false, message: 'Invalid admin ID.'});
+        }
+        const admin = await User.findById(adminId);
+        if (!admin) {
+            return res.status(403).json({ success: false, message: 'Cannot edit another super admin.'});
+        }
+        if (ROLES.includes(admin.role) || admin.role === 'admin') {
+            //staff admin
+        } else {
+            return res.status(400).json({ success: false, message: 'Target user is not an admin.'});
+        }
+    }
+}
