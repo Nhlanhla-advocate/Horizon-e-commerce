@@ -156,6 +156,24 @@ async function listAdmins(req, res) {
     }
 }
 
+//--- 4. View and manage all users (getAllUsers in dashboard; super admin can also suspend or ban) ---
+async function suspendUser(req, res) {
+    try {
+        const { userId } = req.params;
+        const { reason } = req.body || {};
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(400).json({ success: false, message: 'Invalid user ID.'});
+        }
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found.'});
+        }
+        if (['super_admin', 'admin', 'manager', 'support'].includes(user.role)) {
+            return res.status(403).json({ success: false, message: 'Use admin management to suspend staff.'});
+        }
+    }
+}
+
 module.exports = {
     createAdmin,
     listAdmins,
