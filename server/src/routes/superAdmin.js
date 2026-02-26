@@ -11,3 +11,6 @@ router.post('/admins', superAdminController.createAdmin);
 router.get('/admins', superAdminController.listAdmins);
 router.put('/admins/:adminId', superAdminController.updateAdmin);
 router.delete('/admins/:adminId', superAdminController.deleteAdmin);
+
+// 2. Assign roles and permissions
+router.patch('/admins/:adminId/role', superAdminController.assignRole);
