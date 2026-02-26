@@ -155,3 +155,11 @@ async function listAdmins(req, res) {
         return res.status(500).json({ success: false, error: err.message });
     }
 }
+
+module.exports = {
+    createAdmin,
+    listAdmins,
+    updateAdmin,
+    deleteAdmin,
+    assignRole
+};

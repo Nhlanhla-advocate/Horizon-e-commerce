@@ -14,3 +14,5 @@ router.delete('/admins/:adminId', superAdminController.deleteAdmin);
 
 // 2. Assign roles and permissions
 router.patch('/admins/:adminId/role', superAdminController.assignRole);
+
+module.exports = router;
