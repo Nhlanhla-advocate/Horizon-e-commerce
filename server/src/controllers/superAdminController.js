@@ -171,6 +171,17 @@ async function suspendUser(req, res) {
         if (['super_admin', 'admin', 'manager', 'support'].includes(user.role)) {
             return res.status(403).json({ success: false, message: 'Use admin management to suspend staff.'});
         }
+        user.status = 'suspended';
+        user.suspendedAt = new Date();
+        user.suspensionReason = reason || '';
+        user.bannedAt = undefined;
+        user.banReason = undefined;
+        await user.save();
+        await logAudit(req.user._id, 'suspended_user', 'user', user._id, { reason: user.suspensionReason }, req);
+        return res.json({ success: true, message: 'User suspended.', data: { _id: user._id, status: user.status}});
+    } catch (err) {
+        console.error('suspendUser error:', err);
+        return res.status(500).json({ success: false, error: err.message });
     }
 }
 
