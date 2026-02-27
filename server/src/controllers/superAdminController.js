@@ -322,6 +322,11 @@ async function createDispute(req, res) {
             amount: amount || null,
             status: 'open'
         });
+        await logAudit(req.user._id, 'creatte_dispute', 'dispute', dispute._id, { orderId, type: dispute.type }, req);
+        return res.status(201).json({ success: true, data: dispute });
+    } catch (err) {
+        console.error('createDispute error:', err);
+        return res.status(500).json({ success: false, error: err.message });
     }
 }
 
@@ -337,5 +342,6 @@ module.exports = {
     banUser,
     unbanUser,
     overrideOrder,
-    listDisputes
+    listDisputes,
+    createDispute
 };
