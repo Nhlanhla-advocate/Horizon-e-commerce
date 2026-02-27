@@ -185,10 +185,33 @@ async function suspendUser(req, res) {
     }
 }
 
+async function unsuspendUser(req, res) {
+    try {
+        const { userId } = req.params;
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(400).json({ success: false,message: 'Invalid user ID.'});
+        }
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(400).json({ success: false, message: 'User not found.'});
+        }
+        user.status = 'active';
+        user.suspendedAt = undefined;
+        user.suspendedReason = undefined;
+        await user.save();
+        await logAudit(req.user._id, 'unsuspend_user', 'user', user._id, {}, req);
+        return res.json({ success: true, message: 'User unsuspended.', data: { _id: user._id, status: user.status}});
+    } catch (err) {
+        console.error('unsuspendUser error:', err);
+        return res.status(500).json({ success: false, error: err.message });
+    }
+}
+
 module.exports = {
     createAdmin,
     listAdmins,
     updateAdmin,
     deleteAdmin,
-    assignRole
+    assignRole,
+    suspendUser
 };
