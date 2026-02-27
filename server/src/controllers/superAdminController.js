@@ -3,6 +3,7 @@ const Order = require('../models/order');
 const AuditLog = require('../models/auditLog');
 const Dispute = require('../models/dispute');
 const mongoose = require('mongoose');
+const user = require('../models/user');
 
 const ROLES = ['admin', 'manager', 'support'];
 const VALID_ORDER_STATUSES = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
@@ -124,7 +125,7 @@ async function assignRole(req, res) {
         if (admin.role ==='super_admin') {
             return res.status(403).json({ success: false, message: 'Cannot change supoer admin role.'});
         }
-        if (!role && ROLES.includes(role)) {
+        if (role && ROLES.includes(role)) {
             admin.role = role;
         }
         if (Array.isArray(permissions)) {
@@ -197,7 +198,7 @@ async function unsuspendUser(req, res) {
         }
         user.status = 'active';
         user.suspendedAt = undefined;
-        user.suspendedReason = undefined;
+        user.suspensionReason = undefined;
         await user.save();
         await logAudit(req.user._id, 'unsuspend_user', 'user', user._id, {}, req);
         return res.json({ success: true, message: 'User unsuspended.', data: { _id: user._id, status: user.status}});
@@ -238,15 +239,26 @@ async function banUser(req, res) {
 async function unbanUser(req, res) {
     try {
         const { userId } = req.params;
-        if (!MongooseError.Types.ObjectId.isValid(userId)) {
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
             return res.status(400).json({ success: false, message: 'Invalid user ID.'});
         }
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found.'});
         }
+        user.status = 'active';
+        user.bannedAt = undefined;
+        user.banReason = undefined;
+        await user.save();
+        await logAudit(req.user._id, 'unban_user', 'user', user._id, {}, req);
+        return res.json({ success: true, message: 'User unbanned.', data: { _id: user._id, status: user.status}});
+    } catch (err) {
+        console.error('unbanUser error:', err);
+        return res.status(500).json({ success: false, error: err.message });
     }
 }
+
+
 module.exports = {
     createAdmin,
     listAdmins,
