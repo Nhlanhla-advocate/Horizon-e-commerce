@@ -286,7 +286,7 @@ async function overrideOrder(req, res) {
     }
 }
 
-// ---7. Dispute and refunds ---
+// ---6. Dispute and refunds ---
 async function listDisputes(req, res) {
     try {
         const { status, type } = req.query;
@@ -307,6 +307,23 @@ async function listDisputes(req, res) {
         return res.status(500).json({ success: false, error: err.message });
     }
 } 
+
+async function createDispute(req, res) {
+    try {
+        const { orderId, userId, type, reason, amount } = req.body;
+        if (!orderId || !userId) {
+            return res.status(400).json({ success: false, message: 'orderId and userId are required.'});
+        }
+        const dispute = await Dispute.create({ 
+            orderId,
+            userId,
+            type: type || 'refund',
+            reason: reason || '',
+            amount: amount || null,
+            status: 'open'
+        });
+    }
+}
 
 
 module.exports = {
