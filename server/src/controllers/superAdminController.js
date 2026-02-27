@@ -207,11 +207,31 @@ async function unsuspendUser(req, res) {
     }
 }
 
+async function banUser(req, res) {
+    try {
+        const { userId } = req.params;
+        const { reason } = req.body || {};
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(400).json({ success: false, message: 'Invalid user ID.'});
+        }
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found.'});
+        }
+        if (user.role === 'super_admin') {
+            return res.status(403).json({ success: false, message: 'Cannot ban a super admin.'});
+        }
+
+    }
+}
+
 module.exports = {
     createAdmin,
     listAdmins,
     updateAdmin,
     deleteAdmin,
     assignRole,
-    suspendUser
+    suspendUser,
+    unsuspendUser,
+    banUser
 };
