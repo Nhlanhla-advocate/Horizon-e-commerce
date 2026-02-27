@@ -258,7 +258,7 @@ async function unbanUser(req, res) {
     }
 }
 
-// --- 6. View and override orders ---
+// --- 5. View and override orders ---
 async function overrideOrder(req, res) {
     try {
         const { orderId } = req.params;
@@ -273,6 +273,16 @@ async function overrideOrder(req, res) {
             if (!order) {
                 return res.status(404).json({ success: false, message: 'Order not found.'});
             }
+            order.status = status;
+            order.overriddenBy = req.user._id;
+            order.overrideReason = overrideReason || '';
+            order.overriddenAt = new Date();
+            await order.save();
+            await logAudit(req.user._id, 'override_order', 'order', order._id, { status, overrideReason }, req);
+            return res.json({ success: true, message: 'Order overridden.', data: order });
+        } catch (err) {
+            console.error('overrideOrder error:', err);
+            return res.status(500).json({ success: false, error: err.message });
         }
     }
 }
