@@ -286,6 +286,28 @@ async function overrideOrder(req, res) {
     }
 }
 
+// ---7. Dispute and refunds ---
+async function listDisputes(req, res) {
+    try {
+        const { status, type } = req.query;
+        const filter = {};
+        if (status) filter.status = status;
+        if (type) filter.status = status;
+        if (type) filter.type = type;
+        const dispute = await Dispute.find(filter)
+        .populate('orderId', 'totalPrice status createdAt')
+        .populate('userId', 'username email')
+        .populate('assignedTo', 'username email')
+        .populate('resolvedBy', 'username email')
+        .sort({ createdAt: -1 })
+        .lean();
+        return res.json({ success: true, data: disputes });
+    } catch (err) {
+        console.error('listDisputes error:', err);
+        return res.status(500).json({ success: false, error: err.message });
+    }
+} 
+
 
 module.exports = {
     createAdmin,
@@ -297,5 +319,6 @@ module.exports = {
     unsuspendUser,
     banUser,
     unbanUser,
-    overrideOrder
+    overrideOrder,
+    listDisputes
 };
