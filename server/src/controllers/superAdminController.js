@@ -262,30 +262,30 @@ async function unbanUser(req, res) {
 async function overrideOrder(req, res) {
     try {
         const { orderId } = req.params;
-        const { status, overrideReason   = req.body;
-            if (!mongoose.Types.ObjectId.isValid(orderId)) {
-                return res.status(400).json({ success: false, message: 'Invalid order ID.'});
-            }
-            if (!status || !VALID_ORDER_STATUSES.includes(status)) {
-                return res.status(400).json({ success: false, message: 'Valid status is required.', validStatuses: VALID_ORDER_STATUSES});
-            }
-            const order = await Order.findById(orderId);
-            if (!order) {
-                return res.status(404).json({ success: false, message: 'Order not found.'});
-            }
-            order.status = status;
-            order.overriddenBy = req.user._id;
-            order.overrideReason = overrideReason || '';
-            order.overriddenAt = new Date();
-            await order.save();
-            await logAudit(req.user._id, 'override_order', 'order', order._id, { status, overrideReason }, req);
-            return res.json({ success: true, message: 'Order overridden.', data: order });
-        } catch (err) {
-            console.error('overrideOrder error:', err);
-            return res.status(500).json({ success: false, error: err.message });
+        const { status, overrideReason } = req.body || {};
+        if (!mongoose.Types.ObjectId.isValid(orderId)) {
+            return res.status(400).json({ success: false, message: 'Invalid order ID.'});
         }
+        if (!status || !VALID_ORDER_STATUSES.includes(status)) {
+            return res.status(400).json({ success: false, message: 'Valid status is required.', validStatuses: VALID_ORDER_STATUSES});
+        }
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ success: false, message: 'Order not found.'});
+        }
+        order.status = status;
+        order.overriddenBy = req.user._id;
+        order.overrideReason = overrideReason || '';
+        order.overriddenAt = new Date();
+        await order.save();
+        await logAudit(req.user._id, 'override_order', 'order', order._id, { status, overrideReason }, req);
+        return res.json({ success: true, message: 'Order overridden.', data: order });
+    } catch (err) {
+        console.error('overrideOrder error:', err);
+        return res.status(500).json({ success: false, error: err.message });
     }
 }
+
 
 module.exports = {
     createAdmin,
