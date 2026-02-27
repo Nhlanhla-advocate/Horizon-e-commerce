@@ -221,7 +221,17 @@ async function banUser(req, res) {
         if (user.role === 'super_admin') {
             return res.status(403).json({ success: false, message: 'Cannot ban a super admin.'});
         }
-
+        user.status = 'banned';
+        user.bannedAt = new Date();
+        user.banReason = reason || '';
+        user.suspendedAt = undefined;
+        user.suspensionReason = undefined;
+        await user.save();
+        await logAudit(req.user._id, 'ban_user', 'user', user._id, { reason: user.banReason }, req);
+        return res.json({ success: true, message: 'User banned.', data: { _id: user._id, status: user.status}});
+    } catch (err) {
+        console.error('banUser error:', err);
+        return res.status(500).json({ success: false, error: err.message });
     }
 }
 
