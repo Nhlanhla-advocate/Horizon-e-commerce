@@ -258,6 +258,24 @@ async function unbanUser(req, res) {
     }
 }
 
+// --- 6. View and override orders ---
+async function overrideOrder(req, res) {
+    try {
+        const { orderId } = req.params;
+        const { status, overrideReason   = req.body;
+            if (!mongoose.Types.ObjectId.isValid(orderId)) {
+                return res.status(400).json({ success: false, message: 'Invalid order ID.'});
+            }
+            if (!status || !VALID_ORDER_STATUSES.includes(status)) {
+                return res.status(400).json({ success: false, message: 'Valid status is required.', validStatuses: VALID_ORDER_STATUSES});
+            }
+            const order = await Order.findById(orderId);
+            if (!order) {
+                return res.status(404).json({ success: false, message: 'Order not found.'});
+            }
+        }
+    }
+}
 
 module.exports = {
     createAdmin,
@@ -268,5 +286,6 @@ module.exports = {
     suspendUser,
     unsuspendUser,
     banUser,
-    unbanUser
+    unbanUser,
+    overrideOrder
 };
