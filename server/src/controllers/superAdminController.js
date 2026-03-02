@@ -367,6 +367,18 @@ async function resolveDispute(req, res) {
         if (!dispute) {
             return res.status(404).json({ success: false, message: 'Dispute not found.'});
         }
+        dispute.status = status;
+        dispute.resolution = resolution || '';
+        dispute.resolvedBy = req.user._id;
+        dispute.resolvedAt = new Date();
+        await dispute.save();
+        if (status === 'resolved' && dispute.type === 'refund') {
+            await Order.findByIdAndUpdate(dispute.orderId, {
+                refundStatus: 'refunded',
+                refundedAt: new Date(),
+                refundedBy: req.user._id
+            });
+        }
     }
 }
 
