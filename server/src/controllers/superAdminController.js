@@ -379,8 +379,14 @@ async function resolveDispute(req, res) {
                 refundedBy: req.user._id
             });
         }
+        await logAudit(req.user._id, 'resolve_dispute', 'dispute', dispute._id, { status, resolution }, req);
+        return res.json({ success: true, data: dispute });
+      } catch (err) {
+        console.error('resolveDispute error:', err);
+        return res.status(500).json({ success: false, error: err.message });
+      }
     }
-}
+
 
 module.exports = {
     createAdmin,
