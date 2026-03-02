@@ -341,6 +341,14 @@ async function assignDispute(req, res) {
         if (!dispute) {
             return res.status(404).json({ success: false, message: 'Dispute not found.'});
         }
+        dispute.assignedTo = assignedTo || undefined;
+        dispute.status = 'in_review';
+        await dispute.save();
+        await logAudit(req.user._id, 'assign_dispute', 'dispute', dispute._id, { assignedTo }, req);
+        return res.json({ success: true, data: dispute });
+    } catch (err) {
+        console.error('assignDispute error:', err);
+        return res.status(500).json({ success: false, error: err.message });
     }
 }
 
