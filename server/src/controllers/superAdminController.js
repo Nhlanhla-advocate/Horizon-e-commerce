@@ -352,6 +352,24 @@ async function assignDispute(req, res) {
     }
 }
 
+async function resolveDispute(req, res) {
+    try {
+        const {disputeId} = req.params;
+        const { status, resolution } = req.body;
+        if (!mongoose.Types.ObjectId.isValid(disputeId)) {
+            return res.status(400).json({ success: false, message: 'Invalid dispute ID.'});
+        }
+        const ValidStatuses = ['resolved', 'rejected'];
+        if (!status || !validStatuses.includes(status)) {
+            return res.status(400).json({ success: false, message: 'status must be resolved or rejected.'});
+        }
+        const dispute = await Dispute.findById(disputeId);
+        if (!dispute) {
+            return res.status(404).json({ success: false, message: 'Dispute not found.'});
+        }
+    }
+}
+
 module.exports = {
     createAdmin,
     listAdmins,
@@ -364,5 +382,7 @@ module.exports = {
     unbanUser,
     overrideOrder,
     listDisputes,
-    createDispute
+    createDispute,
+    assignDispute,
+    resolveDispute
 };
