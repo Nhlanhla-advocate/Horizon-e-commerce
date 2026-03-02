@@ -330,6 +330,19 @@ async function createDispute(req, res) {
     }
 }
 
+async function assignDispute(req, res) {
+    try {
+        const { disputeId} = req.params;
+        const { assignedTo } = req.body;
+        if (!mongoose.Types.ObjectId.isValid(disputeId)) {
+            return res.status(400).json({ success: false, message: 'Invalid dispute ID.'});
+        }
+        const dispute = await Dispute.findById(disputeId);
+        if (!dispute) {
+            return res.status(404).json({ success: false, message: 'Dispute not found.'});
+        }
+    }
+}
 
 module.exports = {
     createAdmin,
