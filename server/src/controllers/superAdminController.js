@@ -397,6 +397,15 @@ async function resolveDispute(req, res) {
             if (!order) {
                 return res.status(404).json({ success: false, message: 'Order not found.'});
             }
+            order.refundStatus = 'refunded';
+            order.refundedAt = new Date();
+            order.refundedBy = req.user._id;
+            await order.save();
+            await logAudit(req.user._id, 'process_refund', 'order', order._id, { amount: order.totalPrice }, req);
+            return res.json({ success: true, message: 'Refund processed.', data: order });
+          } catch (err) {
+            console.error('processRefund error:', err);
+            return res.status(500).json({ success: false, error: err.message });
         }
 
     }
