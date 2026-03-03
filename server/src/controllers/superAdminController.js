@@ -387,6 +387,20 @@ async function resolveDispute(req, res) {
       }
     }
 
+    async function processRefund(req, res) {
+        try {
+            const { orderId } = req.params;
+            if (!mongoose.Types.ObjectId.isValid(orderId)) {
+                return res.status(400).json({ success: false, message: 'Invalid order ID.'});
+            }
+            const order = await Order.findById(orderId);
+            if (!order) {
+                return res.status(404).json({ success: false, message: 'Order not found.'});
+            }
+        }
+
+    }
+
 
 module.exports = {
     createAdmin,
@@ -402,5 +416,6 @@ module.exports = {
     listDisputes,
     createDispute,
     assignDispute,
-    resolveDispute
+    resolveDispute,
+    processRefund
 };
