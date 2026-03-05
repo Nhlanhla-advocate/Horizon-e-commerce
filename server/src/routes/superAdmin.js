@@ -15,4 +15,10 @@ router.delete('/admins/:adminId', superAdminController.deleteAdmin);
 // 2. Assign roles and permissions
 router.patch('/admins/:adminId/role', superAdminController.assignRole);
 
+// 3. Suspend / ban users
+router.post('/users/:userId/suspend', superAdminController.suspendUser);
+router.post('/users/:userId/unsuspend', superAdminController.unsuspendUser);
+router.post('/users/:userId/ban', superAdminController.banUser);
+router.post('/users/:userId/unban', superAdminController.unbanUser);
+
 module.exports = router;
