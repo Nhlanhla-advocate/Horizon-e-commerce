@@ -21,4 +21,13 @@ router.post('/users/:userId/unsuspend', superAdminController.unsuspendUser);
 router.post('/users/:userId/ban', superAdminController.banUser);
 router.post('/users/:userId/unban', superAdminController.unbanUser);
 
+// 4. Override orders
+router.patch('/orders/:orderId/override', superAdminController.overrideOrder);
+
+// 5. Disputes and refunds
+router.get('/disputes', superAdminController.listDisputes);
+router.post('/disputes', superAdminController.createDispute);
+router.patch('/disputes/:disputeId/assign', superAdminController.assignDispute);
+
+
 module.exports = router;
