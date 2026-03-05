@@ -407,7 +407,26 @@ async function resolveDispute(req, res) {
             console.error('processRefund error:', err);
             return res.status(500).json({ success: false, error: err.message });
         }
+    }
 
+    //---7. Audit logs---
+    async function getAuditLogs(req, res) {
+        try {
+            const { page = 1, limit = 50, userId, action, resource, startDate, endDate } = req.query;
+            const filter = {};
+            if (userId) filter.userId = userId;
+            if (action) filter.action = action;
+            if (resource) filter.resource = resource;
+            if (startDate || endDate) {
+                filter.createdAt = {};
+                if (startDate) filter.createdAt.$gte = new Date(startDate);
+                if (endDate) {
+                    const end = new Date(endDate);
+                    end.setHours(23, 59, 59, 999);
+                    filter.createdAt.$lte = end;
+                }
+            }
+        }
     }
 
 
@@ -426,5 +445,6 @@ module.exports = {
     createDispute,
     assignDispute,
     resolveDispute,
-    processRefund
+    processRefund,
+    getAuditLogs
 };
