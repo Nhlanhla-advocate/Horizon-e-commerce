@@ -426,6 +426,24 @@ async function resolveDispute(req, res) {
                     filter.createdAt.$lte = end;
                 }
             }
+            const skip = (parseInt(page) - 1) * parseInt(limit);
+            const [logs, total] = await Promise.all([AuditLog.find(filter)
+                .populate('userId', 'username email role')
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(parseInt(limit))
+                .lean(),
+                AuditLog.countDocuments(filter)
+            ]);
+            return res.json({
+                success: true,
+                data: logs,
+                data: logs,
+                pagination: { total, pages: Math.ceil(total / parseInt(limit)), page: parseInt(page), limit: parseInt(limit)}
+            });
+        } catch (err) {
+            console.error('getAuditLogs error:', err);
+            return res.status(500).json({ success: false, error: err.message });
         }
     }
 
