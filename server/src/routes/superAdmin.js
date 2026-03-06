@@ -34,5 +34,8 @@ router.post('/orders/orderId/refund', superAdminController.processRefund);
 // 6. Audit logs
 router.get('/audit-logs', superAdminController.getAuditLogs);
 
+// 7. System activity
+router.get('/system-activity', superAdminController.getSystemActivity);
+
 
 module.exports = router;
