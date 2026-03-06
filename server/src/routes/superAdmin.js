@@ -37,5 +37,9 @@ router.get('/audit-logs', superAdminController.getAuditLogs);
 // 7. System activity
 router.get('/system-activity', superAdminController.getSystemActivity);
 
+// 8. Failed payments and suspicious behavior
+router.get('failed-payments', superAdminController.getFailedPayments);
+router.get('payments/suspicious', superAdminController.getSuspiciousPayments);
+
 
 module.exports = router;
