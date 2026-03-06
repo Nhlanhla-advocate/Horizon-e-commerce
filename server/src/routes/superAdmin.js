@@ -28,6 +28,8 @@ router.patch('/orders/:orderId/override', superAdminController.overrideOrder);
 router.get('/disputes', superAdminController.listDisputes);
 router.post('/disputes', superAdminController.createDispute);
 router.patch('/disputes/:disputeId/assign', superAdminController.assignDispute);
+router.patch('/disputes/:disputeId/resolve', superAdminController.resolveDispute);
+router.post('/orders/orderId/refund', superAdminController.processRefund);
 
 
 module.exports = router;
