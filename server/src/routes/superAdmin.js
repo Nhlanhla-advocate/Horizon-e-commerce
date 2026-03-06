@@ -31,5 +31,8 @@ router.patch('/disputes/:disputeId/assign', superAdminController.assignDispute);
 router.patch('/disputes/:disputeId/resolve', superAdminController.resolveDispute);
 router.post('/orders/orderId/refund', superAdminController.processRefund);
 
+// 6. Audit logs
+router.get('/audit-logs', superAdminController.getAuditLogs);
+
 
 module.exports = router;
