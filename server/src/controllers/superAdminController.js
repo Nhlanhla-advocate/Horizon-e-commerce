@@ -485,7 +485,7 @@ async function resolveDispute(req, res) {
                 PaymentAttempt.find(filter)
                 .populate('orderId', 'totalPrice status')
                 .populate('userId', 'username email')
-                .sort([ createdAt: -1 ])
+                .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(parseInt(limit))
                 .lean(),
@@ -498,6 +498,22 @@ async function resolveDispute(req, res) {
             });
         } catch (err) {
             console.error('getFailedPayments error:', err);
+            return res.status(500).json({ success: false, error: err.message });
+        }
+    }
+
+    async function getSuspiciousPayments(req, res) {
+        try {
+            const filter = { flagged: true };
+            const attempts = await PaymentAttempt.find(filter)
+            .populate('orderId', 'totalPrice status')
+            .populate('userId', 'username email')
+            .sort({ createdAt: -1 })
+            .limit(100)
+            .lean();
+            return res.json({ success: true, data: attempts });
+        } catch (err) {
+            console.error('getSuspiciousPayments error:', err);
             return res.status(500).json({ success: false, error: err.message });
         }
     }
@@ -521,4 +537,6 @@ module.exports = {
     processRefund,
     getAuditLogs,
     getSystemActivity,
+    getFailedPayments,
+    getSuspiciousPayments
 };
