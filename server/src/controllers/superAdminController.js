@@ -518,6 +518,25 @@ async function resolveDispute(req, res) {
         }
     }
 
+    //Record a payment attempt
+    async function recordPaymentAttempt(data) {
+        try {
+            await PaymentAttempt.create({
+                orderId: data.orderId,
+                userId: data.userId,
+                amount: data.amount || 0,
+                status: data.status || 'pending',
+                failureReason: data.failureReason,
+                paymentMethod: data.paymentMethod,
+                metadata: data.metadata,
+                flagged: data.flagged || false,
+                flaggedReason: data.flaggedReason
+            });
+        } catch (e) {
+            console.error('recordPaymentAttempt error:', e);
+        }
+    }
+
 
 module.exports = {
     createAdmin,
