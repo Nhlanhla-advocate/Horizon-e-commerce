@@ -447,6 +447,23 @@ async function resolveDispute(req, res) {
         }
     }
 
+    //--- 8. System activity (recent audit + recent logins/ key actions)---
+    async function getSystemActivity(req, res) {
+        try {
+            const limit = Math.min(parseInt(req.query.limit) || 100, 200);
+            const recentLogs = await AuditLog.find()
+            .populate('userId', 'username email role')
+            .sort({ createdAt: -1 })
+            .limit(limit)
+            .lean();
+            const byAction = await AuditLog.aggregate([
+                { $group: { _id: '$action', count: { $sum: 1 }}},
+                { $sort: { count: -1 }},
+                { $limit: 20 }
+            ]);
+        }
+    }
+
 
 module.exports = {
     createAdmin,
