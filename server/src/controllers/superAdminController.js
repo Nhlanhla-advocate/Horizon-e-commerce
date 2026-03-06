@@ -491,6 +491,14 @@ async function resolveDispute(req, res) {
                 .lean(),
                 PaymentAttempt.countDocuments(filter)
             ]);
+            return res.json({
+                success: true,
+                data: attempts,
+                pagination: { total, pages: Math.cell(total / parseInt(limit)), page: parseInt(page), limit: parseInt(limit)}
+            });
+        } catch (err) {
+            console.error('getFailedPayments error:', err);
+            return res.status(500).json({ success: false, error: err.message });
         }
     }
 
