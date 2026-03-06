@@ -461,6 +461,36 @@ async function resolveDispute(req, res) {
                 { $sort: { count: -1 }},
                 { $limit: 20 }
             ]);
+            return res.json({
+                success: true,
+                data: {
+                    recentActivity: recentLogs,
+                    byAction
+                }
+            });
+        } catch (err) {
+            console.error('getSystemActivity error:', err);
+            return res.status(500).json({ success: false, error: err.message });
+        }
+    }
+
+    //--- 9. Failed payments and suspicious behavior---
+    async function getFailedPayments(req, res) {
+        try {
+            const { page = 1, limit = 50, userId } = req.query;
+            const filter = { status: 'failed' };
+            if (userId) filter.userId = userId;
+            const skip = (parseInt(page) - 1) * parseInt(limit);
+            const [attempts, total] = await Promise.all([
+                PaymentAttempt.find(filter)
+                .populate('orderId', 'totalPrice status')
+                .populate('userId', 'username email')
+                .sort([ createdAt: -1 ])
+                .skip(skip)
+                .limit(parseInt(limit))
+                .lean(),
+                PaymentAttempt.countDocuments(filter)
+            ]);
         }
     }
 
@@ -481,5 +511,6 @@ module.exports = {
     assignDispute,
     resolveDispute,
     processRefund,
-    getAuditLogs
+    getAuditLogs,
+    getSystemActivity,
 };
