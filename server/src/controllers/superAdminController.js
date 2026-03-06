@@ -557,5 +557,6 @@ module.exports = {
     getAuditLogs,
     getSystemActivity,
     getFailedPayments,
-    getSuspiciousPayments
+    getSuspiciousPayments,
+    recordPaymentAttempt
 };
