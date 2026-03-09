@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import '../../assets/css/superAdmin.css';
+import '../../assets/css/manage.css';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 const ROLES = [
@@ -33,3 +34,19 @@ const getAuthHeaders = () => {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
     };
 };
+
+export default function Manage() {
+    const [admins, setAdmins] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [listError, setListError] = useState(null);
+    const [submitLoading, setSubmitLoading] = useState(false);
+    const [submitError, setSubmitError] = useState(null);
+    const [successMessage, setSuccessMessage] = useState(null);
+    const [form, setForm] = useState({
+        email: '',
+        username: '',
+        password: '',
+        role: 'admin',
+        permissions: [],
+    });
+}
