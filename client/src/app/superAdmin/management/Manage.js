@@ -10,3 +10,17 @@ const ROLES = [
     { value: 'support', label: 'Support' },
 ];
 
+const PERMISSION_OPTIONS = [
+    'manage_products',
+    'manage_orders',
+    'view_users',
+    'manage_users',
+    'handle_refunds',
+    'manage_admins',
+    'view_audit_logs',
+    'view_system_activity',
+    'view_failed_payments',
+    'suspend_ban_users',
+    'override_orders',
+];
+
