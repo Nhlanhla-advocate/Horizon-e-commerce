@@ -71,7 +71,7 @@ export default function Manage() {
         }
     };
 
-    useEffect(() => {]
+    useEffect(() => {
         fetchAdmins();
     }, []);
 
