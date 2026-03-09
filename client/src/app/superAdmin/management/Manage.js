@@ -49,4 +49,25 @@ export default function Manage() {
         role: 'admin',
         permissions: [],
     });
+
+    const fetchAdmins = async () => {
+        setLoading(true);
+        setListError(null);
+        try {
+            const res = await fetch(`${BASE_URL}/dashboard/super-admin/admins`, {
+                headers: getAuthHeaders(),
+            });
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data.message || data.error || `Failed to load admins (${res.status})`);
+            }
+            const data = await res.json();
+            setAdmins(Array.isArray(data?.data) ? data.data : []);
+        } catch (err) {
+            setListError(err.message || 'Failed to load admins');
+            setAdmins([]);
+        } finally {
+            setLoading(false);
+        }
+    };
 }
