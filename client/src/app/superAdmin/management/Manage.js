@@ -24,3 +24,12 @@ const PERMISSION_OPTIONS = [
     'override_orders',
 ];
 
+const getAuthHeaders = () => {
+    const token = typeof window !== 'undefined'
+        ? (localStorage.getItem('adminToken') || localStorage.getItem('token'))
+        : null;
+    return {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+};
