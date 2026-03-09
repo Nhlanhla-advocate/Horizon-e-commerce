@@ -80,5 +80,16 @@ export default function Manage() {
         setForm((prev) => ({ ...prev, [name]: value }));
         setSubmitError(null);
         setSubmitSuccess(null);
-    }
+    };
+
+    const handlePermissionToggle = (perm) => {
+        setForm((prev) => ({
+          ...prev,
+          permissions: prev.permissions.includes(perm)
+            ? prev.permissions.filter((p) => p !== perm)
+            : [...prev.permissions, perm],
+        }));
+        setSubmitError(null);
+        setSubmitSuccess(null);
+      };
 }
