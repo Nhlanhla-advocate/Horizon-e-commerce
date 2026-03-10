@@ -84,55 +84,71 @@ export default function Manage() {
 
     const handlePermissionToggle = (perm) => {
         setForm((prev) => ({
-          ...prev,
-          permissions: prev.permissions.includes(perm)
-            ? prev.permissions.filter((p) => p !== perm)
-            : [...prev.permissions, perm],
+            ...prev,
+            permissions: prev.permissions.includes(perm)
+                ? prev.permissions.filter((p) => p !== perm)
+                : [...prev.permissions, perm],
         }));
         setSubmitError(null);
         setSuccessMessage(null);
-      };
+    };
 
-      const handleSubmit = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        setSubmitLoading(true);
         setSubmitError(null);
         setSuccessMessage(null);
-       if(!form.email?.trim() || !form.username?.trim() || !form.password) {
-        setSubmitError('Email, username and password are required');
-        return;
-       }
-       setSubmitLoading(true);
-       try {
-        const res = await fetch( ${BASE_URL}/dashboard/super-admin/admins, {
-            method: 'POST',
-            headers: getAuthHeaders(),
-            body:JSON.stringify({
-            email: form.email.trim(),
-            username: form.username.trim(),
-            password: form.password,
-            role: form.role,
-            permissions: form.permissions.length ?
-            form.permissions : undefined,
-        }),
-        });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
-            throw new Error(data.message || data.error || 
-                `Request failed (${res.status})`);
+        if (!form.email?.trim() || !form.username?.trim() || !form.password) {
+            setSubmitError('Email, username and password are required');
+            return;
         }
-        if (!data.success) {
-            throw new Error(data.message || data.error ||
-                'Create failed');
+        setSubmitLoading(true);
+        try {
+            const res = await fetch(`${BASE_URL}/dashboard/super-admin/admins`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({
+                    email: form.email.trim(),
+                    username: form.username.trim(),
+                    password: form.password,
+                    role: form.role,
+                    permissions: form.permissions.length ? form.permissions : undefined,
+                }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                throw new Error(data.message || data.error || `Request failed (${res.status})`);
+            }
+            if (!data.success) {
+                throw new Error(data.message || data.error || 'Create failed');
+            }
+            setSuccessMessage('Admin created successfully.');
+            setForm({ email: '', username: '', password: '', role: 'admin', permissions: [] });
+            fetchAdmins();
+        } catch (err) {
+            setSubmitError(err.message || 'Failed to create admin');
+        } finally {
+            setSubmitLoading(false);
         }
-        setSubmitSuccess('Admin created successfully.');
-        setForm({ email: '', username: '', password: '', role: 'admin', permissions: []});
-        fetchAdmins();
-       } catch (err) {
-        setSubmitError(err.message || 'Failed to create admin');
-       } finally {
-        setSubmitLoading(false);
-       }
-        
-      };
+    };
+
+    return (
+        <div className="manage-super-admin">
+            <header className="manage-header">
+                <h1 className="manage-title">Admin management</h1>
+                <p className="manage-subtitle">Create and manage admin accounts (super admin only)</p>
+            </header>
+
+            <section className="manage-section">
+                <h2 className="manage-section-title">Create admin</h2>
+                <form onSubmit={handleSubmit}className="manage-form">
+                    <div className="manage-row">
+                        <label className="manage-label">
+                            Email <span className="manage-required">*
+                                </span>
+                        </label>
+                    </div>
+                </form>
+            </section>
+        </div>
+      )
 }
