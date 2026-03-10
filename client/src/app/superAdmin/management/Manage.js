@@ -146,6 +146,16 @@ export default function Manage() {
                             Email <span className="manage-required">*
                                 </span>
                         </label>
+                        <input
+                        type="email"
+                        name="email"
+                        value={form.email}
+                        onChange={handleChange}
+                        placeholder="admin@example.com"
+                        required
+                        className="manage-input"
+                        autoComplete="email"
+                        />
                     </div>
                 </form>
             </section>
