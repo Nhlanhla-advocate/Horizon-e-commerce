@@ -209,10 +209,17 @@ export default function Manage() {
                                 {form.permissions.includes(perm)}
                                 onChange={() => handlePermissionToggle(perm)}
                                 />
+                                <span className="manage-checkbox-text">{perm}</span>
                             </label>
                         ))}
                     </div>
                 </div>
+                {submitError && (
+                    <div className="manage-message-error">{submitError}</div>
+                )}
+                {submitSuccess && (
+                    <div className="manage-message-success">{submitSuccess}</div>
+                )}
                 </form>
             </section>
         </div>
