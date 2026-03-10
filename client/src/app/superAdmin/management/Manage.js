@@ -187,6 +187,17 @@ export default function Manage() {
                         autoComplete="new-password"
                         />
                     </div>
+                    <div className="manage-row">
+                        <label className="manage-label">Role</label>
+                        <select
+                        name="role"
+                        value={form.role}
+                        onChange={handleChange}
+                        className="manage-select"
+                        >
+                            {ROLES.map((r) => (<option key={r.value} value={r.value}>{r.label}</option>))};
+                        </select>
+                   </div>
                 </form>
             </section>
         </div>
