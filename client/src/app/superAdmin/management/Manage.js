@@ -229,6 +229,21 @@ export default function Manage() {
                 </button>
                 </form>
             </section>
+
+            <section className="manage-section">
+                <h2 className="manage-section-title">Existing admins</h2>
+                {loading ? (
+                    <p className="manage-muted">Loading admins...</p>
+                ) : listError ? (
+                    <p className="manage-message-error">{listError}</p>
+                ) : admins.length === 0 ? (
+                    <p className="manage-muted">No admins yet.</p>
+                ) : (
+                    
+                
+                
+                )}
+            </section>
         </div>
       )
 }
