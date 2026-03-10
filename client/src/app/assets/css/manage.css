@@ -4,3 +4,9 @@
     margin: 0 auto;
     padding: 1.5rem;
 }
+
+.manage-super-admin .manage-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+}
