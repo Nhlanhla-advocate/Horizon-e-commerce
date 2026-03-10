@@ -157,6 +157,21 @@ export default function Manage() {
                         autoComplete="email"
                         />
                     </div>
+                    <div className="manage-row">
+                        <label className="manage-label">
+                            Password <span className="manage-required">*</span>
+                        </label>
+                        <input
+                        type="password"
+                        name="password"
+                        value={form.username}
+                        onChange={handleChange}
+                        placeholder="Your name"
+                        required
+                        className="manage-input"
+                        autoComplete="username"
+                        />
+                    </div>
                 </form>
             </section>
         </div>
