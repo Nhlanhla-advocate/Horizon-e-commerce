@@ -79,7 +79,7 @@ export default function Manage() {
         const { name, value } = e.target;
         setForm((prev) => ({ ...prev, [name]: value }));
         setSubmitError(null);
-        setSubmitSuccess(null);
+        setSuccessMessage(null);
     };
 
     const handlePermissionToggle = (perm) => {
@@ -90,6 +90,33 @@ export default function Manage() {
             : [...prev.permissions, perm],
         }));
         setSubmitError(null);
-        setSubmitSuccess(null);
+        setSuccessMessage(null);
       };
+
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        setSubmitLoading(true);
+        setSubmitError(null);
+        setSuccessMessage(null);
+       if(!form.email?.trim() || !form.username?.trim() || !form.password) {
+        setSubmitError('Email, username and password are required');
+        return;
+       }
+       setSubmitLoading(true);
+       try {
+        const res = await fetch( ${BASE_URL}/dashboard/super-admin/admins, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body:JSON.stringify({
+            email: form.email.trim(),
+            username: form.username.trim(),
+            password: form.password,
+            role: form.role,
+            permissions: form.permissions.length ?
+            form.permissions : undefined,
+        }),
+        });
+       }
+        
+      }
 }
