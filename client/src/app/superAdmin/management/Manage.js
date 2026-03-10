@@ -195,9 +195,24 @@ export default function Manage() {
                         onChange={handleChange}
                         className="manage-select"
                         >
-                            {ROLES.map((r) => (<option key={r.value} value={r.value}>{r.label}</option>))};
+                            {ROLES.map((r) => (<option key={r.value} value={r.value}>{r.label}</option>))}
                         </select>
                    </div>
+                <div className="manage-row">
+                    <label className="manage-label">Permissions (optional)</label>
+                    <div className="manage-permission-grid">
+                        {PERMISSION_OPTIONS.map((perm) => (
+                            <label key={perm} className="manage-checkbox-label">
+                                <input
+                                type="checkbox"
+                                checked=
+                                {form.permissions.includes(perm)}
+                                onChange={() => handlePermissionToggle(perm)}
+                                />
+                            </label>
+                        ))}
+                    </div>
+                </div>
                 </form>
             </section>
         </div>
