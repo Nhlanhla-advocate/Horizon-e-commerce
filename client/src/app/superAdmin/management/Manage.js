@@ -239,7 +239,18 @@ export default function Manage() {
                 ) : admins.length === 0 ? (
                     <p className="manage-muted">No admins yet.</p>
                 ) : (
-                    
+                    <div className="manage-table-wrap">
+                        <table className="manage-table">
+                            <thead>
+                                <tr>
+                                    <th className="manage-th">Email</th>
+                                    <th className="manage-th">Username</th>
+                                    <th className="manage-th">Role</th>
+                                    <th className="manage-th">Status</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
                 
                 
                 )}
