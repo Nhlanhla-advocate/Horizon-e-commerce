@@ -249,10 +249,19 @@ export default function Manage() {
                                     <th className="manage-th">Status</th>
                                 </tr>
                             </thead>
+                            <tbody>
+                                {admins.map((admin) => (
+                                    <tr key={admin._id}>
+                                        <td className="manage-td">{admin.email}</td>
+                                        <td className="manage-td">{admin.username}</td>
+                                        <td className="manage-td"><span className="manage-badge">{admin.role || '-'}</span>
+                                        </td>
+                                        <td className="manager-td">{admin.status || '-'}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
                         </table>
-                    </div>
-                
-                
+                    </div>  
                 )}
             </section>
         </div>
