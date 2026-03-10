@@ -116,7 +116,23 @@ export default function Manage() {
             form.permissions : undefined,
         }),
         });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+            throw new Error(data.message || data.error || 
+                `Request failed (${res.status})`);
+        }
+        if (!data.success) {
+            throw new Error(data.message || data.error ||
+                'Create failed');
+        }
+        setSubmitSuccess('Admin created successfully.');
+        setForm({ email: '', username: '', password: '', role: 'admin', permissions: []});
+        fetchAdmins();
+       } catch (err) {
+        setSubmitError(err.message || 'Failed to create admin');
+       } finally {
+        setSubmitLoading(false);
        }
         
-      }
+      };
 }
