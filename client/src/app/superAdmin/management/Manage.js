@@ -220,6 +220,13 @@ export default function Manage() {
                 {submitSuccess && (
                     <div className="manage-message-success">{submitSuccess}</div>
                 )}
+                <button
+                    type="submit"
+                    disabled={submitLoading}
+                    className={`manage-button${submitLoading ? ' manage-button--disabled' : ''}`}
+                >
+                    {submitLoading ? 'Creating...' : 'Create Admin'}
+                </button>
                 </form>
             </section>
         </div>
