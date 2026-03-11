@@ -23,3 +23,11 @@
     font-weight: 600;
     color: #111827;
 }
+
+.manage-super-admin .manage-section {
+    margin-bottom: 2rem;
+    padding: 1.25rem;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 08);
+}
