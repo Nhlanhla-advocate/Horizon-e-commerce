@@ -217,8 +217,8 @@ export default function Manage() {
                 {submitError && (
                     <div className="manage-message-error">{submitError}</div>
                 )}
-                {submitSuccess && (
-                    <div className="manage-message-success">{submitSuccess}</div>
+                {successMessage && (
+                    <div className="manage-message-success">{successMessage}</div>
                 )}
                 <button
                     type="submit"
