@@ -9,3 +9,11 @@ import Link from 'next/link';
 const API_BASE = process.env.NEXT_PUBLIC_API_URL
 || 'http://localhost:5000';
 
+const SuperAdminSignin = () => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const router = useRouter();
+}
