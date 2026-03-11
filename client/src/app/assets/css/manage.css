@@ -38,3 +38,9 @@
     font-weight: 600;
     color: #374151;
 }
+
+.manage-super-admin .manage-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
