@@ -128,3 +128,11 @@
     font-size: 0.875rem;
   }
   
+  .manage-super-admin .manage-muted {
+    color: #6b7280;
+    font-size: 0.875rem;
+  }
+  
+  .manage-super-admin .manage-table-wrap {
+    overflow-x: auto;
+  }
