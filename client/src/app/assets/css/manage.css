@@ -89,3 +89,19 @@
     font-size: 0.8125rem;
     cursor: pointer;
 }
+
+.manage-super-admin .manage-checkbox-text {
+    color: #4b5563;
+  }
+  
+  .manage-super-admin .manage-button {
+    align-self: flex-start;
+    padding: 0.5rem 1rem;
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
