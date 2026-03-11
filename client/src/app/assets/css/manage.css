@@ -156,3 +156,12 @@
     border-bottom: 1px solid #f3f4f6;
     color: #4b5563;
   }
+
+  .manage-super-admin .manage-badge {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    background: #e0e7ff;
+    color: #3730a3;
+    border-radius: 4px;
+    font-size: 0.75rem;
+  }
