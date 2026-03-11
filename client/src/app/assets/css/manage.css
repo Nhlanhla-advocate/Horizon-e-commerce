@@ -119,3 +119,12 @@
   border-radius: 6px;
   font-size: 0.875rem;
 }
+
+.manage-super-admin .manage-message-success {
+    padding: 0.5rem 0.75rem;
+    background: #f0fdf4;
+    color: #16a34a;
+    border-radius: 6px;
+    font-size: 0.875rem;
+  }
+  
