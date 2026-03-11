@@ -136,3 +136,17 @@
   .manage-super-admin .manage-table-wrap {
     overflow-x: auto;
   }
+
+  .manage-super-admin .manage-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+  
+  .manage-super-admin .manage-th {
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 2px solid #e5e7eb;
+    font-weight: 600;
+    color: #374151;
+  }
