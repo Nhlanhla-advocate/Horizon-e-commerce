@@ -58,5 +58,12 @@
 }
 
 .manage-super-admin .manage-required {
-    color: #374151;
+    color: #dc2626;
+}
+
+.manage-super-admin .manage-input {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.87rem;
 }
