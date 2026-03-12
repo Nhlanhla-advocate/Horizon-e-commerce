@@ -16,4 +16,20 @@ const SuperAdminSignin = () => {
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+
+    useEffect(() => {
+        const checkSuperAdminAuth = asyncc () => {
+            const adminToken = localStorage.getItem('adminToken');
+            if (!adminToken) return;
+
+            try {
+                const response = await fetch( ${API_BASE}/admin/Profiler, {
+                    headers: {
+                        Authorization: `Bearer ${adminToken}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+            }
+        }
+    })
 }
