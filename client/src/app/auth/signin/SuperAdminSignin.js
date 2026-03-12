@@ -29,6 +29,15 @@ const SuperAdminSignin = () => {
                         'Content-Type': 'application/json',
                     }
                 });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const role = data.admin?.role || data.role;
+                    if (data.success && role === 'super_admin') {
+                        router.push('/superAdmin/management');
+                        return;
+                    }
+                }
             }
         }
     })
