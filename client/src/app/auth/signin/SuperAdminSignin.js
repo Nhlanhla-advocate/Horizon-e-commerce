@@ -82,6 +82,14 @@ const SuperAdminSignin = () => {
                 setLoading(false);
                 return;
             }
+
+            //Super admin portal: only super_admin may proceed
+            const role = data.role || data.admin?.role;
+            if (role !== 'super_admin') {
+                setError('Access denied.Super admin sign-in only. Use the admin portal for staff accounts.');
+                setLoading(false);
+                return;
+            }
         }
     }
 }
