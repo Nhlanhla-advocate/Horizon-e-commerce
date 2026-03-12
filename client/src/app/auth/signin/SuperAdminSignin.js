@@ -90,6 +90,19 @@ const SuperAdminSignin = () => {
                 setLoading(false);
                 return;
             }
+
+            localStorage.clear();
+            localStorage.setItem('adminToken', token);
+            localStorage.setItem('token', token);
+            localStorage.setItem('adminRole', 'super_admin');
+
+            await new Promise((r) => setTimeout(r, 300));
+            window.location.href = '/superAdmin/management';
+        } catch (err) {
+            console.error('Super admin login error:', err);
+            setError(err.message || 'Server error. Please try again.');
+        } finally {
+            setLoading(false);
         }
-    }
+    };
 }
