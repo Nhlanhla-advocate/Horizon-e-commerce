@@ -45,7 +45,7 @@ const SuperAdminSignin = () => {
                 localStorage.removeItem('token');
             }
         };
-        
+
         checkSuperAdminAuth();
     }, [router]);
 
@@ -53,5 +53,11 @@ const SuperAdminSignin = () => {
         e.preventDefault();
         setLoading(true);
         setError(null);
+
+        if(!email || !password) {
+            setError('Please fill in all fields');
+            setLoading(false);
+            return;
+        }
     }
 }
