@@ -66,6 +66,15 @@ const SuperAdminSignin = () => {
                 body: JSON.stringify({ email, password }),
                 credentials: 'include',
             });
+
+            let data;
+            try {
+                data = await response.json();
+            } catch {
+                setError('invalid response from server. Please try again.');
+                setLoading(false);
+                return;
+            }
         }
     }
 }
