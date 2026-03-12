@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useEffect } from React;
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from '../../assets/css/auth.module.css';
 import '../../assets/css/buttons.css';
 import Link from 'next/link';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL
-|| 'http://localhost:5000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 const SuperAdminSignin = () => {
     const [email, setEmail] = useState('');
@@ -18,16 +17,16 @@ const SuperAdminSignin = () => {
     const router = useRouter();
 
     useEffect(() => {
-        const checkSuperAdminAuth = asyncc () => {
+        const checkSuperAdminAuth = async () => {
             const adminToken = localStorage.getItem('adminToken');
             if (!adminToken) return;
 
             try {
-                const response = await fetch( ${API_BASE}/admin/Profiler, {
+                const response = await fetch( `${API_BASE}/admin/Profile`, {
                     headers: {
                         Authorization: `Bearer ${adminToken}`,
                         'Content-Type': 'application/json',
-                    }
+                    },
                 });
 
                 if (response.ok) {
@@ -54,7 +53,7 @@ const SuperAdminSignin = () => {
         setLoading(true);
         setError(null);
 
-        if(!email || !password) {
+        if (!email || !password) {
             setError('Please fill in all fields');
             setLoading(false);
             return;
