@@ -75,6 +75,13 @@ const SuperAdminSignin = () => {
                 setLoading(false);
                 return;
             }
+
+            const token = data.accessToken || data.token;
+            if (!response.ok || !data.success || !token) {
+                setError(data.error || data.message || 'Invalid credentials.');
+                setLoading(false);
+                return;
+            }
         }
     }
 }
