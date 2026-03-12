@@ -38,7 +38,20 @@ const SuperAdminSignin = () => {
                         return;
                     }
                 }
+                localStorage.removeItem('adminToken');
+                localStorage.removeItem('token');
+            } catch {
+                localStorage.removeItem('adminToken');
+                localStorage.removeItem('token');
             }
-        }
-    })
+        };
+        
+        checkSuperAdminAuth();
+    }, [router]);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError(null);
+    }
 }
