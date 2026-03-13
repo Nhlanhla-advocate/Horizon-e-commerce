@@ -1,0 +1,11 @@
+/*WRAPPER FOR BOTTOM LINKS ON SIGN - IN PAGES*/
+.authLinks {
+    margin: 0;
+}
+
+/*SUPER ADMIN SIGN-IN(AND SHARED AUTH DUBTITLE/LINK ROW)*/
+.subtitleMuted {
+    margin-bottom: 1.5rem;
+    color: #666;
+    font-size: 0.9rem
+}
