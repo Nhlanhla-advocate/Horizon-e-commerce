@@ -83,7 +83,6 @@ const SuperAdminSignin = () => {
                 return;
             }
 
-            //Super admin portal: only super_admin may proceed
             const role = data.role || data.admin?.role;
             if (role !== 'super_admin') {
                 setError('Access denied.Super admin sign-in only. Use the admin portal for staff accounts.');
@@ -105,4 +104,21 @@ const SuperAdminSignin = () => {
             setLoading(false);
         }
     };
+
+    return (
+        <div className={styles.authPageWrapper}>
+            <div className={styles.authSplit}>
+                <div className={styles.mediaPane}>
+                    <div className={styles.mediaImageWrapper}>
+                        <img src ="/Pictures/Playstation 5 pro.jpg" alt="Super Admin" className={styles.mediaImage} />
+                        <div className={styles.mediaOverlay}>
+                            <h2 className={styles.mediaTitle}>Super Admin</h2>
+                            <p className={styles.mediaSubtitle}>Restricted access</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+
 }
