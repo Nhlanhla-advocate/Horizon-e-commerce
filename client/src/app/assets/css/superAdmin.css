@@ -9,3 +9,12 @@
     color: #666;
     font-size: 0.9rem
 }
+
+.authLinksBlock {
+    margin-top: 1rem;
+}
+
+.authLinksCenter {
+    text-align: center;
+    font-size: 0.875rem;
+}
