@@ -34,3 +34,7 @@
     margin-right: 1rem;
 
 }
+
+.authLinkSecondarySpaced:hover {
+    text-decoration: underline;
+}
