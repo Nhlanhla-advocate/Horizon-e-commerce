@@ -27,3 +27,14 @@
 .authLinkSecondary:hover {
     text-decoration: underline;
 }
+
+.authLinkSecondarySpaced {
+    color: #666;
+    text-decoration: none;
+    margin-right: 1rem;
+
+}
+
+.authLinkSecondarySpaced:hover {
+    text-decoration: underline;
+}
