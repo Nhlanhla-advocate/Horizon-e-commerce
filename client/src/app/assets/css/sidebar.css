@@ -162,6 +162,34 @@
   text-align: center;
 }
 
+.admin-sidebar-user {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.admin-sidebar-user-role {
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.9;
+}
+
+.admin-sidebar-user-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: white;
+}
+
+.admin-sidebar-footer-theme {
+  margin-top: 0.75rem;
+}
+
 .admin-sidebar-footer-status {
   display: flex;
   align-items: center;
