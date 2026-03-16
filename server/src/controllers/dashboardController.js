@@ -1312,7 +1312,22 @@ class DashboardController {
       if (!cart) {
         return res.json({ success: true, data: { items: [], totalPrice: 0 } });
       }
-      return res.json({ success: true, data: cart });
+      // Normalize items so client always gets name and price (cart may store product or productId)
+      const items = (cart.items || []).map((item) => {
+        const name = item.name ||
+          (item.product && (item.product.name || item.product.title)) ||
+          (item.productId && (item.productId.name || item.productId.title)) ||
+          'Product';
+        const price = item.price != null ? item.price : (item.product && item.product.price) || (item.productId && item.productId.price) || 0;
+        return {
+          ...item,
+          name,
+          price: Number(price),
+          quantity: item.quantity || 1,
+        };
+      });
+      const totalPrice = cart.totalPrice != null ? Number(cart.totalPrice) : items.reduce((sum, i) => sum + (i.price * (i.quantity || 1)), 0);
+      return res.json({ success: true, data: { items, totalPrice } });
     } catch (error) {
       return res.status(500).json({
         success: false,
