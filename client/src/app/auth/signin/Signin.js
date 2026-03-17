@@ -72,9 +72,16 @@ const Signin = () => {
             console.log("User login response status:", response.status);
             console.log("User login response data:", data);
             
-            if (response.ok) {
+            if (response.ok && data?.success) {
                 console.log("User signed in successfully.", data);
-                localStorage.setItem("token", data.accessToken || data.token); 
+                const token = data.accessToken || data.token;
+                if (token) {
+                    localStorage.setItem("token", token);
+                }
+                // Persist the Mongo user _id for cart persistence
+                if (data.user && data.user._id) {
+                    localStorage.setItem("userId", data.user._id);
+                }
                 router.push("/");
                 return;
             }

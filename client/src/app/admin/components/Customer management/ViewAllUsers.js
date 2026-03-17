@@ -6,6 +6,7 @@ import '../../../assets/css/userManagement.css';
 
 const getBaseUrl = () => (
     typeof window !== 'undefined' ? '' : 'http://localhost:5000');
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 const getAuthHeaders = () => {
     const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
@@ -80,19 +81,30 @@ export default function ViewAllUsers() {
         setUserOrders([]);
         setError(null);
         try {
+            const apiBase = base || API_BASE;
             const [cartRes, reviewsRes, ordersRes] = await Promise.all([
-                fetch(`${base}/dashboard/users/${userId}/cart`, { headers }),
-                fetch(`${base}/dashboard/users/${userId}/reviews`, { headers }),
-                fetch(`${base}/dashboard/users/${userId}/orders`, { headers }),
+                fetch(`${apiBase}/dashboard/users/${userId}/cart`, { headers }),
+                fetch(`${apiBase}/dashboard/users/${userId}/reviews`, { headers }),
+                fetch(`${apiBase}/dashboard/users/${userId}/orders`, { headers }),
             ]);
             if (cartRes.status === 401 || reviewsRes.status === 401 || ordersRes.status === 401) {
                 setError('Session expired or invalid. Please sign in again.');
                 return;
             }
-            const cartData = cartRes.ok ? await cartRes.json() : null;
+            let cartData = null;
+            try {
+                cartData = cartRes.ok ? await cartRes.json() : null;
+            } catch (_) {
+                cartData = null;
+            }
             const reviewsData = reviewsRes.ok ? await reviewsRes.json() : null;
             const ordersData = ordersRes.ok ? await ordersRes.json() : null;
-            if (cartData?.success) setUserCart(cartData.data);
+            if (cartData?.success && cartData.data != null) {
+                const data = cartData.data;
+                setUserCart(Array.isArray(data.items) ? data : { items: data.items || [], totalPrice: data.totalPrice ?? 0 });
+            } else {
+                setUserCart(null);
+            }
             if (reviewsData?.success && Array.isArray(reviewsData.data)) setUserReviews(reviewsData.data);
             if (ordersData?.success && Array.isArray(ordersData.data)) setUserOrders(ordersData.data);
         } catch (err) {
@@ -116,10 +128,10 @@ export default function ViewAllUsers() {
         setUserOrders([]);
     };
 
-    const cartItems = userCart?.items || [];
+    const cartItems = Array.isArray(userCart?.items) ? userCart.items : [];
     const cartTotal = userCart?.totalPrice ?? 0;
-    const getItemName = (item) => item.name || item.productId?.name || item.product?.name || 'Product';
-    const getItemPrice = (item) => item.price ?? 0;
+    const getItemName = (item) => item.name || item.productId?.name || item.product?.name || item.product?.title || item.productId?.title || 'Product';
+    const getItemPrice = (item) => item.price != null ? Number(item.price) : (item.product?.price != null ? Number(item.product.price) : item.productId?.price != null ? Number(item.productId.price) : 0);
 
     const statusColors = {
         pending: '#f59e0b',

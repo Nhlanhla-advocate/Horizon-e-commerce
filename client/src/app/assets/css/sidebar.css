@@ -186,6 +186,13 @@
   color: white;
 }
 
+.admin-sidebar-user-email {
+  font-size: 0.6875rem;
+  color: rgba(255, 255, 255, 0.85);
+  word-break: break-all;
+  max-width: 100%;
+}
+
 .admin-sidebar-footer-theme {
   margin-top: 0.75rem;
 }

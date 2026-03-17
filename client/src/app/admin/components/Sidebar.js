@@ -24,6 +24,7 @@ export default function Sidebar({ tabs, activeTab, setActiveTab, sidebarOpen, se
 
   const roleLabel = user?.role === 'super_admin' ? 'Super Admin' : 'Admin';
   const displayName = user?.username || user?.email || 'Admin';
+  const showEmail = user?.email && user?.username; // show email below when we have both (avoid duplicate when name is email)
 
   return (
     <>
@@ -59,6 +60,9 @@ export default function Sidebar({ tabs, activeTab, setActiveTab, sidebarOpen, se
                 <div className="admin-sidebar-user">
                   <span className="admin-sidebar-user-role">{roleLabel}</span>
                   <span className="admin-sidebar-user-name">{displayName}</span>
+                  {showEmail && (
+                    <span className="admin-sidebar-user-email">{user.email}</span>
+                  )}
                 </div>
               )}
               <div className="admin-sidebar-footer-status">
