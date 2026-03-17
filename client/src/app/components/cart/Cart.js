@@ -10,13 +10,23 @@ export const useCart = () => useContext(CartContext);
 // Backend base URL 
 const BASE_URL = 'http://localhost:5000';
 
-// Generate or get guest ID for cross-browser cart persistence
+// Generate a 24-char hex string (Mongo ObjectId–compatible) so guest carts can be saved in MongoDB
+const generateObjectIdHex = () => {
+  if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+    const bytes = new Uint8Array(12);
+    window.crypto.getRandomValues(bytes);
+    return Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
+  }
+  return Date.now().toString(16).padEnd(24, '0').slice(0, 24);
+};
+
+// Generate or get guest ID so both guest and user carts persist in Mongo
 const getGuestId = () => {
   if (typeof window === 'undefined') return null;
-  
+  const validHex24 = /^[a-f0-9]{24}$/i;
   let guestId = localStorage.getItem('guestId');
-  if (!guestId) {
-    guestId = 'guest_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  if (!guestId || !validHex24.test(guestId)) {
+    guestId = generateObjectIdHex();
     localStorage.setItem('guestId', guestId);
   }
   return guestId;
