@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Navbar from '../../components/navbar/Navbar';
 import '../../assets/css/product.css';
 import ImageModal from '../../components/imagemodal/ImageModal';
-import { useCart } from '../../cart/Cart';
+import { useCart } from '@/app/components/cart/Cart';
 
 
 const images = [

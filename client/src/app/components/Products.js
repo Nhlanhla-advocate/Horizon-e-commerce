@@ -4,7 +4,7 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useCart } from '../cart/Cart';
+import { useCart } from '@/app/components/cart/Cart';
 
 
 const Products = () => {
