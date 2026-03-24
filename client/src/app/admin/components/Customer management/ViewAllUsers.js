@@ -17,6 +17,17 @@ const getAuthHeaders = () => {
     };
 };
 
+const getCurrentAdminRole = () => {
+    try {
+        const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+        if (!token) return null;
+        const payload = JSON.parse(atob(token.split('.')[1] || ''));
+        return payload?.role || null;
+    } catch (_) {
+        return null;
+    }
+};
+
 export default function ViewAllUsers() {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -30,6 +41,12 @@ export default function ViewAllUsers() {
     const [userReviews, setUserReviews] = useState([]);
     const [userOrders, setUserOrders] = useState([]);
     const [detailTab, setDetailTab] = useState('cart');
+    const [currentAdminRole, setCurrentAdminRole] = useState(null);
+
+    useEffect(() => {
+        setCurrentAdminRole(getCurrentAdminRole());
+    }, []);
+    const isSuperAdmin = currentAdminRole === 'super_admin';
 
     const fetchUsers = useCallback(async () => {
         try {
@@ -190,9 +207,9 @@ export default function ViewAllUsers() {
                             style={{ minWidth: '120px' }}
                         >
                             <option value="">All Roles</option>
-                            <option value="admin">Admin</option>
                             <option value="user">User</option>
-                            <option value="super_admin">Super Admin</option>
+                            {isSuperAdmin && <option value="admin">Admin</option>}
+                            {isSuperAdmin && <option value="super_admin">Super Admin</option>}
                         </select>
                     </div>
                     <div>

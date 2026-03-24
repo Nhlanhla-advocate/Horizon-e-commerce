@@ -8,6 +8,17 @@ const Dashboard = require('../models/dashboard');
 const mongoose = require('mongoose');
 
 class DashboardController {
+  canViewPrivilegedUsers(req) {
+    return req.user?.role === 'super_admin';
+  }
+
+  async canAccessTargetUser(req, targetUserId) {
+    if (this.canViewPrivilegedUsers(req)) return true;
+    const target = await User.findById(targetUserId).select('role').lean();
+    if (!target) return false;
+    return target.role === 'user';
+  }
+
   // Get dashboard statistics and overview (with caching)
   async getDashboardStats(req, res) {
     try {
@@ -1305,6 +1316,10 @@ class DashboardController {
       if (!mongoose.Types.ObjectId.isValid(userId)) {
         return res.status(400).json({ success: false, message: 'Invalid user ID' });
       }
+      const allowed = await this.canAccessTargetUser(req, userId);
+      if (!allowed) {
+        return res.status(403).json({ success: false, message: 'Access denied. Admins can only view regular users.' });
+      }
       const cart = await Cart.findOne({ customerId: userId })
         .populate('items.product', 'name price')
         .populate('items.productId', 'name price')
@@ -1343,6 +1358,10 @@ class DashboardController {
       if (!mongoose.Types.ObjectId.isValid(userId)) {
         return res.status(400).json({ success: false, message: 'Invalid user ID' });
       }
+      const allowed = await this.canAccessTargetUser(req, userId);
+      if (!allowed) {
+        return res.status(403).json({ success: false, message: 'Access denied. Admins can only view regular users.' });
+      }
       const reviews = await Review.find({ user: userId })
         .populate('product', 'name')
         .sort({ createdAt: -1 })
@@ -1362,6 +1381,10 @@ class DashboardController {
       const { userId } = req.params;
       if (!mongoose.Types.ObjectId.isValid(userId)) {
         return res.status(400).json({ success: false, message: 'Invalid user ID' });
+      }
+      const allowed = await this.canAccessTargetUser(req, userId);
+      if (!allowed) {
+        return res.status(403).json({ success: false, message: 'Access denied. Admins can only view regular users.' });
       }
       const orders = await Order.find({ customerId: userId, isGuestOrder: { $ne: true } })
         .populate('customerId', 'username email')
@@ -1387,7 +1410,14 @@ class DashboardController {
           { username: { $regex: search.trim(), $options: 'i' } }
         ];
       }
-      if (role && role.trim()) filter.role = role.trim();
+      const requesterRole = req.user?.role;
+      const isSuperAdmin = requesterRole === 'super_admin';
+      if (!isSuperAdmin) {
+        // Non-super-admin staff can only view regular users.
+        filter.role = 'user';
+      } else if (role && role.trim()) {
+        filter.role = role.trim();
+      }
       if (status && status.trim()) filter.status = status.trim();
 
       const users = await User.find(filter)
