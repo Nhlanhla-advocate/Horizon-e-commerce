@@ -5,7 +5,7 @@ import './assets/css/product.css';
 import './assets/css/footer.css';
 import './assets/css/authlayout.css';
 
-import { CartProvider } from './components/cart/Cart';
+import { CartProvider } from '@/app/components/cart/Cart';
 import AuthLayoutWrapper from './components/AuthLayoutWrapper.js';
 
 const inter = Inter({ subsets: ['latin'] });

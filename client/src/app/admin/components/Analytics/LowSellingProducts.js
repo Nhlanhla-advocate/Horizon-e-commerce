@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { formatCurrency, formatDate, useAnalyticsFetch } from '../../../utils/reusable';
+import '../../../assets/css/Analytics.css';
 
 // Low Selling Products Component
 function LowSellingProducts() {
@@ -20,16 +21,16 @@ function LowSellingProducts() {
     );
   
     return (
-      <div className="space-y-4">
+      <div className="analytics-container">
         {/* Filters */}
-        <div className="bg-white p-4 rounded-lg shadow">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="analytics-filters">
+          <div className="analytics-filters-grid">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Period (days)</label>
+              <label className="analytics-filter-label">Period (days)</label>
               <select
                 value={filters.days}
                 onChange={(e) => setFilters({...filters, days: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                className="analytics-filter-select"
               >
                 <option value="7">Last 7 days</option>
                 <option value="30">Last 30 days</option>
@@ -38,11 +39,11 @@ function LowSellingProducts() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+              <label className="analytics-filter-label">Category</label>
               <select
                 value={filters.category}
                 onChange={(e) => setFilters({...filters, category: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                className="analytics-filter-select"
               >
                 <option value="">All Categories</option>
                 <option value="jewelry">Jewelry</option>
@@ -52,21 +53,21 @@ function LowSellingProducts() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Max Sales</label>
+              <label className="analytics-filter-label">Max Sales</label>
               <input
                 type="number"
                 value={filters.maxSales}
                 onChange={(e) => setFilters({...filters, maxSales: e.target.value})}
                 placeholder="Max sales"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                className="analytics-filter-input"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Limit</label>
+              <label className="analytics-filter-label">Limit</label>
               <select
                 value={filters.limit}
                 onChange={(e) => setFilters({...filters, limit: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                className="analytics-filter-select"
               >
                 <option value="10">Top 10</option>
                 <option value="20">Top 20</option>
@@ -77,81 +78,65 @@ function LowSellingProducts() {
         </div>
   
         {/* Results */}
-        <div className="bg-white shadow rounded-lg">
-          <div className="px-4 py-5 sm:p-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+        <div className="analytics-results">
+          <div className="analytics-results-content">
+            <h3 className="analytics-results-title">
               Low Selling Products
             </h3>
             
             {loading ? (
-              <div className="flex items-center justify-center h-32">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+              <div className="analytics-loading">
+                <div className="analytics-loading-spinner"></div>
               </div>
             ) : error ? (
-              <div className="text-red-600 text-sm">{error}</div>
+              <div className="analytics-error">{error}</div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+              <div className="analytics-table-container">
+                <table className="analytics-table">
+                  <thead>
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Product
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Category
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Price
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Stock
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Total Sold
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Revenue
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Created
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Days Since Created
-                      </th>
+                      <th>Product</th>
+                      <th>Category</th>
+                      <th>Price</th>
+                      <th>Stock</th>
+                      <th>Total Sold</th>
+                      <th>Revenue</th>
+                      <th>Created</th>
+                      <th>Days Since Created</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody>
                     {products.map((product) => (
-                      <tr key={product._id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{product.name}</div>
+                      <tr key={product._id}>
+                        <td>
+                          <div className="analytics-table-cell-text">{product.name}</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                        <td>
+                          <span className="analytics-category-badge">
                             {product.category}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="analytics-table-cell-text">
                           {formatCurrency(product.price)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`text-sm font-medium ${
-                            product.stock <= 10 ? 'text-red-600' : 
-                            product.stock <= 20 ? 'text-yellow-600' : 'text-green-600'
-                          }`}>
+                        <td>
+                          <span className={
+                            product.stock <= 10 ? 'analytics-stock-low' : 
+                            product.stock <= 20 ? 'analytics-stock-medium' : 'analytics-stock-high'
+                          }>
                             {product.stock}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="analytics-table-cell-text">
                           {product.totalSold}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="analytics-table-cell-text">
                           {formatCurrency(product.totalRevenue)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="analytics-table-cell-muted">
                           {formatDate(product.createdAt)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="analytics-table-cell-muted">
                           {product.daysSinceCreated} days
                         </td>
                       </tr>
@@ -159,7 +144,7 @@ function LowSellingProducts() {
                   </tbody>
                 </table>
                 {products.length === 0 && (
-                  <p className="text-gray-500 text-center py-8">No low selling products found</p>
+                  <p className="analytics-empty">No low selling products found</p>
                 )}
               </div>
             )}

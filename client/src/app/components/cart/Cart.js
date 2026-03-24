@@ -10,17 +10,37 @@ export const useCart = () => useContext(CartContext);
 // Backend base URL 
 const BASE_URL = 'http://localhost:5000';
 
-// Generate or get guest ID for cross-browser cart persistence
+// Generate a 24-char hex string (Mongo ObjectId–compatible) so guest carts can be saved in MongoDB
+const generateObjectIdHex = () => {
+  if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+    const bytes = new Uint8Array(12);
+    window.crypto.getRandomValues(bytes);
+    return Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
+  }
+  return Date.now().toString(16).padEnd(24, '0').slice(0, 24);
+};
+
+// Generate or get guest ID so both guest and user carts persist in Mongo
 const getGuestId = () => {
   if (typeof window === 'undefined') return null;
-  
+  const validHex24 = /^[a-f0-9]{24}$/i;
   let guestId = localStorage.getItem('guestId');
-  if (!guestId) {
-    guestId = 'guest_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  if (!guestId || !validHex24.test(guestId)) {
+    guestId = generateObjectIdHex();
     localStorage.setItem('guestId', guestId);
   }
   return guestId;
 }; 
+
+const normalizeProductId = (value) => {
+  if (!value) return null;
+  if (typeof value === 'string') return value;
+  if (typeof value === 'object') {
+    if (typeof value._id === 'string') return value._id;
+    if (typeof value.productId === 'string') return value.productId;
+  }
+  return String(value);
+};
 
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState({ items: [], totalPrice: 0 });
@@ -66,7 +86,7 @@ export const CartProvider = ({ children }) => {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ 
                           userId: guestId, 
-                          productId: item.productId, 
+                          productId: normalizeProductId(item.productId), 
                           quantity: item.quantity 
                         }),
                       });
@@ -145,7 +165,7 @@ export const CartProvider = ({ children }) => {
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ 
                     userId, 
-                    productId: item.productId, 
+                    productId: normalizeProductId(item.productId), 
                     quantity: item.quantity 
                   }),
                 });
@@ -224,8 +244,9 @@ export const CartProvider = ({ children }) => {
     const userId = localStorage.getItem('userId');
     const guestId = getGuestId();
     const cartId = userId || guestId;
-    const isValidHex24 = typeof productId === 'string' && /^[a-fA-F0-9]{24}$/.test(productId);
-    console.log('addToCart called', { productId, quantity, hasUserId: !!userId, hasGuestId: !!guestId, cartId, isValidHex24 });
+    const normalizedProductId = normalizeProductId(productId);
+    const isValidHex24 = typeof normalizedProductId === 'string' && /^[a-fA-F0-9]{24}$/.test(normalizedProductId);
+    console.log('addToCart called', { productId: normalizedProductId, quantity, hasUserId: !!userId, hasGuestId: !!guestId, cartId, isValidHex24 });
     
     // Prepare product data
     let productPrice = 0;
@@ -255,7 +276,7 @@ export const CartProvider = ({ children }) => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             userId: cartId, // Use cartId (either userId or guestId)
-            productId, 
+            productId: normalizedProductId, 
             quantity 
           }),
         });
@@ -272,16 +293,16 @@ export const CartProvider = ({ children }) => {
           const errorData = await res.json();
           console.error('Failed to add to cart:', errorData);
           // Fallback to local update if server fails
-          updateLocalCart(productId, quantity, productData);
+          updateLocalCart(normalizedProductId, quantity, productData);
         }
       } catch (err) {
         console.error('Error adding to cart:', err);
         // Fallback to local update if server fails
-        updateLocalCart(productId, quantity, productData);
+        updateLocalCart(normalizedProductId, quantity, productData);
       }
     } else {
-      console.warn('Skipping server sync due to invalid productId format. Using local cart only.', productId);
-      updateLocalCart(productId, quantity, productData);
+      console.warn('Skipping server sync due to invalid productId format. Using local cart only.', normalizedProductId);
+      updateLocalCart(normalizedProductId, quantity, productData);
     }
   }, [cart.items]);
 
@@ -335,7 +356,8 @@ export const CartProvider = ({ children }) => {
       
       if (res.ok) {
         // Update local state and localStorage
-        const updatedItems = cart.items.filter(item => item.productId !== productId);
+        const targetId = normalizeProductId(productId);
+        const updatedItems = cart.items.filter(item => normalizeProductId(item.productId) !== targetId);
         const newTotalPrice = updatedItems.reduce((total, item) => 
           total + (item.price * item.quantity), 0);
         
@@ -350,7 +372,8 @@ export const CartProvider = ({ children }) => {
       } else {
         console.error('Failed to remove from cart on server');
         // Fallback to local update if server fails
-        const updatedItems = cart.items.filter(item => item.productId !== productId);
+        const targetId = normalizeProductId(productId);
+        const updatedItems = cart.items.filter(item => normalizeProductId(item.productId) !== targetId);
         const newTotalPrice = updatedItems.reduce((total, item) => 
           total + (item.price * item.quantity), 0);
         
@@ -365,7 +388,8 @@ export const CartProvider = ({ children }) => {
     } catch (error) {
       console.error('Error removing from cart:', error);
       // Fallback to local update if server fails
-      const updatedItems = cart.items.filter(item => item.productId !== productId);
+      const targetId = normalizeProductId(productId);
+      const updatedItems = cart.items.filter(item => normalizeProductId(item.productId) !== targetId);
       const newTotalPrice = updatedItems.reduce((total, item) => 
         total + (item.price * item.quantity), 0);
       

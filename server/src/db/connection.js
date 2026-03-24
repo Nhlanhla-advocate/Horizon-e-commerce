@@ -5,12 +5,18 @@ mongoose.set('strictQuery', true);
 
 // CONNECTING TO MONGODB
 async function connectToMongoDB() {
-  const connection = 'mongodb+srv://roykeane888:n3RNZWBK5lfocsed@horizon.alzof.mongodb.net/?retryWrites=true&w=majority&appName=Horizon';
+  const connection = process.env.MONGODB_URL;
+  if (!connection) {
+    const err = new Error("MONGODB_URL is not set in .env");
+    console.error("Error:", err.message);
+    throw err;
+  }
   try {
     await mongoose.connect(connection);
     console.log("Successfully Connected to MongoDB");
   } catch (error) {
     console.error("Error connecting to MongoDB:", error);
+    throw error;
   }
 }
 

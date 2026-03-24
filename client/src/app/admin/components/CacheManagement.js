@@ -1,146 +1,164 @@
 'use client';
 
-import { useState, useEffect} from 'react';
+import { useState, useEffect } from 'react';
+import '../../assets/css/cacheManagement.css';
+
 
 export default function CacheManagement() {
-    const [cacheStatus, setCacheStatus] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [actionLoading, setActionLoading] = useState(false);
+  const [cacheStatus, setCacheStatus] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
-    useEffect (() => {
-        fetchCacheStatus();
-    }, []);
 
-    const fetchCacheStatus = async () => {
-        try {
-            setLoading(true);
-            const token = localStorage.getItem('token');
-            const response = await fetch('/dashboard/cache/status', {
-               headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-               } 
-            });
+  useEffect(() => {
+    fetchCacheStatus();
+  }, []);
 
-            if (!response.ok) {
-                throw new Error('Failed to fetch cache status');
-            }
 
-            const data = await response.json();
-            setCacheStatus(data.cacheStatus);
-            setError(null);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
+  const fetchCacheStatus = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+      const response = await fetch('/api/dashboard/cache/status', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
-    };
+      });
 
-    const refreshCache = async() => {
-        try {
-            setActionLoading(true);
-            const token = localStorage.getItem('token');
-            const response = await fetch('/dashboard/cache/refresh', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
 
-            if (!response.ok) {
-                throw new Error('Failed to refresh cache');
-            }
+      if (!response.ok) {
+        throw new Error('Failed to fetch cache status');
+      }
 
-            // Refresh cache status after successful refresh
-            await fetchCacheStatus();
-        } catch (err) {
-            setError(err.message);
-       } finally {
-        setActionLoading(false);
-       }
-    };
 
-    const clearCache = async () => {
-        if (!confirm('Are you sure you want to clear the cache? This will force fresh data calculation on the next request.')) {
-            return;
-        }
-
-        try {
-            setActionLoading(true);
-            const token = localStorage.getItem('token');
-            const response = await fetch('/dashboard/cache/clear', {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to clear cache');
-            }
-
-            //Refresh cache status after successful clear
-            await fetchCacheStatus();
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setActionLoading(false);
-        }
-    };
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-    });
-  };
-
-  const formatDuration = (seconds) => {
-    if (seconds < 60) {
-        return `${seconds} seconds`;
-    } else if (seconds < 3600) {
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = seconds % 60;
-        return `${minutes}m ${remainingSeconds}s`;
-    } else {
-        const hours = Math.floor(seconds / 3600);
-        const minutes = Math.floor((seconds % 3600) / 60);
-        return `${hours}h ${minutes}m`;
+      const data = await response.json();
+      setCacheStatus(data.cacheStatus);
+      setError(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const getCacheStatusColor = (isExpired) => {
-    return isExpired ? 'text-red-600' : 'text-green-600';
+
+  const refreshCache = async () => {
+    try {
+      setActionLoading(true);
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+      const response = await fetch('/api/dashboard/cache/refresh', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+
+      if (!response.ok) {
+        throw new Error('Failed to refresh cache');
+      }
+
+
+      // Refresh cache status after successful refresh
+      await fetchCacheStatus();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setActionLoading(false);
+    }
   };
+
+
+  const clearCache = async () => {
+    if (!confirm('Are you sure you want to clear the dashboard cache? This will force fresh data calculation on the next request.')) {
+      return;
+    }
+
+
+    try {
+      setActionLoading(true);
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+      const response = await fetch('/api/dashboard/cache/clear', {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+
+      if (!response.ok) {
+        throw new Error('Failed to clear cache');
+      }
+
+
+      // Refresh cache status after successful clear
+      await fetchCacheStatus();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  };
+
+
+  const formatDuration = (seconds) => {
+    if (seconds < 60) {
+      return `${seconds} seconds`;
+    } else if (seconds < 3600) {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = seconds % 60;
+      return `${minutes}m ${remainingSeconds}s`;
+    } else {
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      return `${hours}h ${minutes}m`;
+    }
+  };
+
+
+  const getCacheStatusColor = (isExpired) => {
+    return isExpired ? 'cache-management-status-value-expired' : 'cache-management-status-value-valid';
+  };
+
 
   const getCacheStatusIcon = (isExpired) => {
-    return isExpired ? 'Red' : 'Green';
+    return isExpired ? '❌' : '✅';
   };
 
+
   return (
-    <div className="space-y-8">
+    <div className="cache-management-container">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+      <div className="cache-management-header">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Cache Management</h2>
-          <p className="text-gray-600 mt-1">Manage dashboard cache performance and data freshness</p>
+          <h2 className="cache-management-title">Cache Management</h2>
+          <p className="cache-management-subtitle">Manage dashboard cache performance and data freshness</p>
         </div>
         <button
           onClick={fetchCacheStatus}
           disabled={loading}
-          className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:from-blue-300 disabled:to-purple-400 text-white px-6 py-3 rounded-xl text-sm font-semibold flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 self-start sm:self-auto"
+          className="cache-management-refresh-btn"
         >
           {loading ? (
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+            <div className="cache-management-refresh-spinner"></div>
           ) : (
-            <span className="text-lg"></span>
+            <span className="cache-management-refresh-icon"></span>
           )}
           <span>Refresh Status</span>
         </button>
@@ -149,11 +167,11 @@ export default function CacheManagement() {
 
       {/* Error Display */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <div className="flex">
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">Error</h3>
-              <div className="mt-2 text-sm text-red-700">
+        <div className="cache-management-error">
+          <div className="cache-management-error-content">
+            <div className="cache-management-error-text">
+              <h3 className="cache-management-error-title">Error</h3>
+              <div className="cache-management-error-message">
                 <p>{error}</p>
               </div>
             </div>
@@ -163,21 +181,21 @@ export default function CacheManagement() {
 
 
       {/* Cache Status Overview */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
+      <div className="cache-management-overview-grid">
+        <div className="cache-management-status-card">
+          <div className="cache-management-status-card-content">
+            <div className="cache-management-status-card-inner">
+              <div className="cache-management-status-icon-container">
+                <div className="cache-management-status-icon cache-management-status-icon-blue">
                 </div>
               </div>
-              <div className="ml-5 w-0 flex-1">
+              <div className="cache-management-status-text-container">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Cache Status</dt>
-                  <dd className={`text-lg font-medium ${getCacheStatusColor(cacheStatus?.isExpired)}`}>
+                  <dt className="cache-management-status-label">Cache Status</dt>
+                  <dd className={`cache-management-status-value ${getCacheStatusColor(cacheStatus?.isExpired)}`}>
                     {cacheStatus ? (
                       <>
-                        <span className="mr-1">{getCacheStatusIcon(cacheStatus.isExpired)}</span>
+                        <span className="cache-management-status-icon-inline">{getCacheStatusIcon(cacheStatus.isExpired)}</span>
                         {cacheStatus.isExpired ? 'Expired' : 'Valid'}
                       </>
                     ) : (
@@ -190,18 +208,17 @@ export default function CacheManagement() {
           </div>
         </div>
 
-
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
+        <div className="cache-management-status-card">
+          <div className="cache-management-status-card-content">
+            <div className="cache-management-status-card-inner">
+              <div className="cache-management-status-icon-container">
+                <div className="cache-management-status-icon cache-management-status-icon-green">
                 </div>
               </div>
-              <div className="ml-5 w-0 flex-1">
+              <div className="cache-management-status-text-container">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Cache Age</dt>
-                  <dd className="text-lg font-medium text-gray-900">
+                  <dt className="cache-management-status-label">Cache Age</dt>
+                  <dd className="cache-management-status-value">
                     {cacheStatus ? formatDuration(cacheStatus.cacheAgeSeconds) : 'N/A'}
                   </dd>
                 </dl>
@@ -210,18 +227,17 @@ export default function CacheManagement() {
           </div>
         </div>
 
-
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center">
+        <div className="cache-management-status-card">
+          <div className="cache-management-status-card-content">
+            <div className="cache-management-status-card-inner">
+              <div className="cache-management-status-icon-container">
+                <div className="cache-management-status-icon cache-management-status-icon-yellow">
                 </div>
               </div>
-              <div className="ml-5 w-0 flex-1">
+              <div className="cache-management-status-text-container">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Time Until Expiry</dt>
-                  <dd className="text-lg font-medium text-gray-900">
+                  <dt className="cache-management-status-label">Time Until Expiry</dt>
+                  <dd className="cache-management-status-value">
                     {cacheStatus ? (
                       cacheStatus.timeUntilExpiry > 0 ?
                         formatDuration(cacheStatus.timeUntilExpiry) :
@@ -234,18 +250,17 @@ export default function CacheManagement() {
           </div>
         </div>
 
-
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
+        <div className="cache-management-status-card">
+          <div className="cache-management-status-card-content">
+            <div className="cache-management-status-card-inner">
+              <div className="cache-management-status-icon-container">
+                <div className="cache-management-status-icon cache-management-status-icon-purple">
                 </div>
               </div>
-              <div className="ml-5 w-0 flex-1">
+              <div className="cache-management-status-text-container">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Expiry Time</dt>
-                  <dd className="text-lg font-medium text-gray-900">
+                  <dt className="cache-management-status-label">Expiry Time</dt>
+                  <dd className="cache-management-status-value">
                     {cacheStatus ? formatDuration(cacheStatus.cacheExpirySeconds) : 'N/A'}
                   </dd>
                 </dl>
@@ -258,42 +273,42 @@ export default function CacheManagement() {
 
       {/* Detailed Cache Information */}
       {cacheStatus && (
-        <div className="bg-white shadow rounded-lg">
-          <div className="px-4 py-5 sm:p-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+        <div className="cache-management-details">
+          <div className="cache-management-details-content">
+            <h3 className="cache-management-details-title">
               Cache Details
             </h3>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="space-y-4">
+            <div className="cache-management-details-grid">
+              <div className="cache-management-details-column">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Last Updated</label>
-                  <p className="mt-1 text-sm text-gray-900">
+                  <label className="cache-management-details-field">Last Updated</label>
+                  <p className="cache-management-details-value">
                     {formatDate(cacheStatus.lastUpdated)}
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Cache Age</label>
-                  <p className="mt-1 text-sm text-gray-900">
+                  <label className="cache-management-details-field">Cache Age</label>
+                  <p className="cache-management-details-value">
                     {formatDuration(cacheStatus.cacheAgeSeconds)}
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Cache Expiry</label>
-                  <p className="mt-1 text-sm text-gray-900">
+                  <label className="cache-management-details-field">Cache Expiry</label>
+                  <p className="cache-management-details-value">
                     {formatDuration(cacheStatus.cacheExpirySeconds)}
                   </p>
                 </div>
               </div>
-              <div className="space-y-4">
+              <div className="cache-management-details-column">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Status</label>
-                  <p className={`mt-1 text-sm font-medium ${getCacheStatusColor(cacheStatus.isExpired)}`}>
+                  <label className="cache-management-details-field">Status</label>
+                  <p className={`cache-management-details-value-status ${getCacheStatusColor(cacheStatus.isExpired)}`}>
                     {getCacheStatusIcon(cacheStatus.isExpired)} {cacheStatus.isExpired ? 'Expired' : 'Valid'}
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Time Until Expiry</label>
-                  <p className="mt-1 text-sm text-gray-900">
+                  <label className="cache-management-details-field">Time Until Expiry</label>
+                  <p className="cache-management-details-value">
                     {cacheStatus.timeUntilExpiry > 0 ?
                       formatDuration(cacheStatus.timeUntilExpiry) :
                       'Cache has expired'
@@ -301,8 +316,8 @@ export default function CacheManagement() {
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Performance Impact</label>
-                  <p className="mt-1 text-sm text-gray-900">
+                  <label className="cache-management-details-field">Performance Impact</label>
+                  <p className="cache-management-details-value">
                     {cacheStatus.isExpired ?
                       'Next request will calculate fresh data (slower)' :
                       'Using cached data (faster)'
@@ -317,25 +332,25 @@ export default function CacheManagement() {
 
 
       {/* Cache Actions */}
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-4 py-5 sm:p-6">
-          <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+      <div className="cache-management-actions">
+        <div className="cache-management-actions-content">
+          <h3 className="cache-management-actions-title">
             Cache Actions
           </h3>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="space-y-4">
+          <div className="cache-management-actions-grid">
+            <div className="cache-management-action-item">
               <div>
-                <h4 className="text-sm font-medium text-gray-900">Refresh Cache</h4>
-                <p className="text-sm text-gray-600">
+                <h4 className="cache-management-action-title">Refresh Cache</h4>
+                <p className="cache-management-action-description">
                   Force refresh the dashboard cache with fresh data. This will recalculate all statistics.
                 </p>
                 <button
                   onClick={refreshCache}
                   disabled={actionLoading}
-                  className="mt-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2"
+                  className="cache-management-action-btn cache-management-action-btn-blue"
                 >
                   {actionLoading ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <div className="cache-management-action-spinner"></div>
                   ) : (
                     <span></span>
                   )}
@@ -343,19 +358,19 @@ export default function CacheManagement() {
                 </button>
               </div>
             </div>
-            <div className="space-y-4">
+            <div className="cache-management-action-item">
               <div>
-                <h4 className="text-sm font-medium text-gray-900">Clear Cache</h4>
-                <p className="text-sm text-gray-600">
+                <h4 className="cache-management-action-title">Clear Cache</h4>
+                <p className="cache-management-action-description">
                   Remove all cached data. The next dashboard request will calculate fresh data.
                 </p>
                 <button
                   onClick={clearCache}
                   disabled={actionLoading}
-                  className="mt-2 bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2"
+                  className="cache-management-action-btn cache-management-action-btn-red"
                 >
                   {actionLoading ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <div className="cache-management-action-spinner"></div>
                   ) : (
                     <span></span>
                   )}
@@ -369,14 +384,14 @@ export default function CacheManagement() {
 
 
       {/* Cache Information */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <div className="flex">
-          <div className="flex-shrink-0">
+      <div className="cache-management-info">
+        <div className="cache-management-info-content">
+          <div className="cache-management-info-icon">
           </div>
-          <div className="ml-3">
-            <h3 className="text-sm font-medium text-blue-800">About Dashboard Caching</h3>
-            <div className="mt-2 text-sm text-blue-700">
-              <ul className="list-disc list-inside space-y-1">
+          <div className="cache-management-info-text">
+            <h3 className="cache-management-info-title">About Dashboard Caching</h3>
+            <div className="cache-management-info-list">
+              <ul>
                 <li>Dashboard statistics are cached to improve performance</li>
                 <li>Cache automatically expires after a set time period</li>
                 <li>Data-modifying operations (add/edit/delete products) automatically invalidate cache</li>
@@ -388,22 +403,20 @@ export default function CacheManagement() {
         </div>
       </div>
 
-
       {/* Loading State */}
       {loading && !cacheStatus && (
-        <div className="flex items-center justify-center h-32">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        <div className="cache-management-loading">
+          <div className="cache-management-loading-spinner"></div>
         </div>
       )}
 
-
       {/* No Cache State */}
       {!loading && !cacheStatus && !error && (
-        <div className="bg-white shadow rounded-lg">
-          <div className="px-4 py-5 sm:p-6 text-center">
-            <div className="text-gray-400 text-4xl mb-2"></div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No Cache Found</h3>
-            <p className="text-gray-500">No dashboard cache exists yet. Cache will be created on the first dashboard request.</p>
+        <div className="cache-management-no-cache">
+          <div className="cache-management-no-cache-content">
+            <div className="cache-management-no-cache-icon"></div>
+            <h3 className="cache-management-no-cache-title">No Cache Found</h3>
+            <p className="cache-management-no-cache-text">No dashboard cache exists yet. Cache will be created on the first dashboard request.</p>
           </div>
         </div>
       )}

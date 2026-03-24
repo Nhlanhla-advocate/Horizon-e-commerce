@@ -15,22 +15,21 @@ const Signin = () => {
     const router = useRouter();
 
     useEffect(() => {
+        // Clear form on mount
         const clearForm = () => {
-        setEmail('');
-        setPassword('');
-        setShowPassword(false);
-        setError(null);
-    };
+            setEmail('');
+            setPassword('');
+            setShowPassword(false);
+            setError(null);
+        };
 
+        clearForm();
+        window.addEventListener('load', clearForm);
 
-    clearForm();
-
-    window.addEventListener('load', clearForm);
-
-    return () => {
-        window.removeEventListener('load', clearForm);
-    };
-    },[]);
+        return () => {
+            window.removeEventListener('load', clearForm);
+        };
+    }, []);
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
@@ -47,33 +46,61 @@ const Signin = () => {
             return;
         }
     
-        const userData = { email, password };
+        const loginData = { email, password };
     
         try {
-            console.log("Attempting to fetch from:", "http://localhost:5000/auth/signin");
-            console.log("Sending data:", userData);
+            // User login
+            console.log("Attempting user login:", "http://localhost:5000/auth/signin");
             
             const response = await fetch("http://localhost:5000/auth/signin", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(userData),
+                body: JSON.stringify(loginData),
                 credentials: "include"
             });
-
-            console.log("response: ",response)
-        
-            const data = await response.json();
-            console.log("Response data:", data);
-        
-            if (response.ok) {
-                console.log("You have been signed in successfully.", data);
-                localStorage.setItem("token", data.accessToken); 
-                router.push("/");
-            } else {
-                setError(data.error || "An error occurred, please try again.");
+            
+            let data;
+            try {
+                data = await response.json();
+            } catch (jsonError) {
+                console.error("Failed to parse user login response:", jsonError);
+                setError("Invalid response from server. Please try again.");
+                setLoading(false);
+                return;
             }
+            
+            console.log("User login response status:", response.status);
+            console.log("User login response data:", data);
+            
+            if (response.ok && data?.success) {
+                console.log("User signed in successfully.", data);
+                const token = data.accessToken || data.token;
+                if (token) {
+                    localStorage.setItem("token", token);
+                }
+                // Persist the Mongo user _id for cart persistence
+                if (data.user && data.user._id) {
+                    localStorage.setItem("userId", data.user._id);
+                }
+                router.push("/");
+                return;
+            }
+            
+            // Check if this is an admin trying to use user signin
+            if (response.status === 403 && data.error && data.error.includes("admin")) {
+                setError("This email is registered as an admin. Redirecting to admin sign-in...");
+                // Redirect to admin signin after a short delay
+                setTimeout(() => {
+                    router.push("/admin/signin");
+                }, 2000);
+                setLoading(false);
+                return;
+            }
+            
+            // Login failed
+            setError(data.error || data.message || "Invalid credentials. Please try again.");
         } catch (error) {
-            console.error("Full error details:", error);
+            console.error("Login error:", error);
             setError(`Server error: ${error.message}`);
         } finally {
             setLoading(false);
@@ -97,6 +124,9 @@ const Signin = () => {
                 <div className={styles.formPane}>
                     <div className={styles.container}>
                         <h2 className={styles.title}>Sign In</h2>
+                        <p className={styles.subtitle} style={{ marginBottom: '1.5rem', color: '#666', fontSize: '0.9rem' }}>
+                            Welcome back! Please sign in to your account.
+                        </p>
                         {error && <div className={styles.errorMessage}>{error}</div>}
                         <form className={styles.form} onSubmit={handleSubmit}>
                             <div className={styles.formGroup}>
@@ -163,3 +193,5 @@ const Signin = () => {
 };
 
 export default Signin;
+
+

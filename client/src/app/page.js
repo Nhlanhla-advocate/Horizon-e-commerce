@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useCart } from './components/cart/Cart';
+import { useCart } from '@/app/components/cart/Cart';
 import { FaSearch, FaTimes } from 'react-icons/fa';
 import { useSearchParams } from 'next/navigation';
 

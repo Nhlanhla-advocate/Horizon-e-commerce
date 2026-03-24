@@ -296,9 +296,8 @@ class ProductController {
       const featuredProducts = await Product.find({
         featured: true,
         status: 'active',
-        stockQuantity: { $gt: 0 }
+        stock: { $gt: 0 }
       })
-        .populate('category', 'name')
         .limit(8);
 
       return res.json({
@@ -308,7 +307,7 @@ class ProductController {
     } catch (error) {
       return res.status(500).json({
         success: false,
-        error: `Error fetching related products: ${error}`
+        error: `Error fetching featured products: ${error.message}`
       });
     }
   }

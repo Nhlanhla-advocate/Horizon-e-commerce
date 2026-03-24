@@ -2,7 +2,9 @@ const express = require('express');
 const router = express.Router();
 const dashboardController = require('../controllers/dashboardController');
 const productController = require('../controllers/productController');
-const { authMiddleware, isAdmin } = require('../middleware/authMiddleware');
+const categoryRoutes = require('./category');
+const superAdminRoutes = require('./superAdmin');
+const { authMiddleware, isAdmin, requireSuperAdmin } = require('../middleware/authMiddleware');
 const {
   validate,
   validateAddProduct,
@@ -23,8 +25,21 @@ const {
 router.use(authMiddleware);
 router.use(isAdmin);
 
+// Category management (same as admin; allows product modal and category management to use /dashboard/categories)
+router.use('/categories', categoryRoutes);
+
+// Super admin only: manage admins, roles, users (suspend/ban), orders override, disputes, audit, activity, payments
+router.use('/super-admin', requireSuperAdmin, superAdminRoutes);
+
 // Dashboard overview and statistics
 router.get('/stats', (req, res) => dashboardController.getDashboardStats(req, res));
+router.get('/charts', (req, res) => dashboardController.getChartData(req, res));
+
+// Customer / user management (admin only) — specific routes first so /users/:userId/* are not matched by /users
+router.get('/users/:userId/cart', (req, res) => dashboardController.getUserCart(req, res));
+router.get('/users/:userId/reviews', (req, res) => dashboardController.getUserReviews(req, res));
+router.get('/users/:userId/orders', (req, res) => dashboardController.getUserOrders(req, res));
+router.get('/users', (req, res) => dashboardController.getAllUsers(req, res));
 
 // Cache management routes
 router.post('/cache/refresh', (req, res) => dashboardController.refreshDashboardCache(req, res));
@@ -43,6 +58,11 @@ router.get('/products/low-stock', validateLowStockQuery, validate, (req, res) =>
 // Product review management routes
 router.get('/products/:id/reviews', validateReviewQuery, validate, (req, res) => dashboardController.getProductReviews(req, res));
 router.delete('/reviews/:reviewId', validateReviewId, validate, (req, res) => dashboardController.deleteReview(req, res));
+
+// Order management routes
+router.get('/orders', validateQueryParams, validate, (req, res) => dashboardController.getAllOrders(req, res));
+router.get('/orders/:orderId', (req, res) => dashboardController.getOrder(req, res));
+router.patch('/orders/:orderId/status', (req, res) => dashboardController.updateOrderStatus(req, res));
 
 // Product performance and analytics routes
 router.get('/analytics/top-selling', validateTopSellingQuery, validate, (req, res) => dashboardController.getTopSellingProducts(req, res));

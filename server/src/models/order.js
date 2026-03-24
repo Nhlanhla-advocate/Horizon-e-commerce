@@ -16,6 +16,12 @@ const OrderSchema = new mongoose.Schema({
   items: [ItemSchema],
   totalPrice: { type: Number, required: true },
   status: { type: String, default: 'pending' },
+  overriddenBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  overrideReason: { type: String },
+  overriddenAt: { type: Date },
+  refundStatus: { type: String, enum: ['none', 'requested', 'approved', 'rejected', 'refunded'], default: 'none' },
+  refundedAt: { type: Date },
+  refundedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   isGuestOrder: { type: Boolean, default: false },
   guestDetails: {
     type: GuestDetailsSchema,

@@ -10,6 +10,23 @@ router.post('/remove', cartController.removeFromCart);
 // Update item quantity
 router.post('/update-quantity', cartController.updateItemQuantity);
 
+// Clear cart by user/guest id
+router.delete('/clear/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const cart = await require('../models/cart').findOne({ customerId: userId });
+        if (!cart) {
+            return res.status(404).json({ message: 'Cart not found' });
+        }
+        cart.items = [];
+        cart.totalPrice = 0;
+        await cart.save();
+        return res.status(200).json({ message: 'Cart cleared successfully' });
+    } catch (error) {
+        return res.status(500).json({ message: 'Error clearing cart', error: error.message });
+    }
+});
+
 // Keep customer cart even when a user logs out
 router.get('/:userId', cartController.getCart);
 

@@ -1,0 +1,267 @@
+/* SIDEBAR STYLES */
+
+/*MOBILE HEADER WITH HAMBURGER - VISIBLE ONLY ON SMALL/MEDIUM SCREENS*/
+.admin-mobile-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3.5rem;
+  padding: 0 1rem;
+  background-color: #2563eb;
+  z-index: 25;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+@media (min-width: 1024px) {
+  .admin-mobile-header {
+    display: none;
+  }
+}
+
+.admin-hamburger-btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 2.5rem;
+  height: 2rem;
+  padding: 0.375rem;
+  background: transparent;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  color: white;
+  transition: background-color 0.2s;
+}
+
+.admin-hamburger-btn-hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.admin-hamburger-btn-focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5)
+}
+
+.admin-hamburger-line {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background-color: currentColor;
+  border-radius: 1px;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.admin-mobile-header-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: white;
+}
+
+/*ADD TOP PADDING TO MAIN CONTENT ON SMALL SCREENS SO IT SITS BELOW THE MOBILE HEADER*/
+@media (max-width: 1023px) {
+  .admin-main-content {
+    padding-top: 3.5rem;
+  }
+}
+
+/* MAIN SIDEBAR CONTAINER - hidden off-screen on small/medium, visible on lg+ */
+.admin-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 16rem; /* w-64 */
+  background-color: #2563eb; /* blue-600 */
+  z-index: 30;
+  transition: transform 0.3s ease-in-out;
+  transform: translateX(-100%);
+  height: 100vh;
+  overflow-y: auto;
+}
+
+@media (min-width: 1024px) {
+  .admin-sidebar {
+    transform: translateX(0);
+  }
+}
+
+.admin-sidebar.open {
+  transform: translateX(0);
+}
+
+/* SIDEBAR INNER CONTAINER */
+.admin-sidebar-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* NAVIGATION AREA */
+.admin-sidebar-nav {
+  flex: 1;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+/* SIDEBAR TAB BUTTON */
+.admin-sidebar-tab {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0.625rem 1rem; /* py-2.5 px-4 */
+  text-align: left;
+  transition: all 0.2s ease-in-out;
+  background-color: transparent;
+  color: white;
+  border: none;
+  cursor: pointer;
+  outline: none;
+}
+
+.admin-sidebar-tab:hover {
+  background-color: rgba(29, 78, 216, 0.3); /* blue-700 with opacity */
+}
+
+.admin-sidebar-tab.active {
+  background-color: rgba(29, 78, 216, 0.4); /* blue-700 with opacity */
+}
+
+/* TAB CONTENT */
+.admin-sidebar-tab-content {
+  flex: 1;
+}
+
+.admin-sidebar-tab-label {
+  font-size: 0.625rem; /* text-[10px] */
+  font-weight: 400;
+  color: white;
+}
+
+.admin-sidebar-tab-description {
+  font-size: 0.5625rem; /* text-[9px] */
+  margin-top: 0.125rem;
+  opacity: 0.8;
+  color: white;
+}
+
+/* SIDEBAR FOOTER */
+.admin-sidebar-footer {
+  padding: 1rem;
+  border-top: 1px solid rgba(59, 130, 246, 0.5); /* border-blue-500 */
+}
+
+.admin-sidebar-footer-content {
+  font-size: 0.75rem; /* text-xs */
+  color: white;
+  text-align: center;
+}
+
+.admin-sidebar-user {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.admin-sidebar-user-role {
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.9;
+}
+
+.admin-sidebar-user-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: white;
+}
+
+.admin-sidebar-user-email {
+  font-size: 0.6875rem;
+  color: rgba(255, 255, 255, 0.85);
+  word-break: break-all;
+  max-width: 100%;
+}
+
+.admin-sidebar-footer-theme {
+  margin-top: 0.75rem;
+}
+
+.admin-sidebar-footer-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.admin-sidebar-status-indicator {
+  width: 0.5rem; /* w-2 */
+  height: 0.5rem; /* h-2 */
+  background-color: #4ade80; /* green-400 */
+  border-radius: 9999px; /* rounded-full */
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* MOBILE OVERLAY */
+.admin-sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 20;
+}
+
+@media (min-width: 1024px) {
+  .admin-sidebar-overlay {
+    display: none;
+  }
+
+  /* Main content margin for fixed sidebar on desktop; no extra top padding (no mobile header) */
+  .admin-main-content {
+    margin-left: 16rem; /* w-64 - sidebar width */
+    padding-top: 0;
+  }
+}
+
+/* DARK MODE STYLES FOR SIDEBAR AND MOBILE HEADER */
+:root.dark-mode .admin-sidebar {
+  background-color: #1e3a8a !important; /* blue-800 - darker blue for dark mode */
+}
+
+:root.dark-mode .admin-mobile-header {
+  background-color: #1e3a8a;
+}
+
+:root.dark-mode .admin-sidebar-tab:hover {
+  background-color: rgba(30, 58, 138, 0.5) !important; /* blue-800 with opacity */
+}
+
+:root.dark-mode .admin-sidebar-tab.active {
+  background-color: rgba(30, 58, 138, 0.7) !important; /* blue-800 with more opacity */
+}
+
+:root.dark-mode .admin-sidebar-footer {
+  border-top-color: rgba(59, 130, 246, 0.3) !important; /* border-blue-500 with less opacity */
+}
+

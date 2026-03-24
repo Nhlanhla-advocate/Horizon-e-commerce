@@ -7,12 +7,13 @@ import Footer from "./footer/Footer";
 export default function AuthLayoutWrapper({ children }) {
   const pathname = usePathname();
   const isAuthPage = pathname?.startsWith('/auth');
+  const isAdminPage = pathname?.startsWith('/admin');
 
   return (
     <>
-      {!isAuthPage && <Navbar />}
+      {!isAuthPage && !isAdminPage && <Navbar />}
       {children}
-      {!isAuthPage && <Footer />}
+      {!isAuthPage && !isAdminPage && <Footer />}
     </>
   );
 }

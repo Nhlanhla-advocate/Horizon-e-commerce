@@ -1,4 +1,4 @@
-/* Cart Badge Styles - Add this to your existing navbar.css */
+/* CART BADGE STYLES */
 
 .cart-icon-container {
     position: relative;
@@ -25,7 +25,7 @@
     z-index: 10;
   }
   
-  /* Animation for cart badge */
+  /* ANIMATION FOR CART BADGE */
   @keyframes bounce-in {
     0% {
       transform: scale(0);
@@ -40,14 +40,14 @@
     }
   }
   
-  /* Hover effect for cart link */
+  /* HOVER EFFECT FOR CART LINK */
   .cart-link:hover .cart-badge {
     background-color: #dc2626;
     transform: scale(1.1);
     transition: all 0.2s ease;
   }
   
-  /* Pulse animation when items are added */
+  /* PULSE ANIMATION WHEN ITEMS ARE ADDED */
   .cart-badge.pulse {
     animation: pulse 0.6s ease-out;
   }
@@ -65,7 +65,7 @@
     }
   }
   
-  /* Responsive adjustments */
+  /* RESPONSIVE ADJUSTMENTS */
   @media (max-width: 768px) {
     .cart-badge {
       min-width: 16px;
@@ -86,7 +86,7 @@
     }
   }
 
-/* ===== CART PAGE STYLES ===== */
+/* CART PAGE STYLES */
 
 .cart-container {
     max-width: 1200px;
@@ -316,9 +316,9 @@
 
 
 
-/* ===== RESPONSIVE STYLES ===== */
+/* RESPONSIVE STYLES */
 
-/* Tablet (768px and below) */
+/* TABLET (768px AND BELOW) */
 @media (max-width: 768px) {
     .cart-container {
         padding: 1.5rem 1rem;
@@ -381,7 +381,7 @@
     }
 }
 
-/* Mobile Large (640px and below) */
+/* MOBILE LARGE (640px AND BELOW) */
 @media (max-width: 640px) {
     .cart-container {
         padding: 1rem 0.75rem;
@@ -463,7 +463,7 @@
     }
 }
 
-/* Mobile Medium (480px and below) */
+/* MOBILE MEDIUM (480px AND BELOW) */
 @media (max-width: 480px) {
     .cart-container {
         padding: 0.75rem 0.5rem;
@@ -543,7 +543,7 @@
     }
 }
 
-/* Mobile Small (360px and below) */
+    /* MOBILE SMALL (360px AND BELOW) */
 @media (max-width: 360px) {
     .cart-container {
         padding: 0.5rem 0.25rem;

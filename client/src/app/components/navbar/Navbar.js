@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { FaShoppingCart, FaUser, FaSearch, FaSpinner, FaTimes } from 'react-icons/fa';
-import { useCart } from '../cart/Cart';
+import { useCart } from '@/app/components/cart/Cart';
 import "../../assets/css/navbar.css";
 
 const Navbar = () => {

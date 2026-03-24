@@ -1,0 +1,167 @@
+/*SUPER ADMIN MANAGEMENT*/
+.manage-super-admin {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 1.5rem;
+}
+
+.manage-super-admin .manage-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.manage-super-admin .manage-subtitle {
+    margin: 0.25rem 0 0;
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.manage-super-admin .manage-title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.manage-super-admin .manage-section {
+    margin-bottom: 2rem;
+    padding: 1.25rem;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 08);
+}
+
+.manage-super-admin .manage-section-title {
+    margin: 0 0 1rem;
+    font-size: 1. 125rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.manage-super-admin .manage-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.manage-super-admin .manage-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.manage-super-admin .manage-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+.manage-super-admin .manage-required {
+    color: #dc2626;
+}
+
+.manage-super-admin .manage-input {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.87rem;
+}
+
+.manage-super-admin .manage-select {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    max-width: 200px;
+}
+
+.manage-super-admin .manage-permission-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.5rem;
+}
+
+.manage-super-admin .manage-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    cursor: pointer;
+}
+
+.manage-super-admin .manage-checkbox-text {
+    color: #4b5563;
+  }
+  
+  .manage-super-admin .manage-button {
+    align-self: flex-start;
+    padding: 0.5rem 1rem;
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .manage-super-admin .manage-button:disabled,
+.manage-super-admin .manage-button.manage-button--disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.manage-super-admin .manage-message-error {
+  padding: 0.5rem 0.75rem;
+  background: #fef2f2;
+  color: #dc2626;
+  border-radius: 6px;
+  font-size: 0.875rem;
+}
+
+.manage-super-admin .manage-message-success {
+    padding: 0.5rem 0.75rem;
+    background: #f0fdf4;
+    color: #16a34a;
+    border-radius: 6px;
+    font-size: 0.875rem;
+  }
+  
+  .manage-super-admin .manage-muted {
+    color: #6b7280;
+    font-size: 0.875rem;
+  }
+  
+  .manage-super-admin .manage-table-wrap {
+    overflow-x: auto;
+  }
+
+  .manage-super-admin .manage-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+  
+  .manage-super-admin .manage-th {
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 2px solid #e5e7eb;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .manage-super-admin .manage-td {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid #f3f4f6;
+    color: #4b5563;
+  }
+
+  .manage-super-admin .manage-badge {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    background: #e0e7ff;
+    color: #3730a3;
+    border-radius: 4px;
+    font-size: 0.75rem;
+  }

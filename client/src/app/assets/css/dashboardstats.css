@@ -1,0 +1,381 @@
+/* DASHBOARD STATS */
+
+/* LOADING STATE */
+.dashboard-loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 16rem;
+}
+
+.dashboard-loading-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem; /* space-x-4 */
+}
+
+.dashboard-loading-text {
+  color: #4b5563; /* text-gray-600 */
+}
+
+/* ERROR STATE */
+.dashboard-error-text {
+  font-size: 0.875rem; /* text-sm */
+}
+
+.dashboard-error-retry {
+  margin-top: 1rem; /* mt-4 */
+}
+
+/* MAIN CONTAINER */
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem; /* space-y-2 */
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* HEADER SECTION */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 0.25rem; /* mb-1 */
+}
+
+.dashboard-title {
+  font-size: 1.125rem; /* text-lg */
+  font-weight: 700; /* font-bold */
+  color: #111827; /* text-gray-900 */
+}
+
+.dashboard-last-updated {
+  font-size: 0.625rem; /* text-[10px] */
+  color: #6b7280; /* text-gray-500 */
+  margin-top: 0; /* mt-0 */
+}
+
+.dashboard-refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem; /* space-x-1 */
+  font-size: 0.625rem; /* text-[10px] */
+  padding: 0.25rem 0.5rem; /* px-2 py-1 */
+}
+
+.dashboard-refresh-icon {
+  font-size: 0.75rem; /* text-xs */
+}
+
+.dashboard-refresh-text {
+  font-size: 0.625rem; /* text-[10px] */
+}
+
+/* STATS CARDS */
+.dashboard-stats-grid {
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 0.25rem; /* mb-1 */
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+/* HOVER EFFECT FOR STAT CARDS - POP UP ON HOVER */
+.dashboard-stats-grid .stat-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.dashboard-stats-grid .stat-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15), 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-stat-card-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dashboard-stat-card-content-left {
+  flex: 1;
+}
+
+.dashboard-stat-percentage-small {
+  font-size: 0.5625rem; /* text-[9px] */
+  margin-top: 0.125rem; /* mt-0.5 */
+}
+
+.dashboard-stat-percentage-small-green {
+  font-size: 0.5625rem; /* text-[9px] */
+  color: #059669; /* text-green-600 */
+  margin-top: 0.125rem; /* mt-0.5 */
+}
+
+.dashboard-stat-percentage-small-blue {
+  font-size: 0.5625rem; /* text-[9px] */
+  color: #2563eb; /* text-blue-600 */
+  margin-top: 0.125rem; /* mt-0.5 */
+}
+
+.dashboard-stat-percentage-small-yellow {
+  font-size: 0.5625rem; /* text-[9px] */
+  color: #ca8a04; /* text-yellow-600 */
+  margin-top: 0.125rem; /* mt-0.5 */
+}
+
+.dashboard-stat-percentage-small-red {
+  font-size: 0.5625rem; /* text-[9px] */
+  color: #dc2626; /* text-red-600 */
+  margin-top: 0.125rem; /* mt-0.5 */
+}
+
+.dashboard-stat-percentage-medium {
+  font-size: 0.75rem; /* text-xs */
+  color: #059669; /* text-green-600 */
+  margin-top: 0.25rem; /* mt-1 */
+}
+
+.dashboard-stat-icon {
+  font-size: 1.125rem; /* text-lg */
+}
+
+/* CHARTS SECTION */
+.dashboard-charts-section {
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 0.5rem; /* mb-2 */
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+/* HOVER EFFECT FOR CHART CONTAINERS - POP UP ON HOVER */
+.dashboard-charts-section > div {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dashboard-charts-section > div:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12), 0 3px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* RECENT ORDERS / TOP RATED PRODUCTS GRID */
+.dashboard-grid-section {
+  display: grid;
+  grid-template-columns: 1fr; /* grid-cols-1 */
+  gap: 0.5rem; /* gap-2 */
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+@media (min-width: 768px) {
+  .dashboard-grid-section {
+    grid-template-columns: repeat(2, 1fr); /* md:grid-cols-2 */
+  }
+}
+
+/* CARD HEADERS */
+.dashboard-card-header {
+  font-size: 0.75rem; /* text-xs */
+  font-weight: 600; /* font-semibold */
+  color: white; /* text-white */
+}
+
+.dashboard-card-content {
+  padding: 0.375rem; /* p-1.5 */
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 160px;
+  /* CUSTOM SCROLLBAR STYLING TO MAKE IT LESS INTRODUCTORY */
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+  /* ENSURE SCROLLBAR IS CONTAINED WITHIN THE CARD */
+  position: relative;
+}
+
+.dashboard-card-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dashboard-card-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dashboard-card-content::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 3px;
+}
+
+.dashboard-card-content::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
+}
+
+/* ENSURE CARDS DON'T CREATE PAGE-LEVEL SCROLLBARS */
+.dashboard-grid-section .admin-card {
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+/* HOVER EFFECT FOR ADMIN CARDS IN GRID - POP UP ON HOVER */
+.dashboard-grid-section .admin-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15), 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem; /* space-y-1 */
+}
+
+/* ORDER/PRODUCT ITEM */
+.dashboard-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.375rem; /* p-1.5 */
+  background-color: #f9fafb; /* bg-gray-50 */
+  border-radius: 0.375rem; /* rounded-md */
+  transition: background-color 0.2s, transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.dashboard-item:hover {
+  background-color: #f3f4f6; /* hover:bg-gray-100 */
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.dashboard-item-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* space-x-2 */
+  flex: 1;
+  min-width: 0;
+}
+
+.dashboard-item-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.dashboard-item-title {
+  font-size: 0.625rem; /* text-[10px] */
+  font-weight: 600; /* font-semibold */
+  color: #111827; /* text-gray-900 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap; /* truncate */
+}
+
+.dashboard-item-subtitle {
+  font-size: 0.5625rem; /* text-[9px] */
+  color: #6b7280; /* text-gray-500 */
+}
+
+.dashboard-item-right {
+  text-align: right;
+  flex-shrink: 0;
+  margin-left: 0.5rem; /* ml-2 */
+}
+
+.dashboard-item-price {
+  font-size: 0.625rem; /* text-[10px] */
+  font-weight: 700; /* font-bold */
+  color: #111827; /* text-gray-900 */
+}
+
+.dashboard-item-badge {
+  font-size: 0.5625rem; /* text-[9px] */
+  padding: 0.125rem 0.25rem; /* px-1 py-0.5 */
+}
+
+.dashboard-item-rating-container {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem; /* space-x-1 */
+}
+
+.dashboard-item-rating-stars {
+  display: flex;
+}
+
+.dashboard-item-rating-value {
+  font-size: 0.5625rem; /* text-[9px] */
+  color: #6b7280; /* text-gray-500 */
+}
+
+/* EMPTY STATE */
+.dashboard-empty-state {
+  text-align: center;
+  padding: 0.5rem 0; /* py-2 */
+}
+
+.dashboard-empty-text {
+  color: #6b7280; /* text-gray-500 */
+  font-size: 0.625rem; /* text-[10px] */
+}
+
+/* DARK MODE STYLES FOR DASHBOARD STATS */
+:root.dark-mode .dashboard-container {
+  background-color: transparent !important;
+}
+
+:root.dark-mode .dashboard-title {
+  color: #f9fafb !important; /* gray-50 */
+}
+
+:root.dark-mode .dashboard-last-updated {
+  color: #9ca3af !important; /* gray-400 */
+}
+
+:root.dark-mode .dashboard-stat-card-content {
+  color: #f9fafb !important; /* gray-50 */
+}
+
+:root.dark-mode .dashboard-stat-percentage-small-green,
+:root.dark-mode .dashboard-stat-percentage-small-blue,
+:root.dark-mode .dashboard-stat-percentage-small-yellow,
+:root.dark-mode .dashboard-stat-percentage-small-red {
+  color: #9ca3af !important; /* gray-400 */
+}
+
+:root.dark-mode .dashboard-card-header {
+  color: #f9fafb !important; /* gray-50 */
+}
+
+:root.dark-mode .dashboard-item {
+  background-color: #374151 !important; /* gray-700 */
+}
+
+:root.dark-mode .dashboard-item:hover {
+  background-color: #4b5563 !important; /* gray-600 */
+}
+
+:root.dark-mode .dashboard-item-title {
+  color: #f9fafb !important; /* gray-50 */
+}
+
+:root.dark-mode .dashboard-item-subtitle {
+  color: #9ca3af !important; /* gray-400 */
+}
+
+:root.dark-mode .dashboard-item-price {
+  color: #f9fafb !important; /* gray-50 */
+}
+
+:root.dark-mode .dashboard-empty-text {
+  color: #9ca3af !important; /* gray-400 */
+}
+

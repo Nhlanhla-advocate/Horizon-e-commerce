@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { formatCurrency, formatDate, useAnalyticsFetch } from '../../../utils/reusable';
+import '../../../assets/css/Analytics.css';
 
 // Top Selling Products Component
 function TopSellingProducts() {
@@ -21,21 +22,21 @@ function TopSellingProducts() {
     );
   
     return (
-      <div className="space-y-4">
+      <div className="topselling-container">
         {/* Filters */}
-        <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
+        <div className="topselling-filters">
+          <div className="topselling-filters-header">
+            <div className="topselling-filters-icon">
             </div>
-            <h3 className="text-lg font-semibold text-gray-900">Analytics Filters</h3>
+            <h3 className="topselling-filters-title">Analytics Filters</h3>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="topselling-filters-grid">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Period</label>
+              <label className="topselling-filter-label">Period</label>
               <select
                 value={filters.days}
                 onChange={(e) => setFilters({...filters, days: e.target.value})}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                className="topselling-filter-select"
               >
                 <option value="7">Last 7 days</option>
                 <option value="30">Last 30 days</option>
@@ -44,11 +45,11 @@ function TopSellingProducts() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+              <label className="topselling-filter-label">Category</label>
               <select
                 value={filters.category}
                 onChange={(e) => setFilters({...filters, category: e.target.value})}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                className="topselling-filter-select"
               >
                 <option value="">All Categories</option>
                 <option value="jewelry">Jewelry</option>
@@ -58,31 +59,31 @@ function TopSellingProducts() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Min Revenue</label>
+              <label className="topselling-filter-label">Min Revenue</label>
               <input
                 type="number"
                 value={filters.minRevenue}
                 onChange={(e) => setFilters({...filters, minRevenue: e.target.value})}
                 placeholder="Min revenue"
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                className="topselling-filter-input"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Min Quantity</label>
+              <label className="topselling-filter-label">Min Quantity</label>
               <input
                 type="number"
                 value={filters.minQuantity}
                 onChange={(e) => setFilters({...filters, minQuantity: e.target.value})}
                 placeholder="Min quantity"
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                className="topselling-filter-input"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Results</label>
+              <label className="topselling-filter-label">Results</label>
               <select
                 value={filters.limit}
                 onChange={(e) => setFilters({...filters, limit: e.target.value})}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                className="topselling-filter-select"
               >
                 <option value="5">Top 5</option>
                 <option value="10">Top 10</option>
@@ -94,70 +95,70 @@ function TopSellingProducts() {
         </div>
   
         {/* Results */}
-        <div className="bg-white shadow-xl rounded-2xl border border-gray-100 overflow-hidden">
-          <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+        <div className="topselling-results">
+          <div className="topselling-results-header">
+            <div className="topselling-results-header-content">
+              <div className="topselling-results-icon">
               </div>
-              <h3 className="text-lg font-semibold text-white">Top Selling Products</h3>
+              <h3 className="topselling-results-title">Top Selling Products</h3>
             </div>
           </div>
           
-          <div className="p-6">
+          <div className="topselling-results-content">
             {loading ? (
-              <div className="flex items-center justify-center h-32">
-                <div className="flex items-center space-x-3">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
-                  <span className="text-gray-600">Loading analytics...</span>
+              <div className="topselling-loading">
+                <div className="topselling-loading-content">
+                  <div className="topselling-loading-spinner"></div>
+                  <span className="topselling-loading-text">Loading analytics...</span>
                 </div>
               </div>
             ) : error ? (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p className="text-red-800 text-sm">{error}</p>
+              <div className="topselling-error">
+                <p className="topselling-error-message">{error}</p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="topselling-product-list">
                 {products.map((product, index) => (
-                  <div key={product._id} className="group flex items-center justify-between p-6 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl hover:from-green-50 hover:to-emerald-50 transition-all duration-300 border border-gray-200 hover:border-green-200">
-                    <div className="flex items-center space-x-6">
-                      <div className="flex-shrink-0">
-                        <div className={`w-12 h-12 text-white rounded-xl flex items-center justify-center text-lg font-bold shadow-lg ${
-                          index === 0 ? 'bg-gradient-to-r from-yellow-400 to-yellow-500' :
-                          index === 1 ? 'bg-gradient-to-r from-gray-400 to-gray-500' :
-                          index === 2 ? 'bg-gradient-to-r from-orange-400 to-orange-500' :
-                          'bg-gradient-to-r from-blue-500 to-blue-600'
+                  <div key={product._id} className="topselling-product-item">
+                    <div className="topselling-product-left">
+                      <div className="topselling-product-rank">
+                        <div className={`topselling-rank-badge ${
+                          index === 0 ? 'topselling-rank-badge-gold' :
+                          index === 1 ? 'topselling-rank-badge-silver' :
+                          index === 2 ? 'topselling-rank-badge-bronze' :
+                          'topselling-rank-badge-default'
                         }`}>
                           {index + 1}
                         </div>
                       </div>
-                      <div>
-                        <h4 className="text-lg font-semibold text-gray-900 group-hover:text-green-800 transition-colors duration-200">{product.name}</h4>
-                        <p className="text-sm text-gray-600 capitalize">{product.category}</p>
+                      <div className="topselling-product-info">
+                        <h4>{product.name}</h4>
+                        <p>{product.category}</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="grid grid-cols-3 gap-6 text-center">
+                    <div className="topselling-product-right">
+                      <div className="topselling-product-stats">
                         <div>
-                          <div className="text-2xl font-bold text-gray-900">
+                          <div className="topselling-stat-value topselling-stat-value-default">
                             {product.totalSold}
                           </div>
-                          <div className="text-xs text-gray-500 font-medium">
+                          <div className="topselling-stat-label">
                             Units Sold
                           </div>
                         </div>
                         <div>
-                          <div className="text-2xl font-bold text-green-600">
+                          <div className="topselling-stat-value topselling-stat-value-green">
                             {formatCurrency(product.totalRevenue)}
                           </div>
-                          <div className="text-xs text-gray-500 font-medium">
+                          <div className="topselling-stat-label">
                             Revenue
                           </div>
                         </div>
                         <div>
-                          <div className="text-2xl font-bold text-blue-600">
+                          <div className="topselling-stat-value topselling-stat-value-blue">
                             {product.orderCount}
                           </div>
-                          <div className="text-xs text-gray-500 font-medium">
+                          <div className="topselling-stat-label">
                             Orders
                           </div>
                         </div>
@@ -166,9 +167,9 @@ function TopSellingProducts() {
                   </div>
                 ))}
                 {products.length === 0 && (
-                  <div className="text-center py-12">
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No Data Available</h3>
-                    <p className="text-gray-500">No products found for the selected criteria</p>
+                  <div className="topselling-empty">
+                    <h3 className="topselling-empty-title">No Data Available</h3>
+                    <p className="topselling-empty-text">No products found for the selected criteria</p>
                   </div>
                 )}
               </div>

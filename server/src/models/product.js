@@ -7,8 +7,8 @@ const productSchema = new mongoose.Schema({
     },
     category: { 
         type: String, 
-        required: true,
-        enum: ['jewelry', 'electronics', 'consoles', 'computers']
+        required: true
+        /* Must match a category name from the Category collection (validated in controller) */
     },
     description: { 
         type: String, 
@@ -62,9 +62,18 @@ const productSchema = new mongoose.Schema({
         type: String, 
         enum: ['active', 'inactive', 'deleted'],
         default: 'active'
+    },
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    updatedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     }
 }, {
-    timestamps: true
+    timestamps: true,
+    strictPopulate: false
 });
 
 // Add index for better search performance

@@ -1,11 +1,24 @@
 const Product = require('../models/product');
+const Category = require('../models/category');
 const Review = require('../models/review');
 const User = require('../models/user');
 const Order = require('../models/order');
+const Cart = require('../models/cart');
 const Dashboard = require('../models/dashboard');
 const mongoose = require('mongoose');
 
 class DashboardController {
+  canViewPrivilegedUsers(req) {
+    return req.user?.role === 'super_admin';
+  }
+
+  async canAccessTargetUser(req, targetUserId) {
+    if (this.canViewPrivilegedUsers(req)) return true;
+    const target = await User.findById(targetUserId).select('role').lean();
+    if (!target) return false;
+    return target.role === 'user';
+  }
+
   // Get dashboard statistics and overview (with caching)
   async getDashboardStats(req, res) {
     try {
@@ -16,15 +29,17 @@ class DashboardController {
       if (!forceRefresh) {
         const cachedStats = await Dashboard.getDashboardStats();
         if (cachedStats) {
+          // Convert Mongoose document to plain object if needed
+          const cachedData = cachedStats.toObject ? cachedStats.toObject() : cachedStats;
           return res.json({
             success: true,
             data: {
-              overview: cachedStats.overview,
-              recentOrders: cachedStats.recentOrders,
-              topRatedProducts: cachedStats.topRatedProducts
+              overview: cachedData.overview || {},
+              recentOrders: cachedData.recentOrders || [],
+              topRatedProducts: cachedData.topRatedProducts || []
             },
             cached: true,
-            lastUpdated: cachedStats.lastUpdated
+            lastUpdated: cachedData.lastUpdated
           });
         }
       }
@@ -37,7 +52,7 @@ class DashboardController {
         totalOrders,
         totalRevenue,
         lowStockProducts,
-        recentOrders,
+        recentOrdersRaw,
         topRatedProducts
       ] = await Promise.all([
         Product.countDocuments(),
@@ -49,14 +64,32 @@ class DashboardController {
           { $group: { _id: null, total: { $sum: '$totalPrice' } } }
         ]),
         Product.countDocuments({ stock: { $lt: 10 } }),
-        Order.find().sort({ createdAt: -1 }).limit(5).populate('customerId', 'username email'),
+        Order.find()
+          .sort({ createdAt: -1 })
+          .limit(5)
+          .populate('customerId', 'username email')
+          .lean(),
         Product.find({ status: 'active' })
           .sort({ rating: -1 })
           .limit(5)
           .select('name rating numReviews price')
+          .lean()
       ]);
 
       const revenue = totalRevenue.length > 0 ? totalRevenue[0].total : 0;
+
+      // Format recent orders to handle guest orders
+      const recentOrders = recentOrdersRaw.map(order => ({
+        _id: order._id,
+        customerId: order.customerId || (order.isGuestOrder ? {
+          username: order.guestDetails?.name || 'Guest',
+          email: order.guestDetails?.email || 'N/A'
+        } : null),
+        totalPrice: order.totalPrice,
+        status: order.status,
+        createdAt: order.createdAt,
+        items: order.items || []
+      }));
 
       const statsData = {
         overview: {
@@ -81,9 +114,11 @@ class DashboardController {
         lastUpdated: new Date()
       });
     } catch (error) {
+      console.error('Error in getDashboardStats:', error);
       return res.status(500).json({
         success: false,
-        error: `Error fetching dashboard stats: ${error.message}`
+        error: `Error fetching dashboard stats: ${error.message}`,
+        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
       });
     }
   }
@@ -105,8 +140,16 @@ class DashboardController {
 
       const query = {};
 
+      // By default, exclude deleted products unless status='deleted' is explicitly requested
+      if (status === 'deleted') {
+        query.status = 'deleted';
+      } else if (!status) {
+        query.status = { $ne: 'deleted' };
+      } else {
+        query.status = status;
+      }
+
       if (category) query.category = category;
-      if (status) query.status = status;
       if (minPrice || maxPrice) {
         query.price = {};
         if (minPrice) query.price.$gte = parseFloat(minPrice);
@@ -151,7 +194,7 @@ class DashboardController {
     try {
       const {
         name, 
-        category,
+        category: categoryInput,
         description,
         price,
         stock,
@@ -162,12 +205,25 @@ class DashboardController {
       } = req.body;
 
       // Validate required fields
-      if(!name || !category || !description || !price || stock === undefined) {
+      if(!name || !categoryInput || !description || !price || stock === undefined) {
         return res.status(400).json({
           success: false,
           error: 'Missing required fields: name, category, description, price, and stock are required'
         });
       }
+
+      // Validate category exists in Category collection (match by name or slug); store name
+      const categories = await Category.find({}).select('name slug').lean();
+      const categoryMatch = categories.find(
+        (c) => c.name === categoryInput.trim() || c.slug === categoryInput.trim().toLowerCase()
+      );
+      if (!categoryMatch) {
+        return res.status(400).json({
+          success: false,
+          error: `Invalid category. Choose a category from Category Management, or add it there first.`
+        });
+      }
+      const category = categoryMatch.name;
 
       const product = new Product({
         name,
@@ -226,15 +282,20 @@ class DashboardController {
         });
       }
 
-      // Validate category if provided
+      // Validate category if provided (must exist in Category collection; store name)
+      let categoryToSave = category;
       if (category) {
-        const validCategories = ['jewelry', 'electronics', 'consoles', 'computers'];
-        if (!validCategories.includes(category)) {
+        const categories = await Category.find({}).select('name slug').lean();
+        const categoryMatch = categories.find(
+          (c) => c.name === category.trim() || c.slug === category.trim().toLowerCase()
+        );
+        if (!categoryMatch) {
           return res.status(400).json({
             success: false,
-            error: `Invalid category. Must be one of: ${validCategories.join(', ')}`
+            error: 'Invalid category. Choose a category from Category Management, or add it there first.'
           });
         }
+        categoryToSave = categoryMatch.name;
       }
 
       // Update the product
@@ -242,7 +303,7 @@ class DashboardController {
         id,
         {
           ...(name && { name }),
-          ...(category && { category }),
+          ...(categoryToSave !== undefined && { category: categoryToSave }),
           ...(description && { description }),
           ...(price && { price }),
           ...(stock !== undefined && { stock }),
@@ -876,6 +937,197 @@ class DashboardController {
     }
   }
 
+  // ORDER MANAGEMENT METHODS
+
+  // Get all orders with filtering, sorting, and pagination
+  async getAllOrders(req, res) {
+    try {
+      const {
+        page = 1,
+        limit = 20,
+        sort = 'createdAt',
+        order = 'desc',
+        status,
+        search,
+        startDate,
+        endDate,
+        minAmount,
+        maxAmount
+      } = req.query;
+
+      const query = {};
+
+      // Status filter
+      if (status) {
+        query.status = status;
+      }
+
+      // Date range filter
+      if (startDate || endDate) {
+        query.createdAt = {};
+        if (startDate) {
+          query.createdAt.$gte = new Date(startDate);
+        }
+        if (endDate) {
+          const end = new Date(endDate);
+          end.setHours(23, 59, 59, 999); // Include the entire end date
+          query.createdAt.$lte = end;
+        }
+      }
+
+      // Amount range filter
+      if (minAmount || maxAmount) {
+        query.totalPrice = {};
+        if (minAmount) query.totalPrice.$gte = parseFloat(minAmount);
+        if (maxAmount) query.totalPrice.$lte = parseFloat(maxAmount);
+      }
+
+      // Search filter - search in customer name/email or order items
+      // Note: MongoDB text search on populated fields requires aggregation
+      // For now, we'll search in items.name and handle customer search separately
+      if (search) {
+        query.$or = [
+          { 'items.name': { $regex: search, $options: 'i' } },
+          { 'guestDetails.name': { $regex: search, $options: 'i' } },
+          { 'guestDetails.email': { $regex: search, $options: 'i' } }
+        ];
+      }
+
+      const orders = await Order.find(query)
+        .populate('customerId', 'username email')
+        .sort({ [sort]: order === 'desc' ? -1 : 1 })
+        .skip((page - 1) * limit)
+        .limit(parseInt(limit))
+        .lean();
+
+      const total = await Order.countDocuments(query);
+
+      // Format orders to include customer info even for guest orders
+      const formattedOrders = orders.map(order => {
+        return {
+          ...order,
+          customer: order.customerId && order.customerId.username
+            ? { 
+                username: order.customerId.username,
+                email: order.customerId.email || 'N/A'
+              }
+            : order.isGuestOrder && order.guestDetails
+            ? {
+                username: order.guestDetails.name || 'Guest',
+                email: order.guestDetails.email || 'N/A'
+              }
+            : {
+                username: 'Unknown',
+                email: 'N/A'
+              }
+        };
+      });
+
+      return res.json({
+        success: true,
+        data: formattedOrders,
+        pagination: {
+          total,
+          pages: Math.ceil(total / limit),
+          page: parseInt(page),
+          limit: parseInt(limit)
+        }
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        error: `Error fetching orders: ${error.message}`
+      });
+    }
+  }
+
+  // Update order status
+  async updateOrderStatus(req, res) {
+    try {
+      const { orderId } = req.params;
+      const { status } = req.body;
+
+      // Validate orderId format
+      if (!mongoose.Types.ObjectId.isValid(orderId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid order ID format'
+        });
+      }
+
+      // Validate status
+      const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+      if (!status || !validStatuses.includes(status)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid status',
+          validStatuses
+        });
+      }
+
+      const order = await Order.findById(orderId);
+      
+      if (!order) {
+        return res.status(404).json({
+          success: false,
+          message: 'Order not found'
+        });
+      }
+
+      order.status = status;
+      const updatedOrder = await order.save();
+
+      // Invalidate cache when order status changes
+      await this.invalidateCache();
+
+      return res.json({
+        success: true,
+        message: 'Order status updated successfully',
+        data: updatedOrder
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        error: `Error updating order status: ${error.message}`
+      });
+    }
+  }
+
+  // Get single order details
+  async getOrder(req, res) {
+    try {
+      const { orderId } = req.params;
+
+      if (!mongoose.Types.ObjectId.isValid(orderId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid order ID format'
+        });
+      }
+
+      const order = await Order.findById(orderId)
+        .populate('customerId', 'username email')
+        .populate('items.productId', 'name price images');
+
+      if (!order) {
+        return res.status(404).json({
+          success: false,
+          message: 'Order not found'
+        });
+      }
+
+      return res.json({
+        success: true,
+        data: order
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        error: `Error fetching order: ${error.message}`
+      });
+    }
+  }
+
   // CACHE MANAGEMENT METHODS
   
   // Manually refresh dashboard cache
@@ -957,6 +1209,233 @@ class DashboardController {
     } catch (error) {
       console.error('Error invalidating cache:', error);
       // Don't throw - cache invalidation failure shouldn't break the main operation
+    }
+  }
+
+  // Get chart data for dashboard visualization
+  async getChartData(req, res) {
+    try {
+      const { period = '30' } = req.query; // days
+      const days = parseInt(period);
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
+
+      // Get order status distribution
+      const orderStatusDistribution = await Order.aggregate([
+        {
+          $group: {
+            _id: '$status',
+            count: { $sum: 1 },
+            totalRevenue: { 
+              $sum: { 
+                $cond: [{ $eq: ['$status', 'completed'] }, '$totalPrice', 0] 
+              } 
+            }
+          }
+        }
+      ]);
+
+      // Get revenue over time (daily)
+      const revenueOverTime = await Order.aggregate([
+        {
+          $match: {
+            status: 'completed',
+            createdAt: { $gte: startDate }
+          }
+        },
+        {
+          $group: {
+            _id: {
+              $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
+            },
+            revenue: { $sum: '$totalPrice' },
+            orders: { $sum: 1 }
+          }
+        },
+        { $sort: { _id: 1 } }
+      ]);
+
+      // Get category breakdown from products
+      const categoryBreakdown = await Product.aggregate([
+        {
+          $group: {
+            _id: '$category',
+            count: { $sum: 1 },
+            totalStock: { $sum: '$stock' },
+            avgPrice: { $avg: '$price' }
+          }
+        }
+      ]);
+
+      // Get orders by status count
+      const ordersByStatus = {};
+      orderStatusDistribution.forEach(item => {
+        ordersByStatus[item._id] = {
+          count: item.count,
+          revenue: item.totalRevenue || 0
+        };
+      });
+
+      // Format revenue over time for charts
+      const revenueData = revenueOverTime.map(item => ({
+        date: item._id,
+        revenue: item.revenue || 0,
+        orders: item.orders || 0
+      }));
+
+      // Format category breakdown
+      const categoryData = categoryBreakdown.map(item => ({
+        category: item._id || 'Unknown',
+        count: item.count || 0,
+        stock: item.totalStock || 0,
+        avgPrice: item.avgPrice || 0
+      }));
+
+      return res.json({
+        success: true,
+        data: {
+          orderStatusDistribution: ordersByStatus,
+          revenueOverTime: revenueData,
+          categoryBreakdown: categoryData
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching chart data:', error);
+      return res.status(500).json({
+        success: false,
+        error: `Error fetching chart data: ${error.message}`
+      });
+    }
+  }
+
+  // Get all registered users (admin only; excludes password)
+  // Get a single user's cart (admin only)
+  async getUserCart(req, res) {
+    try {
+      const { userId } = req.params;
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(400).json({ success: false, message: 'Invalid user ID' });
+      }
+      const allowed = await this.canAccessTargetUser(req, userId);
+      if (!allowed) {
+        return res.status(403).json({ success: false, message: 'Access denied. Admins can only view regular users.' });
+      }
+      const cart = await Cart.findOne({ customerId: userId })
+        .populate('items.product', 'name price')
+        .populate('items.productId', 'name price')
+        .lean();
+      if (!cart) {
+        return res.json({ success: true, data: { items: [], totalPrice: 0 } });
+      }
+      // Normalize items so client always gets name and price (cart may store product or productId)
+      const items = (cart.items || []).map((item) => {
+        const name = item.name ||
+          (item.product && (item.product.name || item.product.title)) ||
+          (item.productId && (item.productId.name || item.productId.title)) ||
+          'Product';
+        const price = item.price != null ? item.price : (item.product && item.product.price) || (item.productId && item.productId.price) || 0;
+        return {
+          ...item,
+          name,
+          price: Number(price),
+          quantity: item.quantity || 1,
+        };
+      });
+      const totalPrice = cart.totalPrice != null ? Number(cart.totalPrice) : items.reduce((sum, i) => sum + (i.price * (i.quantity || 1)), 0);
+      return res.json({ success: true, data: { items, totalPrice } });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        error: `Error fetching user cart: ${error.message}`
+      });
+    }
+  }
+
+  // Get reviews written by a user
+  async getUserReviews(req, res) {
+    try {
+      const { userId } = req.params;
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(400).json({ success: false, message: 'Invalid user ID' });
+      }
+      const allowed = await this.canAccessTargetUser(req, userId);
+      if (!allowed) {
+        return res.status(403).json({ success: false, message: 'Access denied. Admins can only view regular users.' });
+      }
+      const reviews = await Review.find({ user: userId })
+        .populate('product', 'name')
+        .sort({ createdAt: -1 })
+        .lean();
+      return res.json({ success: true, data: reviews });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        error: `Error fetching user reviews: ${error.message}`
+      });
+    }
+  }
+
+  // Get orders for a user (by customerId)
+  async getUserOrders(req, res) {
+    try {
+      const { userId } = req.params;
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(400).json({ success: false, message: 'Invalid user ID' });
+      }
+      const allowed = await this.canAccessTargetUser(req, userId);
+      if (!allowed) {
+        return res.status(403).json({ success: false, message: 'Access denied. Admins can only view regular users.' });
+      }
+      const orders = await Order.find({ customerId: userId, isGuestOrder: { $ne: true } })
+        .populate('customerId', 'username email')
+        .sort({ createdAt: -1 })
+        .lean();
+      return res.json({ success: true, data: orders });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        error: `Error fetching user orders: ${error.message}`
+      });
+    }
+  }
+
+  async getAllUsers(req, res) {
+    try {
+      const { search, role, status } = req.query;
+      const filter = {};
+
+      if (search && search.trim()) {
+        filter.$or = [
+          { email: { $regex: search.trim(), $options: 'i' } },
+          { username: { $regex: search.trim(), $options: 'i' } }
+        ];
+      }
+      const requesterRole = req.user?.role;
+      const isSuperAdmin = requesterRole === 'super_admin';
+      if (!isSuperAdmin) {
+        // Non-super-admin staff can only view regular users.
+        filter.role = 'user';
+      } else if (role && role.trim()) {
+        filter.role = role.trim();
+      }
+      if (status && status.trim()) filter.status = status.trim();
+
+      const users = await User.find(filter)
+        .select('-password -refreshToken -refreshTokenExpiry -tokenBlacklist -resetPasswordToken -resetPasswordExpires')
+        .sort({ createdAt: -1 })
+        .lean();
+
+      return res.status(200).json({
+        success: true,
+        data: users,
+        total: users.length
+      });
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      return res.status(500).json({
+        success: false,
+        error: `Error fetching users: ${error.message}`
+      });
     }
   }
 }

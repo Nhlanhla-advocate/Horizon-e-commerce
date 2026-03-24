@@ -1,13 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import '../../assets/css/admin.css';
 
 export default function ProductManagement() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [filters, setFilters] = useState({
@@ -26,15 +24,12 @@ export default function ProductManagement() {
     name: '',
     price: '',
     category: '',
-    stock: '',
-    description: '',
-    featured: false
+    stock: ''
   });
 
   const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
-      setError(null);
       const token = localStorage.getItem('token');
       const queryParams = new URLSearchParams();
 
@@ -51,25 +46,16 @@ export default function ProductManagement() {
         }
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        // Extract error message from response
-        const errorMessage = data.error || data.message || 'Failed to fetch products';
-        throw new Error(errorMessage);
+        throw new Error('Failed to fetch products');
       }
 
-      // Handle both response formats
-      if (data.success !== false) {
-        setProducts(data.data || []);
-        setPagination(data.pagination || {});
-      } else {
-        throw new Error(data.error || 'Failed to fetch products');
-      }
+      const data = await response.json();
+      setProducts(data.data || []);
+      setPagination(data.pagination || {});
+      setError(null);
     } catch (err) {
       setError(err.message);
-      setProducts([]);
-      setPagination({});
     } finally {
       setLoading(false);
     }
@@ -84,132 +70,60 @@ export default function ProductManagement() {
       name: '',
       price: '',
       category: '',
-      stock: '',
-      description: '',
-      featured: false
+      stock: ''
     });
     setEditingProduct(null);
   };
 
   const handleAddProduct = async (productData) => {
     try {
-      setError(null);
       const token = localStorage.getItem('token');
-      
-      // Convert price and stock to numbers, and ensure category is lowercase
-      const formattedData = {
-        ...productData,
-        price: parseFloat(productData.price),
-        stock: parseInt(productData.stock, 10),
-        category: productData.category.toLowerCase()
-      };
-
-      // Validate that price and stock are valid numbers
-      if (isNaN(formattedData.price) || formattedData.price < 0) {
-        throw new Error('Price must be a valid positive number');
-      }
-      if (isNaN(formattedData.stock) || formattedData.stock < 0) {
-        throw new Error('Stock must be a valid non-negative integer');
-      }
-
       const response = await fetch('/dashboard/products', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(formattedData)
+        body: JSON.stringify(productData)
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        // Extract error message from response - check for validation errors
-        let errorMessage = 'Failed to add product';
-        if (data.error) {
-          errorMessage = data.error;
-        } else if (data.message) {
-          errorMessage = data.message;
-        } else if (Array.isArray(data.errors)) {
-          errorMessage = data.errors.map(e => e.msg || e.message).join(', ');
-        }
-        throw new Error(errorMessage);
+        throw new Error('Failed to add product');
       }
 
       setShowAddForm(false);
       resetForm();
-      setError(null);
-      setSuccessMessage('Product added successfully!');
-      // Clear success message after 3 seconds
-      setTimeout(() => setSuccessMessage(null), 3000);
-      // Refresh the product list
-      try {
-        await fetchProducts();
-      } catch (fetchErr) {
-        // If fetch fails, don't overwrite success message immediately
-        // The error will be shown by fetchProducts
-        console.error('Failed to refresh product list:', fetchErr);
-      }
+      fetchProducts();
     } catch (err) {
       setError(err.message);
-      setSuccessMessage(null);
     }
   };
 
   const handleEditProduct = async (productId, updates) => {
     try {
       const token = localStorage.getItem('token');
-      
-      // Convert price and stock to numbers if they exist, and ensure category is lowercase
-      const formattedData = { ...updates };
-      if (formattedData.price !== undefined) {
-        formattedData.price = parseFloat(formattedData.price);
-      }
-      if (formattedData.stock !== undefined) {
-        formattedData.stock = parseInt(formattedData.stock, 10);
-      }
-      if (formattedData.category) {
-        formattedData.category = formattedData.category.toLowerCase();
-      }
-
       const response = await fetch(`/dashboard/products/${productId}`, {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(formattedData)
+        body: JSON.stringify(updates)
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        // Extract error message from response
-        const errorMessage = data.error || data.message || 'Failed to update product';
-        throw new Error(errorMessage);
+        throw new Error('Failed to update product');
       }
 
       setEditingProduct(null);
       resetForm();
-      setError(null);
-      setSuccessMessage('Product updated successfully!');
-      setTimeout(() => setSuccessMessage(null), 3000);
-      try {
-        await fetchProducts();
-      } catch (fetchErr) {
-        console.error('Failed to refresh product list:', fetchErr);
-      }
+      fetchProducts();
     } catch (err) {
       setError(err.message);
-      setSuccessMessage(null);
     }
   };
 
   const handleDeleteProduct = async (productId) => {
-    if (!confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
-      return;
-    }
-
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`/dashboard/products/${productId}`, {
@@ -220,24 +134,13 @@ export default function ProductManagement() {
         }
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        const errorMessage = data.error || data.message || 'Failed to delete product';
-        throw new Error(errorMessage);
+        throw new Error('Failed to delete product');
       }
 
-      setError(null);
-      setSuccessMessage('Product deleted successfully!');
-      setTimeout(() => setSuccessMessage(null), 3000);
-      try {
-        await fetchProducts();
-      } catch (fetchErr) {
-        console.error('Failed to refresh product list:', fetchErr);
-      }
+      fetchProducts();
     } catch (err) {
       setError(err.message);
-      setSuccessMessage(null);
     }
   };
 
@@ -252,16 +155,13 @@ export default function ProductManagement() {
   };
 
   const handleChange = (event) => {
-    const { name, value, type, checked } = event.target;
-    setFormData((prev) => ({ 
-      ...prev, 
-      [name]: type === 'checkbox' ? checked : value 
-    }));
+    const { name, value } = event.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
     <div className="space-y-6">
-      <div className="admin-card" style={{ borderRadius: '0.75rem' }}>
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h2 className="text-xl font-semibold text-gray-900">Product Management</h2>
@@ -273,7 +173,7 @@ export default function ProductManagement() {
               setShowAddForm(true);
               resetForm();
             }}
-            className="admin-btn admin-btn-primary"
+            className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
           >
             Add Product
           </button>
@@ -281,54 +181,41 @@ export default function ProductManagement() {
       </div>
 
       {error && (
-        <div className="admin-alert admin-alert-error">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
           {error}
         </div>
       )}
 
-      {successMessage && (
-        <div className="admin-alert" style={{ 
-          backgroundColor: '#d1fae5', 
-          borderColor: '#10b981', 
-          color: '#065f46',
-          padding: '0.75rem 1rem',
-          borderRadius: '0.5rem',
-          marginBottom: '1rem'
-        }}>
-          {successMessage}
-        </div>
-      )}
-
       {loading ? (
-        <div className="flex items-center justify-center" style={{ height: '10rem' }}>
-          <div className="admin-spinner" style={{ width: '2.5rem', height: '2.5rem', borderTopColor: '#2563eb', borderWidth: '4px' }}></div>
+        <div className="flex h-40 items-center justify-center">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
         </div>
       ) : products.length === 0 ? (
-        <div className="admin-card text-center" style={{ borderStyle: 'dashed' }}>
-          <p className="text-sm text-gray-500">No products found. Try adjusting your filters or add a new product.</p>
+        <div className="rounded-lg border border-dashed border-gray-200 bg-white p-8 text-center text-sm text-gray-500">
+          No products found. Try adjusting your filters or add a new product.
         </div>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
-          <table className="admin-table">
-            <thead>
+          <table className="min-w-full divide-y divide-gray-200 text-sm">
+            <thead className="bg-gray-50">
               <tr>
-                <th>Product</th>
-                <th>Category</th>
-                <th>Price</th>
-                <th>Stock</th>
-                <th className="text-right">Actions</th>
+                <th className="px-6 py-3 text-left font-semibold text-gray-500">Product</th>
+                <th className="px-6 py-3 text-left font-semibold text-gray-500">Category</th>
+                <th className="px-6 py-3 text-left font-semibold text-gray-500">Price</th>
+                <th className="px-6 py-3 text-left font-semibold text-gray-500">Stock</th>
+                <th className="px-6 py-3 text-right font-semibold text-gray-500">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-200 bg-white">
               {products.map((product) => (
                 <tr key={product._id}>
-                  <td className="text-gray-900">{product.name}</td>
-                  <td className="text-gray-500">{product.category}</td>
-                  <td className="text-gray-900">
+                  <td className="px-6 py-4 text-gray-900">{product.name}</td>
+                  <td className="px-6 py-4 text-gray-500">{product.category}</td>
+                  <td className="px-6 py-4 text-gray-900">
                     {typeof product.price === 'number' ? `R ${product.price.toFixed(2)}` : product.price}
                   </td>
-                  <td className="text-gray-900">{product.stock}</td>
-                  <td className="text-right">
+                  <td className="px-6 py-4 text-gray-900">{product.stock}</td>
+                  <td className="px-6 py-4 text-right">
                     <div className="flex justify-end gap-2">
                       <button
                         type="button"
@@ -338,22 +225,18 @@ export default function ProductManagement() {
                             name: product.name || '',
                             price: product.price || '',
                             category: product.category || '',
-                            stock: product.stock || '',
-                            description: product.description || '',
-                            featured: product.featured || false
+                            stock: product.stock || ''
                           });
                           setShowAddForm(true);
                         }}
-                        className="admin-btn admin-btn-secondary"
-                        style={{ padding: '0.25rem 0.75rem', fontSize: '0.875rem' }}
+                        className="rounded-lg border border-gray-200 px-3 py-1 text-sm text-gray-700 hover:bg-gray-50"
                       >
                         Edit
                       </button>
                       <button
                         type="button"
                         onClick={() => handleDeleteProduct(product._id)}
-                        className="admin-btn admin-btn-danger"
-                        style={{ padding: '0.25rem 0.75rem', fontSize: '0.875rem' }}
+                        className="rounded-lg border border-red-200 px-3 py-1 text-sm text-red-600 hover:bg-red-50"
                       >
                         Delete
                       </button>
@@ -367,7 +250,7 @@ export default function ProductManagement() {
       )}
 
       {showAddForm && (
-        <div className="admin-card" style={{ borderRadius: '0.75rem' }}>
+        <div className="rounded-xl border border-gray-200 bg-white p-6">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900">
               {editingProduct ? 'Edit Product' : 'Add New Product'}
@@ -379,93 +262,58 @@ export default function ProductManagement() {
                 resetForm();
               }}
               className="text-sm text-gray-500 hover:text-gray-700"
-              style={{ background: 'none', border: 'none', cursor: 'pointer' }}
             >
               Close
             </button>
           </div>
           <form className="mt-6 grid gap-4 sm:grid-cols-2" onSubmit={handleSubmit}>
             <div className="sm:col-span-2">
-              <label className="admin-form-label">Name</label>
+              <label className="mb-1 block text-sm font-medium text-gray-700">Name</label>
               <input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="admin-form-input"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 required
               />
             </div>
             <div>
-              <label className="admin-form-label">Price</label>
+              <label className="mb-1 block text-sm font-medium text-gray-700">Price</label>
               <input
                 type="number"
                 name="price"
                 value={formData.price}
                 onChange={handleChange}
-                className="admin-form-input"
-                min="0"
-                step="0.01"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 required
               />
             </div>
             <div>
-              <label className="admin-form-label">Category</label>
-              <select
+              <label className="mb-1 block text-sm font-medium text-gray-700">Category</label>
+              <input
+                type="text"
                 name="category"
                 value={formData.category}
                 onChange={handleChange}
-                className="admin-form-input"
-                required
-              >
-                <option value="">Select a category</option>
-                <option value="jewelry">Jewelry</option>
-                <option value="electronics">Electronics</option>
-                <option value="consoles">Consoles</option>
-                <option value="computers">Computers</option>
-              </select>
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
             </div>
             <div>
-              <label className="admin-form-label">Stock</label>
+              <label className="mb-1 block text-sm font-medium text-gray-700">Stock</label>
               <input
                 type="number"
                 name="stock"
                 value={formData.stock}
                 onChange={handleChange}
-                className="admin-form-input"
-                min="0"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 required
               />
-            </div>
-            <div className="sm:col-span-2">
-              <label className="admin-form-label">Description</label>
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                className="admin-form-input"
-                rows="4"
-                required
-                placeholder="Enter product description (minimum 10 characters)"
-              />
-            </div>
-            <div className="sm:col-span-2">
-              <label className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  name="featured"
-                  checked={formData.featured}
-                  onChange={handleChange}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                />
-                <span className="admin-form-label">Featured Product</span>
-                <span className="text-xs text-gray-500">(Will appear on the featured products section)</span>
-              </label>
             </div>
             <div className="sm:col-span-2 flex gap-3">
               <button
                 type="submit"
-                className="admin-btn admin-btn-primary"
+                className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
               >
                 {editingProduct ? 'Update Product' : 'Create Product'}
               </button>
@@ -475,7 +323,7 @@ export default function ProductManagement() {
                   setShowAddForm(false);
                   resetForm();
                 }}
-                className="admin-btn admin-btn-secondary"
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
               >
                 Cancel
               </button>
