@@ -10,7 +10,7 @@ const mongoose = require('mongoose');
 exports.addToCart = async (req, res) => {
     const { userId, productId, quantity, items } = req.body;
     try {
-        console.log(`Attempting to add product to cart for user ${userId}`);
+        console.log(`[CART:add] Attempting add for customerId=${userId}`);
         
         // Handle both new and old request formats
         let productIdToAdd, quantityToAdd;
@@ -27,6 +27,7 @@ exports.addToCart = async (req, res) => {
         
         // Check if productId is provided
         if (!productIdToAdd) {
+            console.warn('[CART:add] Missing productId in request', { userId });
             return res.status(400).json({ 
                 message: 'Product ID is required',
                 suggestion: 'Send productId directly in the request body or within an items array'
@@ -35,6 +36,7 @@ exports.addToCart = async (req, res) => {
         
         // Validate productId format
         if (!mongoose.Types.ObjectId.isValid(productIdToAdd)) {
+            console.warn('[CART:add] Invalid productId format', { userId, productId: productIdToAdd });
             return res.status(400).json({ 
                 message: 'Invalid product ID format',
                 receivedId: productIdToAdd,
@@ -44,6 +46,7 @@ exports.addToCart = async (req, res) => {
         
         // Check if userId is provided
         if (!userId) {
+            console.warn('[CART:add] Missing userId in request', { productId: productIdToAdd });
             return res.status(400).json({ 
                 message: 'User ID is required',
                 suggestion: 'Send userId in the request body'
@@ -52,6 +55,7 @@ exports.addToCart = async (req, res) => {
         
         // Validate userId format
         if (!mongoose.Types.ObjectId.isValid(userId)) {
+            console.warn('[CART:add] Invalid userId format', { userId, productId: productIdToAdd });
             return res.status(400).json({ 
                 message: 'Invalid user ID format',
                 receivedId: userId,
@@ -68,6 +72,14 @@ exports.addToCart = async (req, res) => {
         
         const product = await Product.findById(productIdToAdd);
         if (!product) {
+            console.warn('[CART:add] Product not found', {
+                userId,
+                productId: productIdToAdd,
+                mongo: {
+                    host: mongoose.connection.host,
+                    name: mongoose.connection.name
+                }
+            });
             return res.status(404).json({ 
                 message: 'Product not found',
                 productId: productIdToAdd,
@@ -102,16 +114,33 @@ exports.addToCart = async (req, res) => {
             });
         }
   
-        await cart.save();
+        const saved = await cart.save();
+        console.log('[CART:add] Saved cart', {
+            cartId: saved?._id?.toString?.() || saved?._id,
+            customerId: saved?.customerId?.toString?.() || saved?.customerId,
+            itemsCount: Array.isArray(saved?.items) ? saved.items.length : 0,
+            totalPrice: saved?.totalPrice,
+            mongo: {
+                readyState: mongoose.connection.readyState,
+                host: mongoose.connection.host,
+                name: mongoose.connection.name
+            }
+        });
         res.status(200).json({
             message: 'Item added to cart successfully',
-            cart
+            cart: saved
         });
     } catch (error) {
-        console.error('Error adding item to cart:', error);
+        console.error('[CART:add] Error adding item to cart:', {
+            message: error?.message,
+            name: error?.name,
+            code: error?.code,
+            errors: error?.errors ? Object.keys(error.errors) : undefined
+        });
         res.status(500).json({ 
             message: 'Error adding item to cart', 
-            error: error.message 
+            error: error.message,
+            ...(process.env.NODE_ENV === 'development' ? { stack: error.stack } : {})
         });
     }
 };
