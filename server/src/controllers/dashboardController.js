@@ -1320,13 +1320,22 @@ class DashboardController {
       if (!allowed) {
         return res.status(403).json({ success: false, message: 'Access denied. Admins can only view regular users.' });
       }
-      const cart = await Cart.findOne({ customerId: userId })
-        .populate('items.product', 'name price')
-        .populate('items.productId', 'name price')
+      const customerObjectId = new mongoose.Types.ObjectId(userId);
+      const cart = await Cart.findOne({ customerId: customerObjectId })
+        .populate('items.productId', 'name price images image')
         .lean();
       if (!cart) {
+        console.log('[DASHBOARD:getUserCart] No cart found', {
+          userId,
+          mongo: { host: mongoose.connection.host, name: mongoose.connection.name }
+        });
         return res.json({ success: true, data: { items: [], totalPrice: 0 } });
       }
+      console.log('[DASHBOARD:getUserCart] Cart found', {
+        userId,
+        cartId: cart._id?.toString?.() || cart._id,
+        itemsCount: Array.isArray(cart.items) ? cart.items.length : 0
+      });
       // Normalize items so client always gets name and price (cart may store product or productId)
       const items = (cart.items || []).map((item) => {
         const name = item.name ||
