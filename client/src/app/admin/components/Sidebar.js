@@ -9,6 +9,24 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 export default function Sidebar({ tabs, activeTab, setActiveTab, sidebarOpen, setSidebarOpen }) {
   const [user, setUser] = useState(null);
   const profileRequestRef = useRef(0);
+  
+  const handleLogout = async () => {
+    try {
+      // Optional server-side signout (safe to ignore failures)
+      const token = localStorage.getItem('adminToken');
+      if (token) {
+        await fetch(`${API_BASE}/admin/signout`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        }).catch(() => {});
+      }
+    } finally {
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('token');
+      localStorage.removeItem('adminRole');
+      window.location.href = '/admin/signin';
+    }
+  };
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -111,6 +129,24 @@ export default function Sidebar({ tabs, activeTab, setActiveTab, sidebarOpen, se
               <div className="admin-sidebar-footer-theme">
                 <ThemeToggle />
               </div>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="admin-sidebar-logout"
+                style={{
+                  marginTop: '0.75rem',
+                  width: '100%',
+                  padding: '0.65rem 0.75rem',
+                  borderRadius: '0.5rem',
+                  border: '1px solid rgba(255,255,255,0.25)',
+                  background: 'rgba(0,0,0,0.15)',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                }}
+              >
+                Log out
+              </button>
             </div>
           </div>
         </div>
