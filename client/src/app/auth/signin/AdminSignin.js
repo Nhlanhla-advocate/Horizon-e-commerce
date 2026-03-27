@@ -15,46 +15,12 @@ const AdminSignin = () => {
     const router = useRouter();
 
     useEffect(() => {
-        // Check if admin is already logged in with a valid token
-        const checkAdminAuth = async () => {
-            const adminToken = localStorage.getItem('adminToken');
-            
-            if (!adminToken) {
-                // No token, show login form
-                return;
-            }
-
-            // Validate token by checking admin profile
-            try {
-                const response = await fetch('http://localhost:5000/admin/profile', {
-                    headers: {
-                        'Authorization': `Bearer ${adminToken}`,
-                        'Content-Type': 'application/json',
-                    },
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.success) {
-                        // Admin token, redirect to dashboard
-                        router.push('/admin');
-                        return;
-                    }
-                }
-                
-                // Invalid token, clear it and show login form
-                localStorage.removeItem('adminToken');
-                localStorage.removeItem('token');
-            } catch (error) {
-                // Error validating token, clear it and show login form
-                console.error('Token validation error:', error);
-                localStorage.removeItem('adminToken');
-                localStorage.removeItem('token');
-            }
-        };
-
-        checkAdminAuth();
-    }, [router]);
+        // Always allow account switching from admin sign-in page.
+        // Clearing existing admin tokens here prevents stale sidebar identity.
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('token');
+        localStorage.removeItem('adminRole');
+    }, []);
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
