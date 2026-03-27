@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import '../../assets/css/sidebar.css';
 import ThemeToggle from './ThemeToggle';
 
@@ -8,18 +8,57 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export default function Sidebar({ tabs, activeTab, setActiveTab, sidebarOpen, setSidebarOpen }) {
   const [user, setUser] = useState(null);
+  const profileRequestRef = useRef(0);
 
   useEffect(() => {
-    const token = typeof window !== 'undefined' ? (localStorage.getItem('adminToken') || localStorage.getItem('token')) : null;
-    if (!token) return;
-    fetch(`${API_BASE}/admin/profile`, {
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    })
-      .then((res) => res.ok ? res.json() : null)
-      .then((data) => {
-        if (data?.success && data?.admin) setUser(data.admin);
-      })
-      .catch(() => {});
+    if (typeof window === 'undefined') return undefined;
+
+    const loadAdminProfile = async () => {
+      const requestId = ++profileRequestRef.current;
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        if (requestId === profileRequestRef.current) setUser(null);
+        return;
+      }
+      try {
+        const res = await fetch(`${API_BASE}/admin/profile`, {
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          cache: 'no-store',
+        });
+        if (requestId !== profileRequestRef.current) return;
+        if (!res.ok) {
+          setUser(null);
+          return;
+        }
+        const data = await res.json();
+        const latestToken = localStorage.getItem('adminToken');
+        if (latestToken !== token) return;
+        if (data?.success && data?.admin) {
+          setUser(data.admin);
+        } else {
+          setUser(null);
+        }
+      } catch {
+        if (requestId === profileRequestRef.current) setUser(null);
+      }
+    };
+
+    const onStorage = (e) => {
+      if (e.key === 'adminToken' || e.key === 'token' || e.key === 'adminRole') {
+        loadAdminProfile();
+      }
+    };
+
+    const onFocus = () => loadAdminProfile();
+
+    loadAdminProfile();
+    window.addEventListener('storage', onStorage);
+    window.addEventListener('focus', onFocus);
+
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('focus', onFocus);
+    };
   }, []);
 
   const roleLabel = user?.role === 'super_admin' ? 'Super Admin' : 'Admin';
