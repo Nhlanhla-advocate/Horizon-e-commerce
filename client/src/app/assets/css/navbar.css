@@ -73,6 +73,12 @@ html, body {
     color: #2563eb;
 }
 
+.navbar-logout-btn:disabled,
+.navbar-mobile-icon-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
 /* SEARCH CONTAINER */
 .navbar-search-container {
     display: flex;

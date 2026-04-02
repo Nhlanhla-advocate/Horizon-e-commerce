@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { FaShoppingCart, FaUser, FaSearch, FaSpinner, FaTimes } from 'react-icons/fa';
+import { FaShoppingCart, FaUser, FaSearch, FaSpinner, FaTimes, FaSignOutAlt } from 'react-icons/fa';
 import { useCart } from '@/app/components/cart/Cart';
 import "../../assets/css/navbar.css";
 
@@ -12,6 +12,8 @@ const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [isAuthed, setIsAuthed] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -19,11 +21,55 @@ const Navbar = () => {
     console.log('Navbar cartCount changed:', cartCount);
   }, [cartCount]);
 
+  useEffect(() => {
+    const readAuth = () => {
+      try {
+        const token = localStorage.getItem('token');
+        setIsAuthed(Boolean(token));
+      } catch {
+        setIsAuthed(false);
+      }
+    };
+    readAuth();
+    window.addEventListener('storage', readAuth);
+    return () => window.removeEventListener('storage', readAuth);
+  }, []);
+
   // Close mobile menu when route changes
   useEffect(() => {
     setIsMobileMenuOpen(false);
     setIsMobileSearchOpen(false);
   }, [pathname]);
+
+  const handleLogout = async () => {
+    if (isSigningOut) return;
+    setIsSigningOut(true);
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        await fetch('http://localhost:5000/auth/signout', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        });
+      }
+    } catch (e) {
+      // Even if server signout fails, clear local auth state.
+      console.error('Signout error:', e);
+    } finally {
+      try {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userId');
+      } catch {}
+      setIsAuthed(false);
+      setIsSigningOut(false);
+      router.push('/');
+      router.refresh?.();
+    }
+  };
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -84,9 +130,21 @@ const Navbar = () => {
                 )}
               </div>
             </Link>
-            <Link href="/auth/signin" className="navbar-mobile-icon-btn">
-              <FaUser />
-            </Link>
+            {isAuthed ? (
+              <button
+                type="button"
+                className="navbar-mobile-icon-btn"
+                onClick={handleLogout}
+                aria-label="Log out"
+                disabled={isSigningOut}
+              >
+                {isSigningOut ? <FaSpinner className="animate-spin" /> : <FaSignOutAlt />}
+              </button>
+            ) : (
+              <Link href="/auth/signin" className="navbar-mobile-icon-btn" aria-label="Sign in">
+                <FaUser />
+              </Link>
+            )}
           </div>
         </div>
 
@@ -169,9 +227,22 @@ const Navbar = () => {
                 )}
               </div>
             </Link>
-            <Link href="/auth/signin" className="navbar-icon-link">
-              <FaUser />
-            </Link>
+            {isAuthed ? (
+              <button
+                type="button"
+                className="navbar-icon-link navbar-logout-btn"
+                onClick={handleLogout}
+                aria-label="Log out"
+                disabled={isSigningOut}
+                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+              >
+                {isSigningOut ? <FaSpinner className="animate-spin" /> : <FaSignOutAlt />}
+              </button>
+            ) : (
+              <Link href="/auth/signin" className="navbar-icon-link" aria-label="Sign in">
+                <FaUser />
+              </Link>
+            )}
           </div>
         </div>
 
