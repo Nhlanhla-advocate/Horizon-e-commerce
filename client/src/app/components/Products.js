@@ -14,7 +14,7 @@ const Products = () => {
         {
             id: 1,
             name: 'PlayStation 5 Digital',
-            dbId: '687758601f8fda62d2898c43',
+            dbId: '6967723a14abc5c5ab213365',
             price: 12000.00,
             image: '/Pictures/Playstation 5 Digital.jpg',
             slug: 'playstation-5-digital'
@@ -36,6 +36,7 @@ const Products = () => {
         {
             id: 4,
             name: 'PlayStation 5 Disk',
+            dbId: '69c4e0816f9a502a54895df6',
             price: 16500.00,
             image: '/Pictures/Playstation 5 disk.jpg',
             slug: 'playstation-5-disk'
@@ -43,6 +44,7 @@ const Products = () => {
         {
             id: 5,
             name: 'PlayStation 5 Pro',
+            dbId: '69c50137740a2ba817048f2c',
             price: 19500.00,
             image: '/Pictures/Playstation 5 pro.jpg',
             slug: 'playstation-5-pro'
