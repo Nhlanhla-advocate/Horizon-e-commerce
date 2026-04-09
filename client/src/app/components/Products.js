@@ -14,7 +14,7 @@ const Products = () => {
         {
             id: 1,
             name: 'PlayStation 5 Digital',
-            dbId: '6967723a14abc5c5ab213365',
+            _id: '6967723a14abc5c5ab213365',
             price: 12000.00,
             image: '/Pictures/Playstation 5 Digital.jpg',
             slug: 'playstation-5-digital'
@@ -22,6 +22,7 @@ const Products = () => {
         {
             id: 2,
             name: 'PlayStation 4 Slim',
+            _id: '69d62db019e043ca85996f91',
             price: 4000.00,
             image: '/Pictures/Playstation 4 Slim.jpg',
             slug: 'playstation-4-slim'
@@ -29,6 +30,7 @@ const Products = () => {
         {
             id: 3,
             name: 'PlayStation 4',
+            _id: '69d62e1019e043ca85996fa7',
             price: 3000.00,
             image: '/Pictures/Playstation 4.jpg',
             slug: 'playstation-4'
@@ -36,7 +38,7 @@ const Products = () => {
         {
             id: 4,
             name: 'PlayStation 5 Disk',
-            dbId: '69c4e0816f9a502a54895df6',
+            _id: '69c4e0816f9a502a54895df6',
             price: 16500.00,
             image: '/Pictures/Playstation 5 disk.jpg',
             slug: 'playstation-5-disk'
@@ -44,7 +46,7 @@ const Products = () => {
         {
             id: 5,
             name: 'PlayStation 5 Pro',
-            dbId: '69c50137740a2ba817048f2c',
+            _id: '69c50137740a2ba817048f2c',
             price: 19500.00,
             image: '/Pictures/Playstation 5 pro.jpg',
             slug: 'playstation-5-pro'
@@ -52,6 +54,7 @@ const Products = () => {
         {
             id: 6,
             name: 'PlayStation 4 Pro',
+            _id: '69d62dde19e043ca85996f9c',
             price: 12000.00,
             image: '/Pictures/Playstation 4 pro.jpg',
             slug: 'playstation-4-pro'
@@ -89,7 +92,12 @@ const Products = () => {
                                     onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        addToCart(product.dbId || product.name, 1);
+                                        if (!product._id) return;
+                                        addToCart(product._id, 1, {
+                                            name: product.name,
+                                            price: product.price,
+                                            image: product.image
+                                        });
                                     }}
                                 >
                                     <span className="button-content">

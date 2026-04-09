@@ -42,6 +42,19 @@ const normalizeProductId = (value) => {
   return String(value);
 };
 
+const safeReadResponseBody = async (res) => {
+  try {
+    const contentType = res.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      return await res.json();
+    }
+    const text = await res.text();
+    return text ? { message: text } : null;
+  } catch {
+    return null;
+  }
+};
+
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState({ items: [], totalPrice: 0 });
   const [isLoading, setIsLoading] = useState(true);
@@ -290,7 +303,7 @@ export const CartProvider = ({ children }) => {
           localStorage.setItem('localCart', JSON.stringify(serverCart));
           console.log('Server sync successful - cart updated from server and localStorage');
         } else {
-          const errorData = await res.json();
+          const errorData = await safeReadResponseBody(res);
           console.error('Failed to add to cart:', errorData);
           // Fallback to local update if server fails
           updateLocalCart(normalizedProductId, quantity, productData);
