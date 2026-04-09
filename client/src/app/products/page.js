@@ -8,55 +8,10 @@ import '../assets/css/product.css';
 
 const ProductsPage = () => { // Changed to PascalCase
     const { addToCart } = useCart();
-
-    const allProducts = [
-        {
-            id: 1,
-            name: 'PlayStation 5 Digital',
-            _id: '687758601f8fda62d2898c43',
-            price: 12000.00,
-            image: '/Pictures/Playstation 5 Digital.jpg',
-            slug: 'playstation-5-digital',
-            description: 'Digital edition Playstation 5',
-            category: 'consoles',
-            stockQuantity: 10
-        },
-        {
-            id: 2,
-            name: 'PlayStation 4 Slim',
-            _id: 'ps4-slim-placeholder-id',
-            price:4000.00,
-            image: '/Pictures/Playstation 4 Slim.jpg',
-            slug: 'playstation-4-slim',
-            description: 'Slim version of PlayStation 4',
-            category: 'consoles',
-            stockQuantity: 0   // Out of stock
-        },
-        {
-            id: 3,
-            name: 'PlayStation 4',
-            _id: '68a5651b427b2be32fafb36d',
-            price: 3000.00,
-            image: '/Pictures/Playstation 4.jpg',
-            slug: 'playstation-4',
-            description: 'Standard PlayStation 4',
-            category: 'consoles',
-            stockQuantity: 3
-        },
-        {
-            id: 4,
-            name: 'PlayStation 5 Disk',
-            _id: '68a563dc8597038db441354b',
-            price: 16500.00,
-            image: '/Pictures/Playstation 5 disk.jpg',
-            slug: 'playstation-5-disk',
-            description: 'Disk edition PlayStation 5',
-            category: 'consoles',
-            stockQuantity: 12
-        }
-    ];
-
-   const [products, setProducts] = useState(allProducts);
+   const [allProducts, setAllProducts] = useState([]);
+   const [products, setProducts] = useState([]);
+   const [isLoading, setIsLoading] = useState(true);
+   const [fetchError, setFetchError] = useState('');
    const [filters, setFilters] = useState({ // Changed from 'filter' to 'filters'
     category: 'all',
     minPrice: '',
@@ -69,6 +24,51 @@ const ProductsPage = () => { // Changed to PascalCase
 
 //    Extract unique categories
 const categories = ['all', ...new Set(allProducts.map(product => product.category))];
+
+useEffect(() => {
+    const fetchProducts = async () => {
+        try {
+            setIsLoading(true);
+            setFetchError('');
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+            const response = await fetch(`${baseUrl}/products`);
+
+            if (!response.ok) {
+                throw new Error('Unable to load products.');
+            }
+
+            const result = await response.json();
+            const rawProducts = Array.isArray(result?.data) ? result.data : [];
+
+            const normalizedProducts = rawProducts.map((product, index) => {
+                const stockQuantity = typeof product.stockQuantity === 'number'
+                    ? product.stockQuantity
+                    : (typeof product.stock === 'number' ? product.stock : 0);
+                const image = Array.isArray(product.images) && product.images.length > 0
+                    ? product.images[0]
+                    : (product.image || '/Pictures/placeholder.jpg');
+                const slug = product.slug || `${product.name?.toLowerCase().replace(/\s+/g, '-') || 'product'}-${product._id}`;
+
+                return {
+                    ...product,
+                    id: product.id ?? index + 1,
+                    stockQuantity,
+                    image,
+                    slug
+                };
+            });
+
+            setAllProducts(normalizedProducts);
+        } catch (error) {
+            setFetchError(error.message || 'Failed to fetch products.');
+            setAllProducts([]);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    fetchProducts();
+}, []);
 
 // Filter and sort products based on current filters
 useEffect(() => {
@@ -121,7 +121,7 @@ filtered.sort((a, b) => {
 });
 
 setProducts(filtered);
-}, [filters]); 
+}, [filters, allProducts]); 
 // Handle filter changes
 const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value}));
@@ -254,6 +254,19 @@ return (
         
         {/* Products Grid */}
         <div className="products-grid">
+            {isLoading && (
+                <div className="empty-state">
+                    <h3>Loading products...</h3>
+                </div>
+            )}
+            {!isLoading && fetchError && (
+                <div className="empty-state">
+                    <h3>Could not load products</h3>
+                    <p>{fetchError}</p>
+                </div>
+            )}
+            {!isLoading && !fetchError && (
+                <>
             {products.map((product) => (
                 <div key={product.id} className="product-card">
                     <div className="product-image-container"> 
@@ -314,10 +327,12 @@ return (
                     </div>
                 </div>
             ))}
+                </>
+            )}
         </div>
         
         {/* Empty state if no products match filter */}
-        {products.length === 0 && (
+        {!isLoading && !fetchError && products.length === 0 && (
             <div className="empty-state">
                 <h3>No products found</h3>
                 <p>Try adjusting your filters or search terms.</p>
