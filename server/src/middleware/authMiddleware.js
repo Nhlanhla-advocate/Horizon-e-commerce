@@ -25,8 +25,8 @@ const authMiddleware = async (req, res, next) => {
         // Verify token
         const decoded = verify(token, process.env.JWT_SECRET);
 
-        // Determine if this is an admin or user token
-        // Admin tokens have 'isAdmin: true' flag, User tokens don't
+        // Determine if this is an admin or user token.
+        // Admin tokens have 'isAdmin: true' flag, user tokens don't.
         const isAdminToken = decoded.isAdmin === true;
         const userId = decoded._id;
 
@@ -150,14 +150,35 @@ const authMiddleware = async (req, res, next) => {
                 });
             }
         } else {
-            // This is a regular user token (not adminToken)
-            // Regular users should NOT be able to access admin routes
-            // Block them immediately
-            console.log('[AUTH MIDDLEWARE] ❌ Regular user token detected on admin route - blocking access');
-            return res.status(403).json({ 
-                success: false,
-                message: "Access denied. Admin privileges required." 
-            });
+            // Regular user token.
+            // Admin routes must also use `isAdmin` after this middleware (e.g. dashboard/router.use(isAdmin)).
+            account = await User.findById(userId);
+            accountType = 'user';
+            if (!account) {
+                return res.status(401).json({
+                    success: false,
+                    message: "User not found"
+                });
+            }
+
+            // Block inactive/suspended/banned users
+            const activeStatuses = ['active'];
+            if (account.status && !activeStatuses.includes(account.status)) {
+                return res.status(403).json({
+                    success: false,
+                    message: account.status === 'banned'
+                        ? "This account has been banned. Contact support if you believe this is an error."
+                        : "This account is inactive. Please contact support."
+                });
+            }
+
+            // Optional: verify role in token matches stored role
+            if (decoded.role && account.role && decoded.role !== account.role) {
+                return res.status(403).json({
+                    success: false,
+                    message: "Access denied. Invalid token."
+                });
+            }
         }
 
         // Add account to request object (as both user and specific type)
