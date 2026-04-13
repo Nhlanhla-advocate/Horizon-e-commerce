@@ -39,6 +39,7 @@ useEffect(() => {
 
             const result = await response.json();
             const rawProducts = Array.isArray(result?.data) ? result.data : [];
+            console.log(result);
 
             const normalizedProducts = rawProducts.map((product, index) => {
                 const stockQuantity = typeof product.stockQuantity === 'number'
