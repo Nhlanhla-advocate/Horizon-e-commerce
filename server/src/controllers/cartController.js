@@ -87,17 +87,26 @@ exports.addToCart = async (req, res) => {
             });
         }
 
+        const productImage =
+            Array.isArray(product.images) && product.images.length > 0 && typeof product.images[0] === 'string'
+                ? product.images[0].trim()
+                : '';
+
         let cart = await Cart.findOne({ customerId: userId });
         if (cart) {
             const itemIndex = cart.items.findIndex(item => item.productId.toString() === productIdToAdd);
             if (itemIndex > -1) {
                 cart.items[itemIndex].quantity += quantityToAdd;
+                if (!cart.items[itemIndex].image && productImage) {
+                    cart.items[itemIndex].image = productImage;
+                }
             } else {
                 cart.items.push({ 
                     productId: productIdToAdd, 
                     quantity: quantityToAdd, 
                     price: product.price,
-                    name: product.name // Add the product name
+                    name: product.name, // Add the product name
+                    image: productImage || undefined
                 });
             }
             cart.totalPrice += product.price * quantityToAdd;
@@ -108,7 +117,8 @@ exports.addToCart = async (req, res) => {
                     productId: productIdToAdd, 
                     quantity: quantityToAdd, 
                     price: product.price,
-                    name: product.name // Add the product name
+                    name: product.name, // Add the product name
+                    image: productImage || undefined
                 }],
                 totalPrice: product.price * quantityToAdd
             });
@@ -145,17 +155,28 @@ exports.addToCart = async (req, res) => {
     }
 };
 
+function findCartLineItemIndex(items, productIdInput) {
+    if (!Array.isArray(items) || productIdInput == null) return -1;
+    const idStr = String(productIdInput).trim();
+    if (!mongoose.Types.ObjectId.isValid(idStr)) return -1;
+    const target = new mongoose.Types.ObjectId(idStr);
+    return items.findIndex((item) => item.productId && item.productId.equals(target));
+}
+
 // Removing a single item from the cart
 exports.removeFromCart = async (req, res) => {
     const { userId, productId } = req.body;
 
     try {
+        if (!userId || !productId) {
+            return res.status(400).json({ message: 'userId and productId are required' });
+        }
         const cart = await Cart.findOne({ customerId: userId });
         if (!cart) {
             return res.status(404).json({ message: 'Cart not found' });
         }
 
-        const itemIndex = cart.items.findIndex(item => item.productId.toString() === productId);
+        const itemIndex = findCartLineItemIndex(cart.items, productId);
         if (itemIndex > -1) {
             const item = cart.items[itemIndex];
             cart.totalPrice -= item.price * item.quantity;
@@ -181,7 +202,7 @@ exports.removeMultipleItems = async (req, res) => {
         }
 
         productIds.forEach(productId => {
-            const itemIndex = cart.items.findIndex(item => item.productId.toString() === productId);
+            const itemIndex = findCartLineItemIndex(cart.items, productId);
             if (itemIndex > -1) {
                 const item = cart.items[itemIndex];
                 cart.totalPrice -= item.price * item.quantity;
@@ -270,7 +291,7 @@ exports.updateItemQuantity = async (req, res) => {
             return res.status(404).json({ message: 'Cart not found' });
         }
 
-        const itemIndex = cart.items.findIndex(item => item.productId.toString() === productId);
+        const itemIndex = findCartLineItemIndex(cart.items, productId);
         if (itemIndex === -1) {
             return res.status(404).json({ message: 'Item not found in the cart' });
         }
