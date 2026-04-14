@@ -1,12 +1,13 @@
 'use client'
 
 import React, { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/app/components/cart/Cart';
 import '../assets/css/product.css';
 
-const ProductsPage = () => { // Changed to PascalCase
+const ProductsPageClient = () => { // Changed to PascalCase
     const { addToCart } = useCart();
    const [allProducts, setAllProducts] = useState([]);
    const [products, setProducts] = useState([]);
@@ -346,4 +347,16 @@ return (
 );
 };
 
-export default ProductsPage; 
+export default dynamic(
+  () => Promise.resolve({ default: ProductsPageClient }),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="products-page-container">
+        <div className="empty-state">
+          <h3>Loading products…</h3>
+        </div>
+      </div>
+    ),
+  }
+);

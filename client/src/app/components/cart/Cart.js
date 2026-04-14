@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useState, useContext, useEffect, useCallback, useMemo } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -32,15 +32,29 @@ const getGuestId = () => {
   return guestId;
 }; 
 
-const normalizeProductId = (value) => {
-  if (!value) return null;
-  if (typeof value === 'string') return value;
+export function normalizeProductId(value) {
+  if (value == null || value === '') return null;
+  if (typeof value === 'string') return value.trim();
   if (typeof value === 'object') {
-    if (typeof value._id === 'string') return value._id;
-    if (typeof value.productId === 'string') return value.productId;
+    if (typeof value._id === 'string') return value._id.trim();
+    if (value._id != null && typeof value._id === 'object' && typeof value._id.toString === 'function') {
+      const s = value._id.toString();
+      if (s && s !== '[object Object]') return s;
+    }
+    if (typeof value.productId === 'string') return value.productId.trim();
+    if (value.productId != null && typeof value.productId.toString === 'function') {
+      const s = value.productId.toString();
+      if (s && s !== '[object Object]') return s;
+    }
+    if (typeof value.toHexString === 'function') return value.toHexString();
+    if (typeof value.toString === 'function') {
+      const s = value.toString();
+      if (s && s !== '[object Object]') return s;
+    }
   }
-  return String(value);
-};
+  const s = String(value);
+  return s === '[object Object]' ? null : s;
+}
 
 const safeReadResponseBody = async (res) => {
   try {
@@ -60,6 +74,27 @@ export const CartProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [showAddedToast, setShowAddedToast] = useState(false);
   const [addedItem, setAddedItem] = useState(null);
+
+  const refreshCartFromServer = useCallback(async (cartId) => {
+    try {
+      const res = await fetch(`${BASE_URL}/cart/${cartId}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      setCart(data);
+      localStorage.setItem('localCart', JSON.stringify(data));
+    } catch (err) {
+      console.error('refreshCartFromServer failed:', err);
+    }
+  }, []);
+
+  /** Serialize cart writes so concurrent adds/removes cannot apply stale responses out of order. */
+  const cartMutationChainRef = useRef(Promise.resolve());
+  const enqueueCartMutation = useCallback((mutation) => {
+    const run = () => Promise.resolve().then(mutation);
+    const next = cartMutationChainRef.current.then(run, run);
+    cartMutationChainRef.current = next.catch(() => {});
+    return next;
+  }, []);
 
   // Fetch cart from Express backend
   const fetchCart = useCallback(async () => {
@@ -252,6 +287,45 @@ export const CartProvider = ({ children }) => {
     };
   }, []);
 
+  // Helper: merge into cart when the API is unavailable (uses functional state — no stale cart.items).
+  const updateLocalCart = useCallback((productId, quantity, productData) => {
+    setCart((prev) => {
+      const items = Array.isArray(prev.items) ? prev.items : [];
+      const existingItemIndex = items.findIndex(
+        (item) => normalizeProductId(item.productId) === productId
+      );
+      let updatedItems;
+
+      if (existingItemIndex >= 0) {
+        updatedItems = [...items];
+        updatedItems[existingItemIndex] = {
+          ...updatedItems[existingItemIndex],
+          quantity: updatedItems[existingItemIndex].quantity + quantity
+        };
+      } else {
+        updatedItems = [
+          ...items,
+          {
+            productId,
+            name: productData?.name || 'Unknown Product',
+            price: productData?.price || 0,
+            quantity,
+            image: productData?.image
+          }
+        ];
+      }
+
+      const newTotalPrice = updatedItems.reduce(
+        (total, item) => total + (item.price * item.quantity),
+        0
+      );
+      const updatedCart = { items: updatedItems, totalPrice: newTotalPrice };
+      localStorage.setItem('localCart', JSON.stringify(updatedCart));
+      console.log('Cart updated locally as fallback', updatedCart);
+      return updatedCart;
+    });
+  }, []);
+
   // Add to cart 
   const addToCart = useCallback(async (productId, quantity = 1, productData = null) => {
     const userId = localStorage.getItem('userId');
@@ -280,196 +354,166 @@ export const CartProvider = ({ children }) => {
     setShowAddedToast(true);
     setTimeout(() => setShowAddedToast(false), 3500);
     
-    // Always sync with server first for cross-browser persistence
-    if (isValidHex24) {
-      try {
-        console.log('Syncing cart with server for cross-browser persistence...');
-        const res = await fetch(`${BASE_URL}/cart/add`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            userId: cartId, // Use cartId (either userId or guestId)
-            productId: normalizedProductId, 
-            quantity 
-          }),
-        });
-        
-        if (res.ok) {
-          const data = await res.json();
-          // Update cart with server response for cross-browser consistency
-          const serverCart = data.cart || data;
-          setCart(serverCart);
-          // Update localStorage to keep it in sync
-          localStorage.setItem('localCart', JSON.stringify(serverCart));
-          console.log('Server sync successful - cart updated from server and localStorage');
-        } else {
-          const errorData = await safeReadResponseBody(res);
-          console.error('Failed to add to cart:', errorData);
-          // Fallback to local update if server fails
+    return enqueueCartMutation(async () => {
+      if (isValidHex24) {
+        try {
+          console.log('Syncing cart with server for cross-browser persistence...');
+          const res = await fetch(`${BASE_URL}/cart/add`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              userId: cartId,
+              productId: normalizedProductId, 
+              quantity 
+            }),
+          });
+          
+          if (res.ok) {
+            await res.json().catch(() => ({}));
+            await refreshCartFromServer(cartId);
+            console.log('Server sync successful - cart refreshed from server');
+          } else {
+            const errorData = await safeReadResponseBody(res);
+            console.error('Failed to add to cart:', errorData);
+            updateLocalCart(normalizedProductId, quantity, productData);
+          }
+        } catch (err) {
+          console.error('Error adding to cart:', err);
           updateLocalCart(normalizedProductId, quantity, productData);
         }
-      } catch (err) {
-        console.error('Error adding to cart:', err);
-        // Fallback to local update if server fails
+      } else {
+        console.warn('Skipping server sync due to invalid productId format. Using local cart only.', normalizedProductId);
         updateLocalCart(normalizedProductId, quantity, productData);
       }
-    } else {
-      console.warn('Skipping server sync due to invalid productId format. Using local cart only.', normalizedProductId);
-      updateLocalCart(normalizedProductId, quantity, productData);
-    }
-  }, [cart.items]);
+    });
+  }, [enqueueCartMutation, refreshCartFromServer, updateLocalCart]);
 
-  // Helper function to update local cart state
-  const updateLocalCart = useCallback((productId, quantity, productData) => {
-    const existingItemIndex = cart.items.findIndex(item => item.productId === productId);
-    let updatedItems;
-    
-    if (existingItemIndex >= 0) {
-      updatedItems = [...cart.items];
-      updatedItems[existingItemIndex] = {
-        ...updatedItems[existingItemIndex],
-        quantity: updatedItems[existingItemIndex].quantity + quantity
-      };
-    } else {
-      updatedItems = [...cart.items, {
-        productId,
-        name: productData?.name || "Unknown Product",
-        price: productData?.price || 0,
-        quantity,
-        image: productData?.image
-      }];
-    }
-    
-    const newTotalPrice = updatedItems.reduce((total, item) => 
-      total + (item.price * item.quantity), 0);
-    
-    const updatedCart = { 
-      items: updatedItems, 
-      totalPrice: newTotalPrice
-    };
-    
-    setCart(updatedCart);
-    localStorage.setItem('localCart', JSON.stringify(updatedCart));
-    console.log('Cart updated locally as fallback', updatedCart);
-  }, [cart.items]);
+  // Helper function to update local quantity
+  const updateLocalQuantity = useCallback((productId, nextQuantity) => {
+    const targetId = normalizeProductId(productId);
+    setCart((prev) => {
+      const items = Array.isArray(prev.items) ? prev.items : [];
+      const updatedItems = items
+        .map((item) =>
+          normalizeProductId(item.productId) === targetId
+            ? { ...item, quantity: Math.max(0, nextQuantity) }
+            : item
+        )
+        .filter((item) => item.quantity > 0);
+      const newTotalPrice = updatedItems.reduce(
+        (total, item) => total + (item.price * item.quantity),
+        0
+      );
+      const updatedCart = { items: updatedItems, totalPrice: newTotalPrice };
+      localStorage.setItem('localCart', JSON.stringify(updatedCart));
+      console.log('Quantity updated locally as fallback', updatedCart);
+      return updatedCart;
+    });
+  }, []);
 
   // Remove from cart
   const removeFromCart = useCallback(async (productId) => {
     const userId = localStorage.getItem('userId');
     const guestId = getGuestId();
     const cartId = userId || guestId;
-    
-    // Always sync with server first for cross-browser persistence
-    try {
-      const res = await fetch(`${BASE_URL}/cart/remove`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: cartId, productId }),
-      });
-      
-      if (res.ok) {
-        // Update local state and localStorage
+
+    return enqueueCartMutation(async () => {
+      try {
+        const productIdForApi = normalizeProductId(productId);
+        if (!productIdForApi) {
+          console.error('removeFromCart: missing product id');
+          return;
+        }
+        const res = await fetch(`${BASE_URL}/cart/remove`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: cartId, productId: productIdForApi }),
+        });
+
+        if (res.ok) {
+          await refreshCartFromServer(cartId);
+          console.log('Item removed from server and cart refreshed');
+        } else {
+          const errBody = await safeReadResponseBody(res);
+          console.error('Failed to remove from cart on server', res.status, errBody);
+          const targetId = normalizeProductId(productId);
+          setCart((prev) => {
+            const items = Array.isArray(prev.items) ? prev.items : [];
+            const updatedItems = items.filter(
+              (item) => normalizeProductId(item.productId) !== targetId
+            );
+            const newTotalPrice = updatedItems.reduce(
+              (total, item) => total + (item.price * item.quantity),
+              0
+            );
+            const updatedCart = { items: updatedItems, totalPrice: newTotalPrice };
+            localStorage.setItem('localCart', JSON.stringify(updatedCart));
+            return updatedCart;
+          });
+        }
+      } catch (error) {
+        console.error('Error removing from cart:', error);
         const targetId = normalizeProductId(productId);
-        const updatedItems = cart.items.filter(item => normalizeProductId(item.productId) !== targetId);
-        const newTotalPrice = updatedItems.reduce((total, item) => 
-          total + (item.price * item.quantity), 0);
-        
-        const updatedCart = {
-          items: updatedItems,
-          totalPrice: newTotalPrice
-        };
-        
-        setCart(updatedCart);
-        localStorage.setItem('localCart', JSON.stringify(updatedCart));
-        console.log('Item removed from server and localStorage updated');
-      } else {
-        console.error('Failed to remove from cart on server');
-        // Fallback to local update if server fails
-        const targetId = normalizeProductId(productId);
-        const updatedItems = cart.items.filter(item => normalizeProductId(item.productId) !== targetId);
-        const newTotalPrice = updatedItems.reduce((total, item) => 
-          total + (item.price * item.quantity), 0);
-        
-        const updatedCart = {
-          items: updatedItems,
-          totalPrice: newTotalPrice
-        };
-        
-        setCart(updatedCart);
-        localStorage.setItem('localCart', JSON.stringify(updatedCart));
+        setCart((prev) => {
+          const items = Array.isArray(prev.items) ? prev.items : [];
+          const updatedItems = items.filter(
+            (item) => normalizeProductId(item.productId) !== targetId
+          );
+          const newTotalPrice = updatedItems.reduce(
+            (total, item) => total + (item.price * item.quantity),
+            0
+          );
+          const updatedCart = { items: updatedItems, totalPrice: newTotalPrice };
+          localStorage.setItem('localCart', JSON.stringify(updatedCart));
+          return updatedCart;
+        });
       }
-    } catch (error) {
-      console.error('Error removing from cart:', error);
-      // Fallback to local update if server fails
-      const targetId = normalizeProductId(productId);
-      const updatedItems = cart.items.filter(item => normalizeProductId(item.productId) !== targetId);
-      const newTotalPrice = updatedItems.reduce((total, item) => 
-        total + (item.price * item.quantity), 0);
-      
-      const updatedCart = {
-        items: updatedItems,
-        totalPrice: newTotalPrice
-      };
-      
-      setCart(updatedCart);
-      localStorage.setItem('localCart', JSON.stringify(updatedCart));
-    }
-  }, [cart.items]);
+    });
+  }, [enqueueCartMutation, refreshCartFromServer]);
 
   // Update item quantity
   const updateQuantity = useCallback(async (productId, nextQuantity) => {
     const userId = localStorage.getItem('userId');
     const guestId = getGuestId();
     const cartId = userId || guestId;
-    const productIdString = typeof productId === 'string' ? productId : (typeof productId === 'object' ? productId._id : String(productId));
-    const isValidHex24 = typeof productIdString === 'string' && /^[a-fA-F0-9]{24}$/.test(productIdString);
-    
-    // Always sync with server first for cross-browser persistence
-    if (isValidHex24) {
-      try {
-        const res = await fetch(`${BASE_URL}/cart/update-quantity`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: cartId, productId: productIdString, quantity: nextQuantity })
-        });
-        if (res.ok) {
-          const data = await res.json();
-          // Update cart with server response for cross-browser consistency
-          const serverCart = data.cart || data;
-          setCart(serverCart);
-          // Also update localStorage to keep it in sync
-          localStorage.setItem('localCart', JSON.stringify(serverCart));
-          console.log('Server sync successful - cart updated from server and localStorage');
-        } else {
-          console.error('Failed to update quantity on server');
-          // Fallback to local update if server fails
+    const productIdString =
+      typeof productId === 'string'
+        ? productId
+        : typeof productId === 'object' && productId?._id
+          ? productId._id
+          : String(productId);
+    const isValidHex24 =
+      typeof productIdString === 'string' && /^[a-fA-F0-9]{24}$/.test(productIdString);
+
+    return enqueueCartMutation(async () => {
+      if (isValidHex24) {
+        try {
+          const res = await fetch(`${BASE_URL}/cart/update-quantity`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: cartId,
+              productId: productIdString,
+              quantity: nextQuantity,
+            }),
+          });
+          if (res.ok) {
+            await res.json().catch(() => ({}));
+            await refreshCartFromServer(cartId);
+            console.log('Server sync successful - cart refreshed from server');
+          } else {
+            console.error('Failed to update quantity on server');
+            updateLocalQuantity(productId, nextQuantity);
+          }
+        } catch (err) {
+          console.error('Error updating quantity:', err);
           updateLocalQuantity(productId, nextQuantity);
         }
-      } catch (err) {
-        console.error('Error updating quantity:', err);
-        // Fallback to local update if server fails
+      } else {
         updateLocalQuantity(productId, nextQuantity);
       }
-    } else {
-      // Fallback to local update if productId is invalid
-      updateLocalQuantity(productId, nextQuantity);
-    }
-  }, [cart.items]);
-
-  // Helper function to update local quantity
-  const updateLocalQuantity = useCallback((productId, nextQuantity) => {
-    const updatedItems = cart.items.map(item =>
-      item.productId === productId || (typeof item.productId === 'object' && item.productId._id === productId)
-        ? { ...item, quantity: Math.max(0, nextQuantity) }
-        : item
-    ).filter(item => item.quantity > 0);
-
-    const newTotalPrice = updatedItems.reduce((total, item) => total + (item.price * item.quantity), 0);
-    const updatedCart = { items: updatedItems, totalPrice: newTotalPrice };
-    setCart(updatedCart);
-    localStorage.setItem('localCart', JSON.stringify(updatedCart));
-    console.log('Quantity updated locally as fallback', updatedCart);
-  }, [cart.items]);
+    });
+  }, [enqueueCartMutation, refreshCartFromServer, updateLocalQuantity]);
 
   // Checkout - create order from cart
   const checkout = useCallback(async () => {
