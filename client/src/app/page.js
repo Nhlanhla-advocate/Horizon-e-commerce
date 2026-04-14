@@ -11,75 +11,9 @@ const Products = () => {
     const { addToCart } = useCart();
     const searchParams = useSearchParams();
     const [searchQuery, setSearchQuery] = useState('');
-    
-    const products = [
-        {
-            id: 1,
-            name: 'PlayStation 5 Digital',
-            _id: '687758601f8fda62d2898c43',
-            price: 12000.00,
-            image: '/Pictures/Playstation 5 Digital.jpg',
-            slug: 'playstation-5-digital',
-            description: 'Digital edition PlayStation 5',
-            category: 'consoles',
-            stockQuantity: 10
-        },
-        {
-            id: 2,
-            name: 'PlayStation 4 Slim',
-            _id: 'ps4-slim-placeholder-id',
-            price: 4000.00,
-            image: '/Pictures/Playstation 4 Slim.jpg',
-            slug: 'playstation-4-slim',
-            description: 'Slim version of PlayStation 4',
-            category: 'consoles',
-            stockQuantity: 0   // Out of stock
-        },
-        {
-            id: 3,
-            name: 'PlayStation 4',
-            _id: '68a5651b427b2be32fafb36d',
-            price: 3000.00,
-            image: '/Pictures/Playstation 4.jpg',
-            slug: 'playstation-4',
-            description: 'Standard PlayStation 4',
-            category: 'consoles',
-            stockQuantity: 3
-        },
-        {
-            id: 4,
-            name: 'PlayStation 5 Disk',
-            _id: '68a563dc8597038db441354b',
-            price: 16500.00,
-            image: '/Pictures/Playstation 5 disk.jpg',
-            slug: 'playstation-5-disk',
-            description: 'Disk edition PlayStation 5',
-            category: 'consoles',
-            stockQuantity: 12
-        },
-        {
-            id: 5,
-            name: 'PlayStation 5 Pro',
-            _id: '68a564b8ac286caca9d2bf0a',
-            price: 19500.00,
-            image: '/Pictures/Playstation 5 pro.jpg',
-            slug: 'playstation-5-pro',
-            description: 'Pro version PlayStation 5',
-            category: 'consoles',
-            stockQuantity: 8
-        },
-        {
-            id: 6,
-            name: 'PlayStation 4 Pro',
-            _id: '68a56573a6d3751170b258a9',
-            price: 12000.00,
-            image: '/Pictures/Playstation 4 pro.jpg',
-            slug: 'playstation-4-pro',
-            description: 'Pro version PlayStation 4',
-            category: 'consoles',
-            stockQuantity: 5
-        }
-    ];
+    const [products, setProducts] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [fetchError, setFetchError] = useState('');
 
     // Read search parameter from URL on component mount
     useEffect(() => {
@@ -88,6 +22,55 @@ const Products = () => {
             setSearchQuery(urlSearch);
         }
     }, [searchParams]);
+
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                setIsLoading(true);
+                setFetchError('');
+                const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+                const response = await fetch(`${baseUrl}/products`);
+
+                if (!response.ok) {
+                    throw new Error('Unable to load featured products.');
+                }
+
+                const result = await response.json();
+                const rawProducts = Array.isArray(result?.data) ? result.data : [];
+
+                const normalizedProducts = rawProducts.map((product, index) => {
+                    const stockQuantity = typeof product.stockQuantity === 'number'
+                        ? product.stockQuantity
+                        : (typeof product.stock === 'number' ? product.stock : 0);
+                    const rawImage = Array.isArray(product.images) && product.images.length > 0
+                        ? product.images[0]
+                        : product.image;
+                    const imageCandidate = typeof rawImage === 'string' ? rawImage.trim() : '';
+                    const image = imageCandidate
+                        ? (imageCandidate.startsWith('http') ? imageCandidate : `/${imageCandidate.replace(/^\//, '')}`)
+                        : '/Pictures/placeholder.jpg';
+                    const slugBase = product.slug || (product.name?.toLowerCase().replace(/\s+/g, '-') || 'product');
+
+                    return {
+                        ...product,
+                        id: product.id ?? index + 1,
+                        stockQuantity,
+                        image,
+                        slug: `${slugBase}-${product._id}`
+                    };
+                });
+
+                setProducts(normalizedProducts);
+            } catch (error) {
+                setFetchError(error.message || 'Failed to fetch featured products.');
+                setProducts([]);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchProducts();
+    }, []);
 
     // Filter products based on search query (same logic as products page)
     const filteredProducts = products.filter(product => {
@@ -118,9 +101,6 @@ const Products = () => {
         url.searchParams.delete('search');
         window.history.replaceState({}, '', url);
     };
-
-    // Debug: check if products are loading
-    console.log('Products loaded:', products);
 
     return (
         <div className="products-page-container">
@@ -169,10 +149,20 @@ const Products = () => {
             </div>
             
             <div className="products-grid">
+                {isLoading && (
+                    <div className="empty-state">
+                        <h3>Loading featured products...</h3>
+                    </div>
+                )}
+                {!isLoading && fetchError && (
+                    <div className="empty-state">
+                        <h3>Could not load featured products</h3>
+                        <p>{fetchError}</p>
+                    </div>
+                )}
+                {!isLoading && !fetchError && (
+                <>
                 {filteredProducts.map((product) => {
-                    // Debug each product
-                    console.log('Rendering product:', product.name, 'ID:', product._id);
-                    
                     return (
                         <div key={product.id} className="product-card">
                             <div className="product-image-container"> 
@@ -209,7 +199,6 @@ const Products = () => {
                                     type="button"
                                     className="add-to-cart-button"
                                     onClick={() => {
-                                        console.log('Add to Cart clicked for:', product.name, 'id:', product._id);
                                         addToCart(
                                             product._id,
                                             1,
@@ -235,6 +224,8 @@ const Products = () => {
                         </div>
                     );
                 })}
+                </>
+                )}
             </div>
 
             {/* Show message when no products found */}

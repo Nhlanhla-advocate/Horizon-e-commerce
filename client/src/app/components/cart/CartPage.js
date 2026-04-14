@@ -1,8 +1,38 @@
 "use client";
 import React from 'react';
 import Image from 'next/image';
-import { useCart } from './Cart';
+import { useCart, normalizeProductId } from './Cart';
 import '../../assets/css/cart.css';
+
+const PLACEHOLDER_IMAGE = '/Pictures/placeholder.jpg';
+
+/** Encode each path segment so spaces and special chars work with next/image and the browser. */
+function normalizeImageSrc(src) {
+    if (!src || typeof src !== 'string') return PLACEHOLDER_IMAGE;
+    const trimmed = src.trim();
+    if (!trimmed) return PLACEHOLDER_IMAGE;
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+    const pathOnly = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+    const segments = pathOnly.split('/').filter(Boolean);
+    if (segments.length === 0) return PLACEHOLDER_IMAGE;
+    return `/${segments.map((seg) => encodeURIComponent(seg)).join('/')}`;
+}
+
+function resolveCartItemImageSrc(item) {
+    if (item?.image && typeof item.image === 'string' && item.image.trim()) {
+        return normalizeImageSrc(item.image);
+    }
+    const pid = item?.productId;
+    if (pid && typeof pid === 'object') {
+        if (Array.isArray(pid.images) && pid.images[0] && typeof pid.images[0] === 'string') {
+            return normalizeImageSrc(pid.images[0]);
+        }
+        if (pid.image && typeof pid.image === 'string' && pid.image.trim()) {
+            return normalizeImageSrc(pid.image);
+        }
+    }
+    return PLACEHOLDER_IMAGE;
+}
 
 export default function CartPage() {
     const { 
@@ -29,21 +59,9 @@ export default function CartPage() {
                 <div className="cart-content">
                     <ul className="cart-items-list">
                         {cart.items.map((item) => {
-                            // Handle different image source possibilities
-                            let imageSrc = '/next.svg'; // Default fallback
+                            const imageSrc = resolveCartItemImageSrc(item);
                             
-                            if (item.image) {
-                                // Direct image path from cart item
-                                imageSrc = item.image;
-                            } else if (item?.productId?.images?.[0]) {
-                                // From populated product data
-                                imageSrc = item.productId.images[0];
-                            } else if (typeof item?.productId === 'object' && item?.productId?.image) {
-                                // From populated product data (alternative field)
-                                imageSrc = item.productId.image;
-                            }
-                            
-                            const productKey = typeof item.productId === 'object' ? item.productId._id : item.productId;
+                            const productKey = normalizeProductId(item.productId) || `idx-${item.name}`;
                             return (
                                 <li key={productKey} className="cart-item">
                                     <div className="cart-item-image">
@@ -51,6 +69,7 @@ export default function CartPage() {
                                             src={imageSrc} 
                                             alt={item.name || 'Product'} 
                                             fill 
+                                            sizes="80px"
                                             style={{ objectFit: 'cover', borderRadius: 4 }} 
                                         />
                                     </div>
