@@ -2,6 +2,24 @@ const Product = require('../models/product');
 const Review = require('../models/review');
 const mongoose = require('mongoose');
 
+const normalizeImagePath = (value) => {
+  if (typeof value !== 'string') return value;
+
+  return value.trim().replace(/^['"]+|['"]+$/g, '');
+};
+
+const sanitizeProductImages = (product) => {
+  if (!product) return product;
+
+  const plainProduct = typeof product.toObject === 'function' ? product.toObject() : product;
+  const images = Array.isArray(plainProduct.images) ? plainProduct.images : [];
+
+  return {
+    ...plainProduct,
+    images: images.map(normalizeImagePath)
+  };
+};
+
 class ProductController {
   // List products with filtering, sorting, and pagination
   async listProducts(req, res) {
@@ -44,7 +62,7 @@ class ProductController {
 
       return res.json({
         success: true,
-        data: products,
+        data: products.map(sanitizeProductImages),
         pagination: {
           total,
           pages: Math.ceil(total / limit),
@@ -75,7 +93,7 @@ class ProductController {
 
       return res.json({
         success: true,
-        data: product
+        data: sanitizeProductImages(product)
       });
     } catch (error) {
       return res.status(500).json({
