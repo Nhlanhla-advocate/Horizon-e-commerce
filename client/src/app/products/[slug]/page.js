@@ -2,10 +2,35 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
-import Navbar from '../../components/navbar/Navbar';
 import '../../assets/css/product.css';
 import ImageModal from '../../components/imagemodal/ImageModal';
 import { useCart } from '@/app/components/cart/Cart';
+
+const normalizeProductImagePath = (value) => {
+  if (typeof value !== 'string') return '';
+
+  const cleaned = value
+    .trim()
+    .replace(/^['"]+|['"]+$/g, '');
+
+  if (!cleaned) return '';
+  if (cleaned.startsWith('http')) return cleaned;
+
+  return `/${cleaned.replace(/^\//, '')}`;
+};
+
+const playstationFallbackImages = {
+  ps5: [
+    '/Pictures/Playstation 5.jpg',
+    '/Pictures/Playstation 5 disk.jpg',
+    '/Pictures/Playstation 5 pro.jpg'
+  ],
+  ps4: [
+    '/Pictures/Playstation 4.jpg',
+    '/Pictures/Playstation4.jpg',
+    '/Pictures/Playstation 4 Pro.jpg'
+  ]
+};
 
 export default function ProductDetail() {
   const params = useParams();
@@ -59,14 +84,42 @@ export default function ProductDetail() {
 
   const productImages = useMemo(() => {
     if (!product) return ['/Pictures/placeholder.jpg'];
-    if (Array.isArray(product.images) && product.images.length > 0) {
-      return product.images;
-    }
-    if (typeof product.image === 'string' && product.image.length > 0) {
-      return [product.image];
-    }
-    return ['/Pictures/placeholder.jpg'];
+
+    const fromApi = Array.isArray(product.images) && product.images.length > 0
+      ? product.images
+      : (typeof product.image === 'string' && product.image.length > 0 ? [product.image] : []);
+
+    const normalizedImages = fromApi
+      .map(normalizeProductImagePath)
+      .filter(Boolean);
+
+    const productName = String(product.name || '').toLowerCase();
+    const isPS5 = productName.includes('playstation 5') || productName.includes('ps5');
+    const isPS4 = productName.includes('playstation 4') || productName.includes('ps4');
+    const fallbackSet = isPS5 ? playstationFallbackImages.ps5 : (isPS4 ? playstationFallbackImages.ps4 : []);
+
+    const merged = [...normalizedImages];
+    fallbackSet.forEach((img) => {
+      const normalizedFallback = normalizeProductImagePath(img);
+      if (normalizedFallback && !merged.includes(normalizedFallback)) {
+        merged.push(normalizedFallback);
+      }
+    });
+
+    return merged.length > 0 ? merged : ['/Pictures/placeholder.jpg'];
   }, [product]);
+
+  const galleryThumbnails = useMemo(() => productImages.slice(0, 3), [productImages]);
+
+  useEffect(() => {
+    setSelected(0);
+  }, [matchedProductId]);
+
+  useEffect(() => {
+    if (selected > productImages.length - 1) {
+      setSelected(0);
+    }
+  }, [productImages, selected]);
 
   const displayPrice = useMemo(() => {
     const price = Number(product?.price ?? 0);
@@ -93,7 +146,6 @@ export default function ProductDetail() {
 
   return (
     <>
-      <Navbar />
       <div className="container">
         {isLoading && (
           <div className="empty-state">
@@ -122,18 +174,18 @@ export default function ProductDetail() {
       <div className="container">
         <div className="mainContent">
           {/* Left: Images */}
-          <div className="leftImages">
-            <div className="imageFlexRow">
-              <div className="thumbnails">
+          <div className="leftImages" style={{ maxWidth: 560, width: '100%' }}>
+            <div className="imageFlexRow" style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+              <div className="thumbnails" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {/* Thumbnails */}
-                {productImages.map((img, idx) => (
+                {galleryThumbnails.map((img, idx) => (
                   <div key={img} style={{ border: idx === selected ? '2px solid #2563eb' : '1px solid #eee', borderRadius: 6, cursor: 'pointer', padding: 2, background: idx === selected ? '#e0e7ff' : '#fff' }} onClick={() => setSelected(idx)}>
-                    <Image src={img} alt={`${product.name} thumb ${idx + 1}`} width={60} height={60} style={{ borderRadius: 6, objectFit: 'cover', width: '100%', height: 'auto' }} />
+                    <Image src={img} alt={`${product.name} thumb ${idx + 1}`} width={72} height={72} style={{ borderRadius: 6, objectFit: 'cover', width: 72, height: 72 }} />
                   </div>
                 ))}
               </div>
-              <div className="mainImageContainer">
-                <Image src={productImages[selected]} alt={`${product.name} ${selected + 1}`} width={340} height={340} style={{ borderRadius: 10, objectFit: 'cover', border: '1px solid #eee', cursor: 'pointer', width: '100%', height: 'auto' }} onClick={() => setFullscreen(true)} />
+              <div className="mainImageContainer" style={{ position: 'relative', width: 420, maxWidth: 'calc(100vw - 160px)' }}>
+                <Image src={productImages[selected]} alt={`${product.name} ${selected + 1}`} width={420} height={420} style={{ borderRadius: 10, objectFit: 'contain', border: '1px solid #eee', cursor: 'pointer', width: '100%', maxWidth: 420, height: 420, background: '#fff' }} onClick={() => setFullscreen(true)} />
                 <button onClick={() => setFullscreen(true)} title="View Fullscreen" style={{ position: 'absolute', bottom: 16, right: 16, background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%', width: 38, height: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 2 }}>
                   <svg width="22" height="22" fill="#fff" viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4a1 1 0 1 0 2 0V5h4a1 1 0 1 0 0-2zm6 0a1 1 0 1 0 0 2h4v4a1 1 0 1 0 2 0V5a2 2 0 0 0-2-2h-4zm5 14a1 1 0 0 0-1 1v4h-4a1 1 0 1 0 0 2h4a2 2 0 0 0 2-2v-4a1 1 0 0 0-1-1zm-16 1a1 1 0 0 0-1 1v4a2 2 0 0 0 2 2h4a1 1 0 1 0 0-2H5v-4a1 1 0 0 0-1-1z"/></svg>
                 </button>
