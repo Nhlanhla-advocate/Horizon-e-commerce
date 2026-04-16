@@ -7,6 +7,19 @@ import { useCart } from '@/app/components/cart/Cart';
 import { FaSearch, FaTimes } from 'react-icons/fa';
 import { useSearchParams } from 'next/navigation';
 
+const normalizeProductImagePath = (value) => {
+    if (typeof value !== 'string') return '/Pictures/placeholder.jpg';
+
+    const cleaned = value
+        .trim()
+        .replace(/^['"]+|['"]+$/g, '');
+
+    if (!cleaned) return '/Pictures/placeholder.jpg';
+    if (cleaned.startsWith('http')) return cleaned;
+
+    return `/${cleaned.replace(/^\//, '')}`;
+};
+
 const Products = () => {
     const { addToCart } = useCart();
     const searchParams = useSearchParams();
@@ -45,10 +58,7 @@ const Products = () => {
                     const rawImage = Array.isArray(product.images) && product.images.length > 0
                         ? product.images[0]
                         : product.image;
-                    const imageCandidate = typeof rawImage === 'string' ? rawImage.trim() : '';
-                    const image = imageCandidate
-                        ? (imageCandidate.startsWith('http') ? imageCandidate : `/${imageCandidate.replace(/^\//, '')}`)
-                        : '/Pictures/placeholder.jpg';
+                    const image = normalizeProductImagePath(rawImage);
                     const slugBase = product.slug || (product.name?.toLowerCase().replace(/\s+/g, '-') || 'product');
 
                     return {

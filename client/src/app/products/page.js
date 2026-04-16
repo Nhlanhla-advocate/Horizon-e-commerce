@@ -7,6 +7,19 @@ import Link from 'next/link';
 import { useCart } from '@/app/components/cart/Cart';
 import '../assets/css/product.css';
 
+const normalizeProductImagePath = (value) => {
+    if (typeof value !== 'string') return '/Pictures/placeholder.jpg';
+
+    const cleaned = value
+        .trim()
+        .replace(/^['"]+|['"]+$/g, '');
+
+    if (!cleaned) return '/Pictures/placeholder.jpg';
+    if (cleaned.startsWith('http')) return cleaned;
+
+    return `/${cleaned.replace(/^\//, '')}`;
+};
+
 const ProductsPageClient = () => { // Changed to PascalCase
     const { addToCart } = useCart();
    const [allProducts, setAllProducts] = useState([]);
@@ -46,9 +59,10 @@ useEffect(() => {
                 const stockQuantity = typeof product.stockQuantity === 'number'
                     ? product.stockQuantity
                     : (typeof product.stock === 'number' ? product.stock : 0);
-                const image = Array.isArray(product.images) && product.images.length > 0
+                const rawImage = Array.isArray(product.images) && product.images.length > 0
                     ? product.images[0]
-                    : (product.image || '/Pictures/placeholder.jpg');
+                    : product.image;
+                const image = normalizeProductImagePath(rawImage);
                 const slug = product.slug || `${product.name?.toLowerCase().replace(/\s+/g, '-') || 'product'}-${product._id}`;
 
                 return {
