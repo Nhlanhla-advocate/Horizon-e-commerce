@@ -197,6 +197,24 @@
   margin-top: 0.75rem;
 }
 
+.admin-sidebar-action-btn {
+  margin-top: 0.75rem;
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(0, 0, 0, 0.15);
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.admin-sidebar-action-btn:hover {
+  background: rgba(0, 0, 0, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
 .admin-sidebar-footer-status {
   display: flex;
   align-items: center;

@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 import '../../assets/css/sidebar.css';
 import ThemeToggle from './ThemeToggle';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export default function Sidebar({ tabs, activeTab, setActiveTab, sidebarOpen, setSidebarOpen }) {
+  const pathname = usePathname();
   const [user, setUser] = useState(null);
   const profileRequestRef = useRef(0);
   
@@ -82,6 +84,12 @@ export default function Sidebar({ tabs, activeTab, setActiveTab, sidebarOpen, se
   const roleLabel = user?.role === 'super_admin' ? 'Super Admin' : 'Admin';
   const displayName = user?.username || user?.email || 'Admin';
   const showEmail = user?.email && user?.username; // show email below when we have both (avoid duplicate when name is email)
+  const isAdminRoute = pathname?.startsWith('/admin');
+  const canSwitchView = user?.role === 'admin' || user?.role === 'super_admin';
+
+  const handleViewSwitch = () => {
+    window.location.href = isAdminRoute ? '/' : '/admin';
+  };
 
   return (
     <>
@@ -129,21 +137,19 @@ export default function Sidebar({ tabs, activeTab, setActiveTab, sidebarOpen, se
               <div className="admin-sidebar-footer-theme">
                 <ThemeToggle />
               </div>
+              {canSwitchView && (
+                <button
+                  type="button"
+                  onClick={handleViewSwitch}
+                  className="admin-sidebar-action-btn"
+                >
+                  {isAdminRoute ? 'Go to Main Site' : 'Back to Dashboard'}
+                </button>
+              )}
               <button
                 type="button"
                 onClick={handleLogout}
-                className="admin-sidebar-logout"
-                style={{
-                  marginTop: '0.75rem',
-                  width: '100%',
-                  padding: '0.65rem 0.75rem',
-                  borderRadius: '0.5rem',
-                  border: '1px solid rgba(255,255,255,0.25)',
-                  background: 'rgba(0,0,0,0.15)',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  fontWeight: 600,
-                }}
+                className="admin-sidebar-action-btn admin-sidebar-logout"
               >
                 Log out
               </button>
