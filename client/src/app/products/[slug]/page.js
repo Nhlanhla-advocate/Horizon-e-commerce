@@ -52,7 +52,18 @@ export default function ProductDetail() {
   const [fetchError, setFetchError] = useState('');
   const [fullscreen, setFullscreen] = useState(false);
   const [selected, setSelected] = useState(0);
+  const [relatedProducts, setRelatedProducts] = useState([]);
   const { addToCart } = useCart();
+
+  const buildProductDetailHref = (item) => {
+    if (!item?._id) return '#';
+    const baseSlug = typeof item.slug === 'string' && item.slug.trim().length > 0
+      ? item.slug.trim()
+      : String(item.name || 'product').toLowerCase().replace(/\s+/g, '-');
+
+    const slugWithId = baseSlug.endsWith(item._id) ? baseSlug : `${baseSlug}-${item._id}`;
+    return `/products/${slugWithId}`;
+  };
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -91,6 +102,28 @@ export default function ProductDetail() {
 
     fetchProduct();
   }, [matchedProductId]);
+
+  useEffect(() => {
+    const fetchRelatedProducts = async () => {
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+        const response = await fetch(`${baseUrl}/products`);
+        if (!response.ok) {
+          throw new Error('Unable to load related products.');
+        }
+
+        const result = await response.json();
+        const allProducts = Array.isArray(result?.data) ? result.data : [];
+
+        setRelatedProducts(allProducts);
+      } catch (error) {
+        console.error(error?.message || 'Failed to fetch related products.');
+        setRelatedProducts([]);
+      }
+    };
+
+    fetchRelatedProducts();
+  }, []);
 
   const productImages = useMemo(() => {
     if (!product) return ['/Pictures/placeholder.jpg'];
@@ -142,6 +175,21 @@ export default function ProductDetail() {
     if (typeof product.stock === 'number') return product.stock;
     return 0;
   }, [product]);
+
+  const relatedCategoryProducts = useMemo(() => {
+    if (!product?.category) return [];
+
+    const currentProductId = product?._id;
+    return relatedProducts
+      .filter((item) => item?._id && item._id !== currentProductId)
+      .filter((item) => String(item.category || '').toLowerCase() === String(product.category || '').toLowerCase())
+      .slice(0, 6);
+  }, [product, relatedProducts]);
+
+  const formatPrice = (price) => {
+    const amount = Number(price ?? 0);
+    return `R ${amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
+  };
 
   // Navigation handlers for modal
   const handlePrev = (e) => {
@@ -264,48 +312,30 @@ export default function ProductDetail() {
         <div style={{ marginTop: 0, textAlign: 'center', padding: '2rem 0', background: '#f8fafc', borderRadius: 10 }}>
           <h2 style={{ fontSize: '1.3rem', fontWeight: 600, marginBottom: 18, textAlign: 'center' }}>You Might Also Like</h2>
           <div className="you-might-like-slider">
-            {/* PlayStation 4 */}
-            <div style={{ minWidth: 180, maxWidth: 220, height: 260, background: '#f9fafb', borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.04)', padding: 12, textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center', scrollSnapAlign: 'start' }}>
-              <div style={{ width: 120, height: 120, margin: '0 auto 8px auto', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff', borderRadius: 6 }}>
-                <Image src="/Pictures/Playstation 4.jpg" alt="PS4" width={120} height={120} style={{ objectFit: 'contain', width: '100%', height: '100%', borderRadius: 6 }} />
+            {relatedCategoryProducts.length > 0 ? relatedCategoryProducts.map((item) => {
+              const imageCandidate = Array.isArray(item.images) && item.images.length > 0 ? item.images[0] : item.image;
+              const itemImage = normalizeProductImagePath(imageCandidate) || '/Pictures/placeholder.jpg';
+
+              return (
+                <div key={item._id} style={{ minWidth: 180, maxWidth: 220, height: 260, background: '#f9fafb', borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.04)', padding: 12, textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center', scrollSnapAlign: 'start' }}>
+                  <div style={{ width: 120, height: 120, margin: '0 auto 8px auto', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff', borderRadius: 6 }}>
+                    <Image src={itemImage} alt={item.name || 'Related product'} width={120} height={120} style={{ objectFit: 'contain', width: '100%', height: '100%', borderRadius: 6 }} />
+                  </div>
+                  <div style={{ fontWeight: 600, marginBottom: 4 }}>{item.name || 'Product'}</div>
+                  <div style={{ color: '#2563eb', fontWeight: 600, marginBottom: 4 }}>{formatPrice(item.price)}</div>
+                  <Link
+                    href={buildProductDetailHref(item)}
+                    style={{ background: '#2563eb', color: '#fff', padding: '0.5rem 1.2rem', border: 'none', borderRadius: 4, fontSize: '0.95rem', cursor: 'pointer', textDecoration: 'none', display: 'inline-block' }}
+                  >
+                    View
+                  </Link>
+                </div>
+              );
+            }) : (
+              <div style={{ width: '100%', color: '#6b7280', textAlign: 'center', padding: '1rem' }}>
+                No related products found in this category yet.
               </div>
-              <div style={{ fontWeight: 600, marginBottom: 4 }}>PlayStation 4</div>
-              <div style={{ color: '#2563eb', fontWeight: 600, marginBottom: 4 }}>R 3,000</div>
-              <Link
-                href="/products/playstation-4-69d62e1019e043ca85996fa7"
-                style={{ background: '#2563eb', color: '#fff', padding: '0.5rem 1.2rem', border: 'none', borderRadius: 4, fontSize: '0.95rem', cursor: 'pointer', textDecoration: 'none', display: 'inline-block' }}
-              >
-                View
-              </Link>
-            </div>
-            {/* PlayStation 5 Disk */}
-            <div style={{ minWidth: 180, maxWidth: 220, height: 260, background: '#f9fafb', borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.04)', padding: 12, textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center', scrollSnapAlign: 'start' }}>
-              <div style={{ width: 120, height: 120, margin: '0 auto 8px auto', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff', borderRadius: 6 }}>
-                <Image src="/Pictures/Playstation 5 disk.jpg" alt="PS5 Disk" width={120} height={120} style={{ objectFit: 'contain', width: '100%', height: '100%', borderRadius: 6 }} />
-              </div>
-              <div style={{ fontWeight: 600, marginBottom: 4 }}>PlayStation 5 Disk</div>
-              <div style={{ color: '#2563eb', fontWeight: 600, marginBottom: 4 }}>R 16,500</div>
-              <Link
-                href="/products/playstation-5-disk-69c4e0816f9a502a54895df6"
-                style={{ background: '#2563eb', color: '#fff', padding: '0.5rem 1.2rem', border: 'none', borderRadius: 4, fontSize: '0.95rem', cursor: 'pointer', textDecoration: 'none', display: 'inline-block' }}
-              >
-                View
-              </Link>
-            </div>
-            {/* PlayStation 5 Pro */}
-            <div style={{ minWidth: 180, maxWidth: 220, height: 260, background: '#f9fafb', borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.04)', padding: 12, textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center', scrollSnapAlign: 'start' }}>
-              <div style={{ width: 120, height: 120, margin: '0 auto 8px auto', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff', borderRadius: 6 }}>
-                <Image src="/Pictures/Playstation 5 pro.jpg" alt="PS5 Pro" width={120} height={120} style={{ objectFit: 'contain', width: '100%', height: '100%', borderRadius: 6 }} />
-              </div>
-              <div style={{ fontWeight: 600, marginBottom: 4 }}>PlayStation 5 Pro</div>
-              <div style={{ color: '#2563eb', fontWeight: 600, marginBottom: 4 }}>R 19,500</div>
-              <Link
-                href="/products/playstation-5-pro-69c50137740a2ba817048f2c"
-                style={{ background: '#2563eb', color: '#fff', padding: '0.5rem 1.2rem', border: 'none', borderRadius: 4, fontSize: '0.95rem', cursor: 'pointer', textDecoration: 'none', display: 'inline-block' }}
-              >
-                View
-              </Link>
-            </div>
+            )}
           </div>
         </div>
       </div>
