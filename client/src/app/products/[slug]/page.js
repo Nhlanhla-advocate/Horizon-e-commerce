@@ -23,14 +23,23 @@ const playstationFallbackImages = {
   ps5: [
     '/Pictures/Playstation 5.jpg',
     '/Pictures/Playstation 5 disk.jpg',
-    '/Pictures/Playstation 5 pro.jpg'
+    '/Pictures/Playstation 5 pro.jpg',
+    '/Pictures/Playstation 5 Digital.jpg'
   ],
   ps4: [
     '/Pictures/Playstation 4.jpg',
     '/Pictures/Playstation4.jpg',
-    '/Pictures/Playstation 4 Pro.jpg'
+    '/Pictures/Playstation 4 Pro.jpg',
+    '/Pictures/Playstation 4 Slim.jpg',
+    '/Pictures/Playstation 4 pro.jpg'
   ]
 };
+
+const pinnedThumbnailImages = [
+  '/Pictures/Playstation 4 pro.jpg',
+  '/Pictures/Playstation 5 Digital.jpg',
+  '/Pictures/Playstation 5 disk.jpg'
+];
 
 export default function ProductDetail() {
   const params = useParams();
@@ -99,7 +108,7 @@ export default function ProductDetail() {
     const fallbackSet = isPS5 ? playstationFallbackImages.ps5 : (isPS4 ? playstationFallbackImages.ps4 : []);
 
     const merged = [...normalizedImages];
-    fallbackSet.forEach((img) => {
+    [...fallbackSet, ...pinnedThumbnailImages].forEach((img) => {
       const normalizedFallback = normalizeProductImagePath(img);
       if (normalizedFallback && !merged.includes(normalizedFallback)) {
         merged.push(normalizedFallback);
@@ -109,7 +118,7 @@ export default function ProductDetail() {
     return merged.length > 0 ? merged : ['/Pictures/placeholder.jpg'];
   }, [product]);
 
-  const galleryThumbnails = useMemo(() => productImages.slice(0, 3), [productImages]);
+  const galleryThumbnails = useMemo(() => productImages.slice(0, 6), [productImages]);
 
   useEffect(() => {
     setSelected(0);
@@ -171,11 +180,17 @@ export default function ProductDetail() {
           onNext={handleNext}
         />
       )}
-      <div className="container">
+      <div className="container product-detail-section">
         <div className="mainContent">
           {/* Left: Images */}
           <div className="leftImages" style={{ maxWidth: 560, width: '100%' }}>
             <div className="imageFlexRow" style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+              <div className="mainImageContainer" style={{ position: 'relative', width: 420, maxWidth: 'calc(100vw - 160px)' }}>
+                <Image src={productImages[selected]} alt={`${product.name} ${selected + 1}`} width={420} height={420} style={{ borderRadius: 10, objectFit: 'contain', border: '1px solid #eee', cursor: 'pointer', width: '100%', maxWidth: 420, height: 420, background: '#fff' }} onClick={() => setFullscreen(true)} />
+                <button onClick={() => setFullscreen(true)} title="View Fullscreen" style={{ position: 'absolute', bottom: 16, right: 16, background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%', width: 38, height: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 2 }}>
+                  <svg width="22" height="22" fill="#fff" viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4a1 1 0 1 0 2 0V5h4a1 1 0 1 0 0-2zm6 0a1 1 0 1 0 0 2h4v4a1 1 0 1 0 2 0V5a2 2 0 0 0-2-2h-4zm5 14a1 1 0 0 0-1 1v4h-4a1 1 0 1 0 0 2h4a2 2 0 0 0 2-2v-4a1 1 0 0 0-1-1zm-16 1a1 1 0 0 0-1 1v4a2 2 0 0 0 2 2h4a1 1 0 1 0 0-2H5v-4a1 1 0 0 0-1-1z"/></svg>
+                </button>
+              </div>
               <div className="thumbnails" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {/* Thumbnails */}
                 {galleryThumbnails.map((img, idx) => (
@@ -183,12 +198,6 @@ export default function ProductDetail() {
                     <Image src={img} alt={`${product.name} thumb ${idx + 1}`} width={72} height={72} style={{ borderRadius: 6, objectFit: 'cover', width: 72, height: 72 }} />
                   </div>
                 ))}
-              </div>
-              <div className="mainImageContainer" style={{ position: 'relative', width: 420, maxWidth: 'calc(100vw - 160px)' }}>
-                <Image src={productImages[selected]} alt={`${product.name} ${selected + 1}`} width={420} height={420} style={{ borderRadius: 10, objectFit: 'contain', border: '1px solid #eee', cursor: 'pointer', width: '100%', maxWidth: 420, height: 420, background: '#fff' }} onClick={() => setFullscreen(true)} />
-                <button onClick={() => setFullscreen(true)} title="View Fullscreen" style={{ position: 'absolute', bottom: 16, right: 16, background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%', width: 38, height: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 2 }}>
-                  <svg width="22" height="22" fill="#fff" viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4a1 1 0 1 0 2 0V5h4a1 1 0 1 0 0-2zm6 0a1 1 0 1 0 0 2h4v4a1 1 0 1 0 2 0V5a2 2 0 0 0-2-2h-4zm5 14a1 1 0 0 0-1 1v4h-4a1 1 0 1 0 0 2h4a2 2 0 0 0 2-2v-4a1 1 0 0 0-1-1zm-16 1a1 1 0 0 0-1 1v4a2 2 0 0 0 2 2h4a1 1 0 1 0 0-2H5v-4a1 1 0 0 0-1-1z"/></svg>
-                </button>
               </div>
             </div>
           </div>
