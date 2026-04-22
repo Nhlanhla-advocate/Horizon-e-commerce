@@ -5,6 +5,31 @@
   padding: 2rem 1rem;
 }
 
+/* PRODUCT DETAIL LAYOUT SPACING */
+.product-detail-section {
+  margin-top: 2.25rem;
+  padding-top: 0.5rem;
+}
+
+.product-detail-section .mainContent {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.you-might-like-slider {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.25rem 0.5rem 0.75rem;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* PRODUCTS CONTROLS SECTION - FILTER/SEARCH BAR */
 .products-controls {
   background: white;
@@ -408,6 +433,16 @@
 
 /* TABLET (768px AND BELOW) */
 @media (max-width: 768px) {
+  .product-detail-section {
+    margin-top: 1.5rem;
+    padding-top: 0.25rem;
+  }
+
+  .product-detail-section .mainContent {
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
   .products-page-container {
     margin: 1rem auto;
     padding: 1rem;
