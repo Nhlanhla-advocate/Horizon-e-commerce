@@ -1,6 +1,7 @@
 'use client';
 import React, { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import '../../assets/css/product.css';
 import ImageModal from '../../components/imagemodal/ImageModal';
@@ -270,9 +271,12 @@ export default function ProductDetail() {
               </div>
               <div style={{ fontWeight: 600, marginBottom: 4 }}>PlayStation 4</div>
               <div style={{ color: '#2563eb', fontWeight: 600, marginBottom: 4 }}>R 3,000</div>
-              <button style={{ background: '#2563eb', color: '#fff', padding: '0.5rem 1.2rem', border: 'none', borderRadius: 4, fontSize: '0.95rem', cursor: 'pointer' }}>
+              <Link
+                href="/products/playstation-4-69d62e1019e043ca85996fa7"
+                style={{ background: '#2563eb', color: '#fff', padding: '0.5rem 1.2rem', border: 'none', borderRadius: 4, fontSize: '0.95rem', cursor: 'pointer', textDecoration: 'none', display: 'inline-block' }}
+              >
                 View
-              </button>
+              </Link>
             </div>
             {/* PlayStation 5 Disk */}
             <div style={{ minWidth: 180, maxWidth: 220, height: 260, background: '#f9fafb', borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.04)', padding: 12, textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center', scrollSnapAlign: 'start' }}>
@@ -281,9 +285,12 @@ export default function ProductDetail() {
               </div>
               <div style={{ fontWeight: 600, marginBottom: 4 }}>PlayStation 5 Disk</div>
               <div style={{ color: '#2563eb', fontWeight: 600, marginBottom: 4 }}>R 16,500</div>
-              <button style={{ background: '#2563eb', color: '#fff', padding: '0.5rem 1.2rem', border: 'none', borderRadius: 4, fontSize: '0.95rem', cursor: 'pointer' }}>
+              <Link
+                href="/products/playstation-5-disk-69c4e0816f9a502a54895df6"
+                style={{ background: '#2563eb', color: '#fff', padding: '0.5rem 1.2rem', border: 'none', borderRadius: 4, fontSize: '0.95rem', cursor: 'pointer', textDecoration: 'none', display: 'inline-block' }}
+              >
                 View
-              </button>
+              </Link>
             </div>
             {/* PlayStation 5 Pro */}
             <div style={{ minWidth: 180, maxWidth: 220, height: 260, background: '#f9fafb', borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.04)', padding: 12, textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center', scrollSnapAlign: 'start' }}>
@@ -292,9 +299,12 @@ export default function ProductDetail() {
               </div>
               <div style={{ fontWeight: 600, marginBottom: 4 }}>PlayStation 5 Pro</div>
               <div style={{ color: '#2563eb', fontWeight: 600, marginBottom: 4 }}>R 19,500</div>
-              <button style={{ background: '#2563eb', color: '#fff', padding: '0.5rem 1.2rem', border: 'none', borderRadius: 4, fontSize: '0.95rem', cursor: 'pointer' }}>
+              <Link
+                href="/products/playstation-5-pro-69c50137740a2ba817048f2c"
+                style={{ background: '#2563eb', color: '#fff', padding: '0.5rem 1.2rem', border: 'none', borderRadius: 4, fontSize: '0.95rem', cursor: 'pointer', textDecoration: 'none', display: 'inline-block' }}
+              >
                 View
-              </button>
+              </Link>
             </div>
           </div>
         </div>
