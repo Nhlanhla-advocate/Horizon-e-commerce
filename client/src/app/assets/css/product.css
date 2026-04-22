@@ -30,6 +30,31 @@
   -webkit-overflow-scrolling: touch;
 }
 
+.image-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(0, 0, 0, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.image-modal-content {
+  position: relative;
+  max-width: 96vw;
+  max-height: 90vh;
+}
+
+.image-modal-content img {
+  display: block;
+  max-width: 100%;
+  max-height: 86vh;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
 /* PRODUCTS CONTROLS SECTION - FILTER/SEARCH BAR */
 .products-controls {
   background: white;
