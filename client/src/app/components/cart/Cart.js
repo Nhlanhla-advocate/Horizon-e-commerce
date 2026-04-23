@@ -2,13 +2,21 @@
 import React, { createContext, useState, useContext, useEffect, useCallback, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
-import Image from 'next/image';
 
 const CartContext = createContext();
 export const useCart = () => useContext(CartContext);
 
 // Backend base URL 
 const BASE_URL = 'http://localhost:5000';
+
+const normalizeCartImageSrc = (src) => {
+  if (!src || typeof src !== 'string') return '/file.svg';
+  const cleaned = src.trim().replace(/^['"]+|['"]+$/g, '');
+  if (!cleaned) return '/file.svg';
+  if (cleaned.startsWith('http://') || cleaned.startsWith('https://')) return cleaned;
+  const withLeadingSlash = cleaned.startsWith('/') ? cleaned : `/${cleaned}`;
+  return withLeadingSlash;
+};
 
 // Generate a 24-char hex string (Mongo ObjectId–compatible) so guest carts can be saved in MongoDB
 const generateObjectIdHex = () => {
@@ -347,7 +355,7 @@ export const CartProvider = ({ children }) => {
     // Show a lightweight "added to cart" toast
     setAddedItem({
       name: productName,
-      image: productData?.image,
+      image: normalizeCartImageSrc(productData?.image),
       price: productPrice,
       quantity
     });
@@ -597,11 +605,13 @@ export const CartProvider = ({ children }) => {
             </div>
             <div style={{ display: 'flex', gap: 14, padding: 16, alignItems: 'center' }}>
               <div style={{ width: 96, height: 96, position: 'relative', flex: '0 0 96px' }}>
-                <Image
-                  src={addedItem.image || '/next.svg'}
+                <img
+                  src={normalizeCartImageSrc(addedItem.image)}
                   alt={addedItem.name}
-                  fill
-                  style={{ objectFit: 'cover', borderRadius: 4, background: '#f6f6f6' }}
+                  style={{ objectFit: 'cover', borderRadius: 4, background: '#f6f6f6', width: '100%', height: '100%' }}
+                  onError={(e) => {
+                    e.currentTarget.src = '/file.svg';
+                  }}
                 />
               </div>
               <div style={{ flex: 1 }}>
