@@ -134,25 +134,27 @@ export default function Sidebar({ tabs, activeTab, setActiveTab, sidebarOpen, se
                 <div className="admin-sidebar-status-indicator"></div>
                 <span>System Online</span>
               </div>
-              <div className="admin-sidebar-footer-theme">
-                <ThemeToggle />
-              </div>
-              {canSwitchView && (
+              <div className="admin-sidebar-footer-actions">
+                <div className="admin-sidebar-footer-theme">
+                  <ThemeToggle />
+                </div>
+                {canSwitchView && (
+                  <button
+                    type="button"
+                    onClick={handleViewSwitch}
+                    className="admin-sidebar-action-btn"
+                  >
+                    {isAdminRoute ? 'Site' : 'Dashboard'}
+                  </button>
+                )}
                 <button
                   type="button"
-                  onClick={handleViewSwitch}
-                  className="admin-sidebar-action-btn"
+                  onClick={handleLogout}
+                  className="admin-sidebar-action-btn admin-sidebar-logout"
                 >
-                  {isAdminRoute ? 'Go to Main Site' : 'Back to Dashboard'}
+                  Log out
                 </button>
-              )}
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="admin-sidebar-action-btn admin-sidebar-logout"
-              >
-                Log out
-              </button>
+              </div>
             </div>
           </div>
         </div>
