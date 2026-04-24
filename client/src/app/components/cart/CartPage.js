@@ -78,13 +78,11 @@ function resolveCartItemImageCandidates(item) {
 
 function CartItemImage({ item }) {
     const imageCandidates = resolveCartItemImageCandidates(item);
-    const [candidateIndex, setCandidateIndex] = useState(0);
+    const [src, setSrc] = useState(imageCandidates[0] || PLACEHOLDER_IMAGE);
 
     useEffect(() => {
-        setCandidateIndex(0);
+        setSrc(imageCandidates[0] || PLACEHOLDER_IMAGE);
     }, [item?.name, item?.image, item?.productId]);
-
-    const src = imageCandidates[candidateIndex] || PLACEHOLDER_IMAGE;
 
     return (
         <img
@@ -92,11 +90,10 @@ function CartItemImage({ item }) {
             alt={item?.name || 'Product'}
             style={{ objectFit: 'cover', borderRadius: 4, width: '100%', height: '100%' }}
             onError={() => {
-                setCandidateIndex((prev) => {
-                    if (prev < imageCandidates.length - 1) return prev + 1;
-                    if (imageCandidates[prev] !== PLACEHOLDER_IMAGE) return imageCandidates.length;
-                    return prev;
-                });
+                const currentIndex = imageCandidates.indexOf(src);
+                const hasNext = currentIndex >= 0 && currentIndex < imageCandidates.length - 1;
+                const nextSrc = hasNext ? imageCandidates[currentIndex + 1] : PLACEHOLDER_IMAGE;
+                if (nextSrc !== src) setSrc(nextSrc);
             }}
         />
     );
@@ -110,6 +107,8 @@ export default function CartPage() {
         isLoading, 
         updateQuantity
     } = useCart();
+    const cartItems = Array.isArray(cart?.items) ? cart.items : [];
+    const cartTotal = Number(cart?.totalPrice ?? 0);
 
     if (isLoading) {
         return <div className="cart-container">Loading cart...</div>;
@@ -118,7 +117,7 @@ export default function CartPage() {
     return (
         <div className="cart-container">
             <h2 className="cart-title">Your Cart</h2>
-            {cart.items.length === 0 ? (
+            {cartItems.length === 0 ? (
                 <div className="cart-empty">
                     <p>Your cart is empty.</p>
                     <a href="/products" className="cart-continue-shopping">Continue Shopping</a>
@@ -126,7 +125,7 @@ export default function CartPage() {
             ) : (
                 <div className="cart-content">
                     <ul className="cart-items-list">
-                        {cart.items.map((item) => {
+                        {cartItems.map((item) => {
                             const productKey = normalizeProductId(item.productId) || `idx-${item.name}`;
                             return (
                                 <li key={productKey} className="cart-item">
@@ -155,7 +154,7 @@ export default function CartPage() {
                             <div className="cart-summary">
             <div className="cart-total">
                 <strong>Total:</strong>
-                <strong>R {cart.totalPrice.toFixed(2)}</strong>
+                <strong>R {cartTotal.toFixed(2)}</strong>
             </div>
             
 
@@ -171,6 +170,9 @@ export default function CartPage() {
 }
 
 function CartItemControls({ productKey, quantity, price, totalPrice, onDecrease, onIncrease, onRemove }) {
+    const safeUnitPrice = Number(price ?? 0);
+    const safeTotalPrice = Number(totalPrice ?? safeUnitPrice * Number(quantity ?? 0));
+
     return (
         <div className="cart-item-controls">
             <div className="quantity-controls"
@@ -199,8 +201,8 @@ function CartItemControls({ productKey, quantity, price, totalPrice, onDecrease,
                 </button>
             </div>
             <div className="cart-item-price-info">
-                <span className="cart-item-unit-price">R {price.toFixed(2)} each</span>
-                <span className="cart-item-total-price">R {totalPrice.toFixed(2)}</span>
+                <span className="cart-item-unit-price">R {safeUnitPrice.toFixed(2)} each</span>
+                <span className="cart-item-total-price">R {safeTotalPrice.toFixed(2)}</span>
             </div>
             <button className="cart-remove-button" onClick={onRemove}>Remove</button>
         </div>
