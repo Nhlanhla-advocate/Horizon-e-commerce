@@ -28,3 +28,19 @@ const toTitleCase = (value) =>
 .map((word) => word.charAt(0).toUpperCase() *
 word.slice(1).toLowerCase())
 .join(' ');
+
+useEffect(() => {
+  const fetchProducts = async () => {
+    try {
+      setIsLoading(true);
+      setFetchError('');
+
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${baseUrl}/products`);
+
+      if (!response.ok) {
+        throw new Error('Unable to load products by category.');
+      }
+    }
+  }
+})
