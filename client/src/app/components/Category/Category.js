@@ -47,6 +47,39 @@ useEffect(() => {
       if (!response.ok) {
         throw new Error('Unable to load products by category.');
       }
-    }
+
+      const result = await response.json();
+      const rawProducts = Array.isArray(result?.data) ? result.data : [];
+
+      const normalizedProducts = rawProducts.map((product, index) => {
+        const stockQuantity = typeof product.stockQuantity === 'number'
+        ? product.stockQuantity
+        : (typeof product.stock === 'number' ? product.stock : 0);
+      const rawImage = Array.isArray(product.images) && product.images.length > 0
+        ? product.images[0]
+        : product.image;
+
+      return {
+        ...product,
+        id: product.id ?? index + 1,
+        image: normalizeProductImagePath(rawImage),
+        stockQuantity,
+        slug: product.slug || 
+        `${product.name?.toLowerCase().replace(/\s+/g, '-') || 'product'}-${product._id}`
+      };
+    });
+
+    setProducts(normalizedProducts);
+  } catch (error) {
+    setFetchError(error.message || 'Failed to fetch category products.');
+    setProducts([]);
+  } finally {
+    setIsLoading(false);
   }
-})
+};
+
+  fetchProducts();
+}, []);
+};
+
+export default CategoryPage;
