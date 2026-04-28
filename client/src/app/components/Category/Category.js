@@ -29,6 +29,12 @@ const toTitleCase = (value) =>
 word.slice(1).toLowerCase())
 .join(' ');
 
+const CategoryPage = () => {
+  const { addToCart } = useCart();
+  const [products, setProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState('');
+
 useEffect(() => {
   const fetchProducts = async () => {
     try {
