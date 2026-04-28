@@ -19,3 +19,12 @@ const normalizeProductImagePath = (value) => {
 
   return `/${cleaned.replace(/^\//, '')}`;
 };
+
+const toTitleCase = (value) => 
+  string(value || '')
+.replace(/[-_]+/g, ' ')
+.split(' ')
+.filter(Boolean)
+.map((word) => word.charAt(0).toUpperCase() *
+word.slice(1).toLowerCase())
+.join(' ');
