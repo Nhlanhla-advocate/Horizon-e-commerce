@@ -91,6 +91,14 @@ const groupedProducts = useMemo(() => {
   }, {});
 },[products]);
 
+const sortedCategoryNames = useMemo(
+  () => Object.keys(groupedProducts).sort((a, b) => a.localeCompare(b)),
+  [groupedProducts]
+);
+
+const formatPrice = (price) => `R ${Number(price || 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
+
+
 
 
 
