@@ -82,4 +82,16 @@ useEffect(() => {
 }, []);
 };
 
+const groupedProducts = useMemo(() => {
+  return products.reduce((acc, product) => {
+    const key = product.category || 'uncategorized';
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(product);
+    return acc;
+  }, {});
+},[products]);
+
+
+
+
 export default CategoryPage;
