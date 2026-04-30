@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { FaShoppingCart, FaUser, FaSearch, FaSpinner, FaTimes, FaSignOutAlt } from 'react-icons/fa';
+import { FaShoppingCart, FaUser, FaSearch, FaSpinner, FaTimes, FaSignOutAlt, FaTachometerAlt } from 'react-icons/fa';
 import { useCart } from '@/app/components/cart/Cart';
 import "../../assets/css/navbar.css";
 
@@ -13,6 +13,7 @@ const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [isAuthed, setIsAuthed] = useState(false);
+  const [hasAdminAccess, setHasAdminAccess] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
@@ -25,9 +26,12 @@ const Navbar = () => {
     const readAuth = () => {
       try {
         const token = localStorage.getItem('token');
+        const adminToken = localStorage.getItem('adminToken');
         setIsAuthed(Boolean(token));
+        setHasAdminAccess(Boolean(adminToken));
       } catch {
         setIsAuthed(false);
+        setHasAdminAccess(false);
       }
     };
     readAuth();
@@ -108,6 +112,11 @@ const Navbar = () => {
           </Link>
           
           <div className="navbar-mobile-icons">
+            {hasAdminAccess && (
+              <Link href="/admin" className="navbar-mobile-icon-btn" aria-label="Admin dashboard">
+                <FaTachometerAlt />
+              </Link>
+            )}
             <button 
               className="navbar-mobile-icon-btn"
               onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
@@ -211,6 +220,11 @@ const Navbar = () => {
 
           {/* Right side icons */}
           <div className="navbar-icons">
+            {hasAdminAccess && (
+              <Link href="/admin" className="navbar-icon-link" aria-label="Admin dashboard">
+                <FaTachometerAlt />
+              </Link>
+            )}
             <Link href="/cart" className="navbar-icon-link cart-link">
               <div className="cart-icon-container">
                 {isLoading ? (
