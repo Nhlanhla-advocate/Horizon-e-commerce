@@ -34,6 +34,32 @@ export default function ProductManagement() {
     stock: '',
     description: ''
   });
+  const [catalogCategories, setCatalogCategories] = useState([]);
+
+  const fetchCatalogCategories = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await fetch(`${BASE_URL}/dashboard/categories`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) return;
+
+      const data = await response.json();
+      const list = Array.isArray(data.categories) ? data.categories : [];
+      const sorted = [...list].sort((a, b) =>
+        (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' })
+      );
+      setCatalogCategories(sorted);
+    } catch (err) {
+      console.error('Failed to load categories for product form:', err);
+    }
+  }, []);
 
   const fetchProducts = useCallback(async () => {
     try {
@@ -74,6 +100,12 @@ export default function ProductManagement() {
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
+
+  useEffect(() => {
+    if (showAddForm) {
+      fetchCatalogCategories();
+    }
+  }, [showAddForm, fetchCatalogCategories]);
 
   const resetForm = () => {
     setFormData({
@@ -443,6 +475,7 @@ export default function ProductManagement() {
         setFormData={setFormData}
         editingProduct={editingProduct}
         error={error}
+        categories={catalogCategories}
       />
     </div>
   );

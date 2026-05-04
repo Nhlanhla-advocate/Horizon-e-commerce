@@ -11,7 +11,8 @@ export default function ProductModal({
   formData, 
   setFormData, 
   editingProduct,
-  error 
+  error,
+  categories = []
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -132,12 +133,18 @@ export default function ProductModal({
                 onChange={handleChange}
                 className="admin-form-input"
                 required
+                disabled={categories.length === 0}
               >
-                <option value="">Select a category</option>
-                <option value="jewelry">Jewelry</option>
-                <option value="electronics">Electronics</option>
-                <option value="consoles">Consoles</option>
-                <option value="computers">Computers</option>
+                <option value="">
+                  {categories.length === 0
+                    ? 'No categories — add some in Category Management first'
+                    : 'Select a category'}
+                </option>
+                {categories.map((cat) => (
+                  <option key={cat._id} value={cat.name}>
+                    {cat.name}
+                  </option>
+                ))}
               </select>
             </div>
             <div>
@@ -157,7 +164,10 @@ export default function ProductModal({
               <button
                 type="submit"
                 className="admin-btn admin-btn-primary"
-                disabled={isSubmitting}
+                disabled={
+                  isSubmitting ||
+                  (!editingProduct && categories.length === 0)
+                }
               >
                 {isSubmitting ? 'Processing...' : (editingProduct ? 'Update Product' : 'Create Product')}
               </button>
