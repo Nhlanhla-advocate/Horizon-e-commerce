@@ -28,6 +28,27 @@ const toTitleCase = (value) =>
     .map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1).toLowerCase()}`)
     .join(' ');
 
+const WATCH_KEYWORDS = ['watch', 'watches', 'casio'];
+
+const getNormalizedCategoryKey = (product) => {
+  const categoryValue = String(product?.category || '')
+    .trim()
+    .toLowerCase();
+
+  const searchableValues = [
+    categoryValue,
+    String(product?.name || '').toLowerCase(),
+    String(product?.image || '').toLowerCase(),
+  ];
+
+  const isWatchProduct = searchableValues.some((value) =>
+    WATCH_KEYWORDS.some((keyword) => value.includes(keyword))
+  );
+
+  if (isWatchProduct) return 'watches';
+  return categoryValue || 'uncategorized';
+};
+
 const CategoryPage = () => {
   const { addToCart } = useCart();
   const [products, setProducts] = useState([]);
@@ -85,9 +106,7 @@ const CategoryPage = () => {
 
   const groupedProducts = useMemo(() => {
     return products.reduce((acc, product) => {
-      const key = String(product.category || 'uncategorized')
-        .trim()
-        .toLowerCase();
+      const key = getNormalizedCategoryKey(product);
       if (!acc[key]) acc[key] = [];
       acc[key].push(product);
       return acc;
