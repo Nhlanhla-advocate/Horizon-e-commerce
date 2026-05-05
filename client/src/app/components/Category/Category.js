@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/app/components/cart/Cart';
 import '@/app/assets/css/product.css';
@@ -17,7 +16,18 @@ const normalizeProductImagePath = (value) => {
   if (!cleaned) return '/Pictures/placeholder.jpg';
   if (cleaned.startsWith('http')) return cleaned;
 
-  return `/${cleaned.replace(/^\//, '')}`;
+  const normalized = cleaned.replace(/^\//, '');
+  if (/^pictures\//i.test(normalized)) return `/${normalized}`;
+  if (!normalized.includes('/')) return `/Pictures/${normalized}`;
+  return `/${normalized}`;
+};
+
+const resolveProductImage = (product) => {
+  const rawImage = Array.isArray(product?.images) && product.images.length > 0
+    ? product.images[0]
+    : product?.image;
+
+  return normalizeProductImagePath(rawImage);
 };
 
 const toTitleCase = (value) => 
@@ -77,14 +87,10 @@ const CategoryPage = () => {
             : typeof product.stock === 'number'
               ? product.stock
               : 0;
-          const rawImage = Array.isArray(product.images) && product.images.length > 0
-            ? product.images[0]
-            : product.image;
-
           return {
             ...product,
             id: product.id ?? index + 1,
-            image: normalizeProductImagePath(rawImage),
+            image: resolveProductImage(product),
             stockQuantity,
             slug:
               product.slug ||
@@ -161,12 +167,13 @@ const CategoryPage = () => {
                   <div className="product-image-container">
                     <Link href={`/products/${product.slug}`}>
                       <div className="image-wrapper">
-                        <Image
+                        <img
                           src={product.image}
                           alt={product.name}
                           className="product-image"
                           width={250}
                           height={250}
+                          loading="lazy"
                           style={{ objectFit: 'cover' }}
                         />
                         {product.stockQuantity === 0 && (

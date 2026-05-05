@@ -235,7 +235,7 @@ export default function ProductDetail() {
           <div className="leftImages" style={{ maxWidth: 560, width: '100%' }}>
             <div className="imageFlexRow" style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
               <div className="mainImageContainer" style={{ position: 'relative', width: 420, maxWidth: 'calc(100vw - 160px)' }}>
-                <Image src={productImages[selected]} alt={`${product.name} ${selected + 1}`} width={420} height={420} style={{ borderRadius: 10, objectFit: 'contain', border: '1px solid #eee', cursor: 'pointer', width: '100%', maxWidth: 420, height: 420, background: '#fff' }} onClick={() => setFullscreen(true)} />
+                <Image src={productImages[selected]} alt={`${product.name} ${selected + 1}`} width={420} height={420} unoptimized style={{ borderRadius: 10, objectFit: 'contain', border: '1px solid #eee', cursor: 'pointer', width: '100%', maxWidth: 420, height: 420, background: '#fff' }} onClick={() => setFullscreen(true)} />
                 <button onClick={() => setFullscreen(true)} title="View Fullscreen" style={{ position: 'absolute', bottom: 16, right: 16, background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%', width: 38, height: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 2 }}>
                   <svg width="22" height="22" fill="#fff" viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4a1 1 0 1 0 2 0V5h4a1 1 0 1 0 0-2zm6 0a1 1 0 1 0 0 2h4v4a1 1 0 1 0 2 0V5a2 2 0 0 0-2-2h-4zm5 14a1 1 0 0 0-1 1v4h-4a1 1 0 1 0 0 2h4a2 2 0 0 0 2-2v-4a1 1 0 0 0-1-1zm-16 1a1 1 0 0 0-1 1v4a2 2 0 0 0 2 2h4a1 1 0 1 0 0-2H5v-4a1 1 0 0 0-1-1z"/></svg>
                 </button>
@@ -244,7 +244,7 @@ export default function ProductDetail() {
                 {/* Thumbnails */}
                 {galleryThumbnails.map((img, idx) => (
                   <div key={img} style={{ border: idx === selected ? '2px solid #2563eb' : '1px solid #eee', borderRadius: 6, cursor: 'pointer', padding: 2, background: idx === selected ? '#e0e7ff' : '#fff' }} onClick={() => setSelected(idx)}>
-                    <Image src={img} alt={`${product.name} thumb ${idx + 1}`} width={72} height={72} style={{ borderRadius: 6, objectFit: 'cover', width: 72, height: 72 }} />
+                    <Image src={img} alt={`${product.name} thumb ${idx + 1}`} width={72} height={72} unoptimized style={{ borderRadius: 6, objectFit: 'cover', width: 72, height: 72 }} />
                   </div>
                 ))}
               </div>
@@ -319,7 +319,7 @@ export default function ProductDetail() {
               return (
                 <div key={item._id} style={{ minWidth: 180, maxWidth: 220, height: 260, background: '#f9fafb', borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.04)', padding: 12, textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center', scrollSnapAlign: 'start' }}>
                   <div style={{ width: 120, height: 120, margin: '0 auto 8px auto', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff', borderRadius: 6 }}>
-                    <Image src={itemImage} alt={item.name || 'Related product'} width={120} height={120} style={{ objectFit: 'contain', width: '100%', height: '100%', borderRadius: 6 }} />
+                    <Image src={itemImage} alt={item.name || 'Related product'} width={120} height={120} unoptimized style={{ objectFit: 'contain', width: '100%', height: '100%', borderRadius: 6 }} />
                   </div>
                   <div style={{ fontWeight: 600, marginBottom: 4 }}>{item.name || 'Product'}</div>
                   <div style={{ color: '#2563eb', fontWeight: 600, marginBottom: 4 }}>{formatPrice(item.price)}</div>
