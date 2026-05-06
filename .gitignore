@@ -4,3 +4,4 @@ node_modules/
 server\.env.production
 
 .env.production
+client/.next/

@@ -74,6 +74,9 @@ const Signin = () => {
             
             if (response.ok && data?.success) {
                 console.log("User signed in successfully.", data);
+                // Ensure previous admin session keys cannot leak admin UI to normal users.
+                localStorage.removeItem("adminToken");
+                localStorage.removeItem("adminRole");
                 const token = data.accessToken || data.token;
                 if (token) {
                     localStorage.setItem("token", token);
