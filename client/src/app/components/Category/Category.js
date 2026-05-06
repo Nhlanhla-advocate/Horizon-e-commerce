@@ -110,8 +110,6 @@ const CategoryPage = () => {
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const categoriesPerPage = 1;
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -191,22 +189,6 @@ const CategoryPage = () => {
     [groupedProducts]
   );
 
-  const totalPages = useMemo(
-    () => Math.max(1, Math.ceil(sortedCategoryNames.length / categoriesPerPage)),
-    [sortedCategoryNames.length]
-  );
-
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
-  }, [currentPage, totalPages]);
-
-  const paginatedCategoryNames = useMemo(() => {
-    const startIndex = (currentPage - 1) * categoriesPerPage;
-    return sortedCategoryNames.slice(startIndex, startIndex + categoriesPerPage);
-  }, [currentPage, sortedCategoryNames]);
-
   const formatPrice = (price) =>
     `R ${Number(price || 0)
       .toFixed(2)
@@ -241,7 +223,7 @@ const CategoryPage = () => {
 
       {!isLoading &&
         !fetchError &&
-        paginatedCategoryNames.map((categoryName) => (
+        sortedCategoryNames.map((categoryName) => (
           <section key={categoryName} className="category-section">
             <h2 className="category-title">{toTitleCase(categoryName)}</h2>
             <div className="products-grid category-products-grid">
@@ -317,40 +299,6 @@ const CategoryPage = () => {
             </div>
           </section>
         ))}
-      {!isLoading && !fetchError && sortedCategoryNames.length > 0 && totalPages > 1 && (
-        <div
-          style={{
-            display: 'flex',
-            gap: 8,
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            marginTop: 24,
-          }}
-        >
-          <button
-            type="button"
-            className="add-to-cart-button"
-            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-            disabled={currentPage === 1}
-            style={{ width: 'auto', padding: '0.5rem 1rem' }}
-          >
-            Previous
-          </button>
-          <span style={{ fontSize: 14, color: '#64748b', minWidth: 110, textAlign: 'center' }}>
-            Page {currentPage} of {totalPages}
-          </span>
-          <button
-            type="button"
-            className="add-to-cart-button"
-            onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-            disabled={currentPage === totalPages}
-            style={{ width: 'auto', padding: '0.5rem 1rem' }}
-          >
-            Next
-          </button>
-        </div>
-      )}
     </div>
   );
 };
