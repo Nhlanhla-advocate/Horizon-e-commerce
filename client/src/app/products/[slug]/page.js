@@ -12,7 +12,8 @@ const normalizeProductImagePath = (value) => {
 
   const cleaned = value
     .trim()
-    .replace(/^['"]+|['"]+$/g, '');
+    .replace(/^['"]+|['"]+$/g, '')
+    .replace(/[,\s]+$/g, '');
 
   if (!cleaned) return '';
   if (cleaned.startsWith('http')) return cleaned;
@@ -32,6 +33,24 @@ const normalizeProductImagePath = (value) => {
   if (/^pictures\//i.test(normalizedWithExtension)) return `/${normalizedWithExtension}`;
   if (!normalizedWithExtension.includes('/')) return `/Pictures/${normalizedWithExtension}`;
   return `/${normalizedWithExtension}`;
+};
+
+const getProductImageCandidates = (product) => {
+  const fromApi = Array.isArray(product?.images) && product.images.length > 0
+    ? product.images
+    : (typeof product?.image === 'string' && product.image.length > 0 ? [product.image] : []);
+
+  const nameCandidates = [];
+  if (product?.name) {
+    nameCandidates.push(product.name);
+    nameCandidates.push(String(product.name).replace(/\bnecklace\b/gi, 'necklaces'));
+  }
+
+  const normalized = [...fromApi, ...nameCandidates]
+    .map(normalizeProductImagePath)
+    .filter(Boolean);
+
+  return [...new Set(normalized)];
 };
 
 const playstationFallbackImages = {
@@ -142,13 +161,7 @@ export default function ProductDetail() {
   const productImages = useMemo(() => {
     if (!product) return ['/Pictures/placeholder.jpg'];
 
-    const fromApi = Array.isArray(product.images) && product.images.length > 0
-      ? product.images
-      : (typeof product.image === 'string' && product.image.length > 0 ? [product.image] : []);
-
-    const normalizedImages = fromApi
-      .map(normalizeProductImagePath)
-      .filter(Boolean);
+    const normalizedImages = getProductImageCandidates(product);
 
     const productName = String(product.name || '').toLowerCase();
     const isPS5 = productName.includes('playstation 5') || productName.includes('ps5');

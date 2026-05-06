@@ -11,7 +11,8 @@ const normalizeProductImagePath = (value) => {
 
   const cleaned = value
     .trim()
-    .replace(/^['"]+|['"]+$/g, '');
+    .replace(/^['"]+|['"]+$/g, '')
+    .replace(/[,\s]+$/g, '');
 
   if (!cleaned) return '/Pictures/placeholder.jpg';
   if (cleaned.startsWith('http')) return cleaned;
@@ -39,6 +40,25 @@ const resolveProductImage = (product) => {
     : product?.image;
 
   return normalizeProductImagePath(rawImage);
+};
+
+const resolveProductImageCandidates = (product) => {
+  const candidates = [];
+  const rawImage = Array.isArray(product?.images) && product.images.length > 0
+    ? product.images[0]
+    : product?.image;
+
+  if (rawImage) candidates.push(rawImage);
+  if (product?.name) {
+    candidates.push(product.name);
+    candidates.push(String(product.name).replace(/\bnecklace\b/gi, 'necklaces'));
+  }
+
+  const normalized = candidates
+    .map(normalizeProductImagePath)
+    .filter(Boolean);
+
+  return [...new Set(normalized)];
 };
 
 const toTitleCase = (value) => 
@@ -90,6 +110,8 @@ const CategoryPage = () => {
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const categoriesPerPage = 1;
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -98,16 +120,34 @@ const CategoryPage = () => {
         setFetchError('');
 
         const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-        const response = await fetch(`${baseUrl}/products`);
-
-        if (!response.ok) {
+        const initialResponse = await fetch(`${baseUrl}/products?page=1&limit=100`);
+        if (!initialResponse.ok) {
           throw new Error('Unable to load products by category.');
         }
 
-        const result = await response.json();
-        const rawProducts = Array.isArray(result?.data) ? result.data : [];
+        const initialResult = await initialResponse.json();
+        const totalPages = Number(initialResult?.pagination?.pages || 1);
+        const allRawProducts = Array.isArray(initialResult?.data) ? [...initialResult.data] : [];
 
-        const normalizedProducts = rawProducts.map((product, index) => {
+        if (totalPages > 1) {
+          const pageRequests = Array.from({ length: totalPages - 1 }, (_, idx) =>
+            fetch(`${baseUrl}/products?page=${idx + 2}&limit=100`).then((response) => {
+              if (!response.ok) {
+                throw new Error('Unable to load products by category.');
+              }
+              return response.json();
+            })
+          );
+
+          const remainingPageResults = await Promise.all(pageRequests);
+          remainingPageResults.forEach((pageResult) => {
+            if (Array.isArray(pageResult?.data)) {
+              allRawProducts.push(...pageResult.data);
+            }
+          });
+        }
+
+        const normalizedProducts = allRawProducts.map((product, index) => {
           const stockQuantity = typeof product.stockQuantity === 'number'
             ? product.stockQuantity
             : typeof product.stock === 'number'
@@ -117,6 +157,7 @@ const CategoryPage = () => {
             ...product,
             id: product.id ?? index + 1,
             image: resolveProductImage(product),
+            imageCandidates: resolveProductImageCandidates(product),
             stockQuantity,
             slug:
               product.slug ||
@@ -149,6 +190,22 @@ const CategoryPage = () => {
     () => Object.keys(groupedProducts).sort((a, b) => a.localeCompare(b)),
     [groupedProducts]
   );
+
+  const totalPages = useMemo(
+    () => Math.max(1, Math.ceil(sortedCategoryNames.length / categoriesPerPage)),
+    [sortedCategoryNames.length]
+  );
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const paginatedCategoryNames = useMemo(() => {
+    const startIndex = (currentPage - 1) * categoriesPerPage;
+    return sortedCategoryNames.slice(startIndex, startIndex + categoriesPerPage);
+  }, [currentPage, sortedCategoryNames]);
 
   const formatPrice = (price) =>
     `R ${Number(price || 0)
@@ -184,7 +241,7 @@ const CategoryPage = () => {
 
       {!isLoading &&
         !fetchError &&
-        sortedCategoryNames.map((categoryName) => (
+        paginatedCategoryNames.map((categoryName) => (
           <section key={categoryName} className="category-section">
             <h2 className="category-title">{toTitleCase(categoryName)}</h2>
             <div className="products-grid category-products-grid">
@@ -201,6 +258,22 @@ const CategoryPage = () => {
                           height={250}
                           loading="lazy"
                           style={{ objectFit: 'cover' }}
+                          onError={(event) => {
+                            const candidates = Array.isArray(product.imageCandidates)
+                              ? product.imageCandidates
+                              : [];
+                            const currentIndex = Number(event.currentTarget.dataset.candidateIndex || 0);
+                            const nextIndex = currentIndex + 1;
+
+                            if (nextIndex < candidates.length) {
+                              event.currentTarget.dataset.candidateIndex = String(nextIndex);
+                              event.currentTarget.src = candidates[nextIndex];
+                              return;
+                            }
+
+                            event.currentTarget.src = '/Pictures/placeholder.jpg';
+                          }}
+                          data-candidate-index="0"
                         />
                         {product.stockQuantity === 0 && (
                           <div className="out-of-stock-badge">Out of Stock</div>
@@ -244,6 +317,40 @@ const CategoryPage = () => {
             </div>
           </section>
         ))}
+      {!isLoading && !fetchError && sortedCategoryNames.length > 0 && totalPages > 1 && (
+        <div
+          style={{
+            display: 'flex',
+            gap: 8,
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            marginTop: 24,
+          }}
+        >
+          <button
+            type="button"
+            className="add-to-cart-button"
+            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+            disabled={currentPage === 1}
+            style={{ width: 'auto', padding: '0.5rem 1rem' }}
+          >
+            Previous
+          </button>
+          <span style={{ fontSize: 14, color: '#64748b', minWidth: 110, textAlign: 'center' }}>
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            type="button"
+            className="add-to-cart-button"
+            onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+            disabled={currentPage === totalPages}
+            style={{ width: 'auto', padding: '0.5rem 1rem' }}
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 };
