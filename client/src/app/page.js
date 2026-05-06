@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/app/components/cart/Cart';
@@ -56,16 +56,34 @@ const Products = () => {
                 setIsLoading(true);
                 setFetchError('');
                 const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-                const response = await fetch(`${baseUrl}/products`);
-
-                if (!response.ok) {
+                const initialResponse = await fetch(`${baseUrl}/products?page=1&limit=100`);
+                if (!initialResponse.ok) {
                     throw new Error('Unable to load featured products.');
                 }
 
-                const result = await response.json();
-                const rawProducts = Array.isArray(result?.data) ? result.data : [];
+                const initialResult = await initialResponse.json();
+                const totalPages = Number(initialResult?.pagination?.pages || 1);
+                const allRawProducts = Array.isArray(initialResult?.data) ? [...initialResult.data] : [];
 
-                const normalizedProducts = rawProducts.map((product, index) => {
+                if (totalPages > 1) {
+                    const pageRequests = Array.from({ length: totalPages - 1 }, (_, idx) =>
+                        fetch(`${baseUrl}/products?page=${idx + 2}&limit=100`).then((response) => {
+                            if (!response.ok) {
+                                throw new Error('Unable to load featured products.');
+                            }
+                            return response.json();
+                        })
+                    );
+
+                    const remainingPageResults = await Promise.all(pageRequests);
+                    remainingPageResults.forEach((pageResult) => {
+                        if (Array.isArray(pageResult?.data)) {
+                            allRawProducts.push(...pageResult.data);
+                        }
+                    });
+                }
+
+                const normalizedProducts = allRawProducts.map((product, index) => {
                     const stockQuantity = typeof product.stockQuantity === 'number'
                         ? product.stockQuantity
                         : (typeof product.stock === 'number' ? product.stock : 0);
@@ -107,6 +125,33 @@ const Products = () => {
             product.category.toLowerCase().includes(searchTerm)
         );
     });
+
+    const productsByCategory = useMemo(() => {
+        return filteredProducts.reduce((acc, product) => {
+            const rawCategory = String(product.category || 'Other').trim().toLowerCase();
+            const categoryKey =
+                rawCategory === 'console' || rawCategory === 'consoles'
+                    ? 'consoles'
+                    : rawCategory === 'watch' || rawCategory === 'watches'
+                        ? 'watches'
+                        : rawCategory === 'jewellery'
+                            ? 'jewelry'
+                            : (rawCategory || 'other');
+            if (!acc[categoryKey]) acc[categoryKey] = [];
+            acc[categoryKey].push(product);
+            return acc;
+        }, {});
+    }, [filteredProducts]);
+
+    const sortedCategories = useMemo(
+        () => Object.keys(productsByCategory).sort((a, b) => a.localeCompare(b)),
+        [productsByCategory]
+    );
+
+    const featuredProducts = useMemo(
+        () => sortedCategories.flatMap((categoryName) => productsByCategory[categoryName].slice(0, 4)),
+        [productsByCategory, sortedCategories]
+    );
 
     // Format price function (same as products page)
     const formatPrice = (price) => {
@@ -172,24 +217,22 @@ const Products = () => {
                 </div>
             </div>
             
-            <div className="products-grid">
-                {isLoading && (
-                    <div className="empty-state">
-                        <h3>Loading featured products...</h3>
-                    </div>
-                )}
-                {!isLoading && fetchError && (
-                    <div className="empty-state">
-                        <h3>Could not load featured products</h3>
-                        <p>{fetchError}</p>
-                    </div>
-                )}
-                {!isLoading && !fetchError && (
-                <>
-                {filteredProducts.map((product) => {
-                    return (
+            {isLoading && (
+                <div className="empty-state">
+                    <h3>Loading featured products...</h3>
+                </div>
+            )}
+            {!isLoading && fetchError && (
+                <div className="empty-state">
+                    <h3>Could not load featured products</h3>
+                    <p>{fetchError}</p>
+                </div>
+            )}
+            {!isLoading && !fetchError && (
+                <div className="products-grid" style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}>
+                    {featuredProducts.map((product) => (
                         <div key={product.id} className="product-card">
-                            <div className="product-image-container"> 
+                            <div className="product-image-container">
                                 <Link href={`/products/${product.slug}`}>
                                     <div className="image-wrapper">
                                         <Image
@@ -210,7 +253,6 @@ const Products = () => {
                                 <Link href={`/products/${product.slug}`}>
                                     <h3 className="product-name">{product.name}</h3>
                                 </Link>
-                                <div className="product-category">{product.category}</div>
                                 <div className="product-price">{formatPrice(product.price)}</div>
                                 <div className="product-stock">
                                     {product.stockQuantity > 0 ? (
@@ -246,11 +288,9 @@ const Products = () => {
                                 </button>
                             </div>
                         </div>
-                    );
-                })}
-                </>
-                )}
-            </div>
+                    ))}
+                </div>
+            )}
 
             {/* Show message when no products found */}
             {filteredProducts.length === 0 && searchQuery && (

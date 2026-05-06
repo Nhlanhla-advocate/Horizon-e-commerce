@@ -7,6 +7,14 @@ import { FaShoppingCart, FaUser, FaSearch, FaSpinner, FaTimes, FaSignOutAlt, FaT
 import { useCart } from '@/app/components/cart/Cart';
 import "../../assets/css/navbar.css";
 
+const normalizeRole = (roleValue) =>
+  String(roleValue || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, '_');
+
+const ALLOWED_DASHBOARD_ROLES = new Set(['admin', 'super_admin']);
+
 const Navbar = () => {
   const { cartCount, isLoading } = useCart();
   const [searchQuery, setSearchQuery] = useState('');
@@ -27,8 +35,9 @@ const Navbar = () => {
       try {
         const token = localStorage.getItem('token');
         const adminToken = localStorage.getItem('adminToken');
+        const adminRole = normalizeRole(localStorage.getItem('adminRole'));
         setIsAuthed(Boolean(token));
-        setHasAdminAccess(Boolean(adminToken));
+        setHasAdminAccess(Boolean(adminToken) && ALLOWED_DASHBOARD_ROLES.has(adminRole));
       } catch {
         setIsAuthed(false);
         setHasAdminAccess(false);
@@ -67,8 +76,11 @@ const Navbar = () => {
       try {
         localStorage.removeItem('token');
         localStorage.removeItem('userId');
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('adminRole');
       } catch {}
       setIsAuthed(false);
+      setHasAdminAccess(false);
       setIsSigningOut(false);
       router.push('/');
       router.refresh?.();
