@@ -8,10 +8,25 @@ const PLACEHOLDER_IMAGE = '/file.svg';
 /** Encode each path segment so spaces and special chars work with next/image and the browser. */
 function normalizeImageSrc(src) {
     if (!src || typeof src !== 'string') return PLACEHOLDER_IMAGE;
-    const trimmed = src.trim().replace(/^['"]+|['"]+$/g, '');
+    const trimmed = src
+        .trim()
+        .replace(/^['"]+|['"]+$/g, '')
+        .replace(/[,\s]+$/g, '');
     if (!trimmed) return PLACEHOLDER_IMAGE;
     if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
-    const pathOnly = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+    const normalized = trimmed
+        .replace(/\\/g, '/')
+        .replace(/^\.\//, '')
+        .replace(/^client\/public\//i, '')
+        .replace(/^public\//i, '')
+        .replace(/^\//, '');
+    const hasFileExtension = /\.[a-z0-9]{2,5}$/i.test(
+        normalized.split('?')[0].split('#')[0].split('/').pop() || ''
+    );
+    const normalizedWithExtension = hasFileExtension ? normalized : `${normalized}.jpg`;
+    const pathOnly = /^pictures\//i.test(normalizedWithExtension)
+        ? `/${normalizedWithExtension}`
+        : (!normalizedWithExtension.includes('/') ? `/Pictures/${normalizedWithExtension}` : `/${normalizedWithExtension}`);
     const segments = pathOnly.split('/').filter(Boolean);
     if (segments.length === 0) return PLACEHOLDER_IMAGE;
     return `/${segments.map((seg) => {
@@ -64,6 +79,11 @@ function resolveCartItemImageCandidates(item) {
         if (pid.image && typeof pid.image === 'string' && pid.image.trim()) {
             candidates.push(pid.image);
         }
+    }
+
+    if (item?.name && typeof item.name === 'string') {
+        candidates.push(item.name);
+        candidates.push(item.name.replace(/\bnecklace\b/gi, 'necklaces'));
     }
 
     candidates.push(...getPlaystationFallbacksByName(item?.name));

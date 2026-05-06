@@ -11,11 +11,26 @@ const BASE_URL = 'http://localhost:5000';
 
 const normalizeCartImageSrc = (src) => {
   if (!src || typeof src !== 'string') return '/file.svg';
-  const cleaned = src.trim().replace(/^['"]+|['"]+$/g, '');
+  const cleaned = src
+    .trim()
+    .replace(/^['"]+|['"]+$/g, '')
+    .replace(/[,\s]+$/g, '');
   if (!cleaned) return '/file.svg';
   if (cleaned.startsWith('http://') || cleaned.startsWith('https://')) return cleaned;
-  const withLeadingSlash = cleaned.startsWith('/') ? cleaned : `/${cleaned}`;
-  return withLeadingSlash;
+  const normalized = cleaned
+    .replace(/\\/g, '/')
+    .replace(/^\.\//, '')
+    .replace(/^client\/public\//i, '')
+    .replace(/^public\//i, '')
+    .replace(/^\//, '');
+
+  const hasFileExtension = /\.[a-z0-9]{2,5}$/i.test(
+    normalized.split('?')[0].split('#')[0].split('/').pop() || ''
+  );
+  const normalizedWithExtension = hasFileExtension ? normalized : `${normalized}.jpg`;
+  if (/^pictures\//i.test(normalizedWithExtension)) return `/${normalizedWithExtension}`;
+  if (!normalizedWithExtension.includes('/')) return `/Pictures/${normalizedWithExtension}`;
+  return `/${normalizedWithExtension}`;
 };
 
 // Generate a 24-char hex string (Mongo ObjectId–compatible) so guest carts can be saved in MongoDB

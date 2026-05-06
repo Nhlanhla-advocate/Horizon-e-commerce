@@ -40,6 +40,8 @@ const ProductsPageClient = () => { // Changed to PascalCase
    const [products, setProducts] = useState([]);
    const [isLoading, setIsLoading] = useState(true);
    const [fetchError, setFetchError] = useState('');
+   const [currentPage, setCurrentPage] = useState(1);
+   const productsPerPage = 8;
    const [filters, setFilters] = useState({ // Changed from 'filter' to 'filters'
     category: 'all',
     minPrice: '',
@@ -59,17 +61,34 @@ useEffect(() => {
             setIsLoading(true);
             setFetchError('');
             const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-            const response = await fetch(`${baseUrl}/products`);
-
-            if (!response.ok) {
+            const initialResponse = await fetch(`${baseUrl}/products?page=1&limit=100`);
+            if (!initialResponse.ok) {
                 throw new Error('Unable to load products.');
             }
 
-            const result = await response.json();
-            const rawProducts = Array.isArray(result?.data) ? result.data : [];
-            console.log(result);
+            const initialResult = await initialResponse.json();
+            const totalPages = Number(initialResult?.pagination?.pages || 1);
+            const allRawProducts = Array.isArray(initialResult?.data) ? [...initialResult.data] : [];
 
-            const normalizedProducts = rawProducts.map((product, index) => {
+            if (totalPages > 1) {
+                const pageRequests = Array.from({ length: totalPages - 1 }, (_, idx) =>
+                    fetch(`${baseUrl}/products?page=${idx + 2}&limit=100`).then((response) => {
+                        if (!response.ok) {
+                            throw new Error('Unable to load products.');
+                        }
+                        return response.json();
+                    })
+                );
+
+                const remainingPageResults = await Promise.all(pageRequests);
+                remainingPageResults.forEach((pageResult) => {
+                    if (Array.isArray(pageResult?.data)) {
+                        allRawProducts.push(...pageResult.data);
+                    }
+                });
+            }
+
+            const normalizedProducts = allRawProducts.map((product, index) => {
                 const stockQuantity = typeof product.stockQuantity === 'number'
                     ? product.stockQuantity
                     : (typeof product.stock === 'number' ? product.stock : 0);
@@ -152,6 +171,23 @@ filtered.sort((a, b) => {
 
 setProducts(filtered);
 }, [filters, allProducts]); 
+
+useEffect(() => {
+    setCurrentPage(1);
+}, [filters]);
+
+const totalPages = Math.max(1, Math.ceil(products.length / productsPerPage));
+
+useEffect(() => {
+    if (currentPage > totalPages) {
+        setCurrentPage(totalPages);
+    }
+}, [currentPage, totalPages]);
+
+const paginatedProducts = products.slice(
+    (currentPage - 1) * productsPerPage,
+    currentPage * productsPerPage
+);
 // Handle filter changes
 const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value}));
@@ -297,7 +333,7 @@ return (
             )}
             {!isLoading && !fetchError && (
                 <>
-            {products.map((product) => (
+            {paginatedProducts.map((product) => (
                 <div key={product.id} className="product-card">
                     <div className="product-image-container"> 
                         <Link href={`/products/${product.slug}`}>
@@ -357,6 +393,41 @@ return (
                     </div>
                 </div>
             ))}
+            {products.length > 0 && totalPages > 1 && (
+                <div
+                    style={{
+                        gridColumn: '1 / -1',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 8,
+                        flexWrap: 'wrap',
+                        marginTop: 12
+                    }}
+                >
+                    <button
+                        type="button"
+                        className="add-to-cart-button"
+                        onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                        disabled={currentPage === 1}
+                        style={{ width: 'auto', padding: '0.5rem 1rem' }}
+                    >
+                        Previous
+                    </button>
+                    <span style={{ fontSize: 14, color: '#64748b', minWidth: 110, textAlign: 'center' }}>
+                        Page {currentPage} of {totalPages}
+                    </span>
+                    <button
+                        type="button"
+                        className="add-to-cart-button"
+                        onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                        disabled={currentPage === totalPages}
+                        style={{ width: 'auto', padding: '0.5rem 1rem' }}
+                    >
+                        Next
+                    </button>
+                </div>
+            )}
                 </>
             )}
         </div>
