@@ -17,7 +17,21 @@ const normalizeProductImagePath = (value) => {
     if (!cleaned) return '/Pictures/placeholder.jpg';
     if (cleaned.startsWith('http')) return cleaned;
 
-    return `/${cleaned.replace(/^\//, '')}`;
+    const normalized = cleaned
+        .replace(/\\/g, '/')
+        .replace(/^\.\//, '')
+        .replace(/^client\/public\//i, '')
+        .replace(/^public\//i, '')
+        .replace(/^\//, '');
+
+    const hasFileExtension = /\.[a-z0-9]{2,5}$/i.test(
+        normalized.split('?')[0].split('#')[0].split('/').pop() || ''
+    );
+    const normalizedWithExtension = hasFileExtension ? normalized : `${normalized}.jpg`;
+
+    if (/^pictures\//i.test(normalizedWithExtension)) return `/${normalizedWithExtension}`;
+    if (!normalizedWithExtension.includes('/')) return `/Pictures/${normalizedWithExtension}`;
+    return `/${normalizedWithExtension}`;
 };
 
 const ProductsPageClient = () => { // Changed to PascalCase

@@ -16,10 +16,21 @@ const normalizeProductImagePath = (value) => {
   if (!cleaned) return '/Pictures/placeholder.jpg';
   if (cleaned.startsWith('http')) return cleaned;
 
-  const normalized = cleaned.replace(/^\//, '');
-  if (/^pictures\//i.test(normalized)) return `/${normalized}`;
-  if (!normalized.includes('/')) return `/Pictures/${normalized}`;
-  return `/${normalized}`;
+  const normalized = cleaned
+    .replace(/\\/g, '/')
+    .replace(/^\.\//, '')
+    .replace(/^client\/public\//i, '')
+    .replace(/^public\//i, '')
+    .replace(/^\//, '');
+
+  const hasFileExtension = /\.[a-z0-9]{2,5}$/i.test(
+    normalized.split('?')[0].split('#')[0].split('/').pop() || ''
+  );
+  const normalizedWithExtension = hasFileExtension ? normalized : `${normalized}.jpg`;
+
+  if (/^pictures\//i.test(normalizedWithExtension)) return `/${normalizedWithExtension}`;
+  if (!normalizedWithExtension.includes('/')) return `/Pictures/${normalizedWithExtension}`;
+  return `/${normalizedWithExtension}`;
 };
 
 const resolveProductImage = (product) => {
@@ -39,6 +50,16 @@ const toTitleCase = (value) =>
     .join(' ');
 
 const WATCH_KEYWORDS = ['watch', 'watches', 'casio'];
+const JEWELRY_KEYWORDS = [
+  'jewelry',
+  'jewellery',
+  'earring',
+  'earrings',
+  'earing',
+  'earings',
+  'necklace',
+  'necklaces',
+];
 
 const getNormalizedCategoryKey = (product) => {
   const categoryValue = String(product?.category || '')
@@ -51,10 +72,15 @@ const getNormalizedCategoryKey = (product) => {
     String(product?.image || '').toLowerCase(),
   ];
 
+  const isJewelryProduct = searchableValues.some((value) =>
+    JEWELRY_KEYWORDS.some((keyword) => value.includes(keyword))
+  );
+
   const isWatchProduct = searchableValues.some((value) =>
     WATCH_KEYWORDS.some((keyword) => value.includes(keyword))
   );
 
+  if (isJewelryProduct) return 'jewelry';
   if (isWatchProduct) return 'watches';
   return categoryValue || 'uncategorized';
 };
