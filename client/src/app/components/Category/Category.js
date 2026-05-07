@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/app/components/cart/Cart';
+import { FaSearch, FaTimes } from 'react-icons/fa';
 import '@/app/assets/css/product.css';
 import '@/app/assets/css/categoryPage.css';
 
@@ -107,6 +108,7 @@ const getNormalizedCategoryKey = (product) => {
 
 const CategoryPage = () => {
   const { addToCart } = useCart();
+  const [searchQuery, setSearchQuery] = useState('');
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
@@ -175,14 +177,33 @@ const CategoryPage = () => {
     fetchProducts();
   }, []);
 
+  const handleSearch = (event) => {
+    event.preventDefault();
+    // Search is handled via local filtering.
+  };
+
+  const clearSearch = () => setSearchQuery('');
+
+  const filteredProducts = useMemo(() => {
+    const term = searchQuery.trim().toLowerCase();
+    if (!term) return products;
+
+    return products.filter((product) => {
+      const name = String(product?.name || '').toLowerCase();
+      const description = String(product?.description || '').toLowerCase();
+      const category = String(product?.category || '').toLowerCase();
+      return name.includes(term) || description.includes(term) || category.includes(term);
+    });
+  }, [products, searchQuery]);
+
   const groupedProducts = useMemo(() => {
-    return products.reduce((acc, product) => {
+    return filteredProducts.reduce((acc, product) => {
       const key = getNormalizedCategoryKey(product);
       if (!acc[key]) acc[key] = [];
       acc[key].push(product);
       return acc;
     }, {});
-  }, [products]);
+  }, [filteredProducts]);
 
   const sortedCategoryNames = useMemo(
     () => Object.keys(groupedProducts).sort((a, b) => a.localeCompare(b)),
@@ -198,8 +219,48 @@ const CategoryPage = () => {
     <div className="products-page-container category-page-container">
       <div className="page-header">
         <h1 className="page-title">Shop by Category</h1>
-        <p className="page-description">Products grouped by category from your database.</p>
+        <p className="page-description">Look for your favorite products in our amazing categories.</p>
       </div>
+
+      {!isLoading && !fetchError && (
+        <div className="products-controls">
+          <div className="search-box">
+            <form onSubmit={handleSearch} className="navbar-search-wrapper">
+              <div className="navbar-search-relative">
+                <div className="navbar-search-icon">
+                  <FaSearch />
+                </div>
+                <input
+                  className="navbar-search-input"
+                  placeholder="Search category..."
+                  type="search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    className="navbar-search-clear"
+                    onClick={clearSearch}
+                    style={{
+                      position: 'absolute',
+                      right: '10px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'none',
+                      border: 'none',
+                      color: '#666',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <FaTimes />
+                  </button>
+                )}
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {isLoading && (
         <div className="empty-state">
@@ -214,10 +275,20 @@ const CategoryPage = () => {
         </div>
       )}
 
-      {!isLoading && !fetchError && sortedCategoryNames.length === 0 && (
+      {!isLoading && !fetchError && products.length === 0 && !searchQuery.trim() && (
         <div className="empty-state">
           <h3>No products found</h3>
           <p>Add products to your database and they will appear here grouped by category.</p>
+        </div>
+      )}
+
+      {!isLoading && !fetchError && filteredProducts.length === 0 && searchQuery && (
+        <div className="empty-state">
+          <h3>No products found</h3>
+          <p>Try adjusting your search terms or browse all categories.</p>
+          <button onClick={clearSearch} className="reset-filters-button">
+            Clear Search
+          </button>
         </div>
       )}
 
