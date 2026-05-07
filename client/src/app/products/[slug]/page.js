@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -86,6 +86,19 @@ export default function ProductDetail() {
   const [fullscreen, setFullscreen] = useState(false);
   const [selected, setSelected] = useState(0);
   const [relatedProducts, setRelatedProducts] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [reviewsError, setReviewsError] = useState('');
+  const [reviewStats, setReviewStats] = useState({
+    averageRating: 0,
+    totalReviews: 0,
+    ratingDistribution: []
+  });
+  const [selectedRating, setSelectedRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [submitReviewError, setSubmitReviewError] = useState('');
+  const [submitReviewSuccess, setSubmitReviewSuccess] = useState('');
   const { addToCart } = useCart();
 
   const buildProductDetailHref = (item) => {
@@ -136,19 +149,68 @@ export default function ProductDetail() {
     fetchProduct();
   }, [matchedProductId]);
 
+  const fetchProductReviews = useCallback(async () => {
+    if (!matchedProductId) return;
+    try {
+      setReviewsLoading(true);
+      setReviewsError('');
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${baseUrl}/reviews/product/${matchedProductId}?page=1&limit=20`);
+
+      if (!response.ok) {
+        throw new Error('Unable to load reviews.');
+      }
+
+      const result = await response.json();
+      const reviewPayload = result?.data;
+      const allReviews = Array.isArray(reviewPayload?.reviews) ? reviewPayload.reviews : [];
+      const stats = reviewPayload?.ratingStats || {};
+      const averageRating = Number(stats?.averageRating || 0);
+      const totalReviews = Number(stats?.totalReviews || 0);
+      const distribution = Array.isArray(stats?.ratingDistribution) ? stats.ratingDistribution : [];
+
+      setReviews(allReviews);
+      setReviewStats({
+        averageRating,
+        totalReviews,
+        ratingDistribution: distribution
+      });
+      setProduct((prev) => (prev ? { ...prev, rating: averageRating, numReviews: totalReviews } : prev));
+    } catch (error) {
+      setReviews([]);
+      setReviewStats({
+        averageRating: 0,
+        totalReviews: 0,
+        ratingDistribution: []
+      });
+      setReviewsError(error?.message || 'Failed to fetch reviews.');
+    } finally {
+      setReviewsLoading(false);
+    }
+  }, [matchedProductId]);
+
+  useEffect(() => {
+    fetchProductReviews();
+  }, [fetchProductReviews]);
+
   useEffect(() => {
     const fetchRelatedProducts = async () => {
+      const category = String(product?.category || '').trim();
+      if (!category) {
+        setRelatedProducts([]);
+        return;
+      }
+
       try {
         const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-        const response = await fetch(`${baseUrl}/products`);
+        const response = await fetch(`${baseUrl}/products/category/${encodeURIComponent(category)}`);
         if (!response.ok) {
           throw new Error('Unable to load related products.');
         }
 
         const result = await response.json();
-        const allProducts = Array.isArray(result?.data) ? result.data : [];
-
-        setRelatedProducts(allProducts);
+        const categoryProducts = Array.isArray(result?.data) ? result.data : [];
+        setRelatedProducts(categoryProducts);
       } catch (error) {
         console.error(error?.message || 'Failed to fetch related products.');
         setRelatedProducts([]);
@@ -156,7 +218,7 @@ export default function ProductDetail() {
     };
 
     fetchRelatedProducts();
-  }, []);
+  }, [product?.category]);
 
   const productImages = useMemo(() => {
     if (!product) return ['/Pictures/placeholder.jpg'];
@@ -204,18 +266,92 @@ export default function ProductDetail() {
   }, [product]);
 
   const relatedCategoryProducts = useMemo(() => {
-    if (!product?.category) return [];
-
     const currentProductId = product?._id;
     return relatedProducts
       .filter((item) => item?._id && item._id !== currentProductId)
-      .filter((item) => String(item.category || '').toLowerCase() === String(product.category || '').toLowerCase())
       .slice(0, 6);
-  }, [product, relatedProducts]);
+  }, [product?._id, relatedProducts]);
 
   const formatPrice = (price) => {
     const amount = Number(price ?? 0);
     return `R ${amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
+  };
+
+  const reviewCounts = useMemo(() => {
+    const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    reviewStats.ratingDistribution.forEach((ratingValue) => {
+      const rounded = Math.round(Number(ratingValue));
+      if (counts[rounded] !== undefined) {
+        counts[rounded] += 1;
+      }
+    });
+    return counts;
+  }, [reviewStats.ratingDistribution]);
+
+  const averageRating = useMemo(() => Number(product?.rating || reviewStats.averageRating || 0), [product?.rating, reviewStats.averageRating]);
+  const totalReviewCount = useMemo(() => Number(product?.numReviews || reviewStats.totalReviews || 0), [product?.numReviews, reviewStats.totalReviews]);
+
+  const renderStars = (rating, size = '18px') => {
+    const safeRating = Math.max(0, Math.min(5, Number(rating || 0)));
+    const filledStars = Math.round(safeRating);
+    return (
+      <span className="review-stars" style={{ fontSize: size }} aria-label={`${safeRating.toFixed(1)} out of 5`}>
+        {Array.from({ length: 5 }, (_, index) => (
+          <span key={index} className={index < filledStars ? 'star-filled' : 'star-empty'}>
+            ★
+          </span>
+        ))}
+      </span>
+    );
+  };
+
+  const handleSubmitReview = async (event) => {
+    event.preventDefault();
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setSubmitReviewError('Please sign in to write a review.');
+      setSubmitReviewSuccess('');
+      return;
+    }
+
+    if (!reviewComment.trim()) {
+      setSubmitReviewError('Please write your review before submitting.');
+      setSubmitReviewSuccess('');
+      return;
+    }
+
+    try {
+      setIsSubmittingReview(true);
+      setSubmitReviewError('');
+      setSubmitReviewSuccess('');
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${baseUrl}/reviews/${matchedProductId}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          rating: selectedRating,
+          comment: reviewComment.trim()
+        })
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result?.message || 'Unable to submit review.');
+      }
+
+      setReviewComment('');
+      setSelectedRating(5);
+      setSubmitReviewSuccess('Review submitted successfully.');
+      await fetchProductReviews();
+    } catch (error) {
+      setSubmitReviewError(error?.message || 'Failed to submit review.');
+      setSubmitReviewSuccess('');
+    } finally {
+      setIsSubmittingReview(false);
+    }
   };
 
   // Navigation handlers for modal
@@ -282,8 +418,8 @@ export default function ProductDetail() {
             <h1 style={{ fontSize: '2.1rem', marginBottom: 8, fontWeight: 700 }}>{product.name}</h1>
             <div style={{ color: '#2563eb', fontWeight: 600, marginBottom: 6 }}>{product.specifications?.brand || product.category}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-              <span style={{ color: '#fbbf24', fontSize: 18 }}>★ ★ ★ ★ ★</span>
-              <span style={{ color: '#666', fontSize: 15 }}>({product.numReviews || 0} Reviews)</span>
+              {renderStars(averageRating)}
+              <span style={{ color: '#666', fontSize: 15 }}>({totalReviewCount} Reviews)</span>
             </div>
             <div style={{ fontSize: 28, color: '#2563eb', fontWeight: 700, margin: '18px 0 10px 0' }}>{displayPrice}</div>
             <div style={{ color: stockQuantity > 0 ? '#16a34a' : '#dc2626', fontWeight: 500, marginBottom: 8 }}>
@@ -333,6 +469,94 @@ export default function ProductDetail() {
               )}
             </ul>
           </div>
+        </div>
+        <div className="reviews-section-wrapper">
+          <div className="reviews-summary-panel">
+            <h2 className="reviews-title">Reviews</h2>
+            <div className="reviews-average-value">{averageRating.toFixed(1)}</div>
+            <div className="reviews-average-stars">{renderStars(averageRating, '22px')}</div>
+            <div className="reviews-count-label">{totalReviewCount} Reviews</div>
+            <div className="reviews-distribution">
+              {[5, 4, 3, 2, 1].map((ratingLevel) => {
+                const count = reviewCounts[ratingLevel] || 0;
+                const widthPercent = totalReviewCount > 0 ? (count / totalReviewCount) * 100 : 0;
+                return (
+                  <div key={ratingLevel} className="distribution-row">
+                    <span className="distribution-label">{ratingLevel} ★</span>
+                    <div className="distribution-track">
+                      <div className="distribution-fill" style={{ width: `${widthPercent}%` }} />
+                    </div>
+                    <span className="distribution-count">{count}</span>
+                  </div>
+                );
+              })}
+            </div>
+            <button
+              type="button"
+              className="write-review-button"
+              onClick={() => document.getElementById('write-review-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+            >
+              Write Review
+            </button>
+          </div>
+
+          <div className="reviews-list-panel">
+            <div className="reviews-list-header">
+              <strong>
+                1 to {Math.min(reviews.length, 20)} of {totalReviewCount} Reviews
+              </strong>
+            </div>
+            {reviewsLoading && <p className="reviews-muted">Loading reviews...</p>}
+            {!reviewsLoading && reviewsError && <p className="reviews-error">{reviewsError}</p>}
+            {!reviewsLoading && !reviewsError && reviews.length === 0 && (
+              <p className="reviews-muted">No reviews yet. Be the first to write one.</p>
+            )}
+            {!reviewsLoading &&
+              !reviewsError &&
+              reviews.map((review) => (
+                <article key={review._id} className="review-item">
+                  <div>{renderStars(review.rating, '20px')}</div>
+                  <h4 className="review-author-line">
+                    {review?.user?.username || 'Anonymous'} - {new Date(review.createdAt).toLocaleDateString()}
+                  </h4>
+                  <p className="review-comment">{review.comment}</p>
+                </article>
+              ))}
+          </div>
+        </div>
+
+        <div id="write-review-form" className="review-form-panel">
+          <h3>Write a Review</h3>
+          <form onSubmit={handleSubmitReview}>
+            <div className="review-rating-picker">
+              {Array.from({ length: 5 }, (_, index) => {
+                const value = index + 1;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    className={`rating-star-btn ${value <= selectedRating ? 'active' : ''}`}
+                    onClick={() => setSelectedRating(value)}
+                    aria-label={`Rate ${value} star${value > 1 ? 's' : ''}`}
+                  >
+                    ★
+                  </button>
+                );
+              })}
+            </div>
+            <textarea
+              value={reviewComment}
+              onChange={(event) => setReviewComment(event.target.value)}
+              placeholder="Share your experience with this product"
+              rows={4}
+              className="review-comment-input"
+            />
+            {submitReviewError && <p className="reviews-error">{submitReviewError}</p>}
+            {submitReviewSuccess && <p className="reviews-success">{submitReviewSuccess}</p>}
+            <button type="submit" className="submit-review-button" disabled={isSubmittingReview}>
+              {isSubmittingReview ? 'Submitting...' : 'Submit Review'}
+            </button>
+          </form>
         </div>
         <hr style={{ margin: '3rem 0 0 0', border: 'none', borderTop: '1.5px solid #e5e7eb' }} />
         <div style={{ position: 'relative', left: '50%', right: '50%', width: '100vw', transform: 'translateX(-50%)', height: '40px', background: '#f3f4f6', margin: '0 0 2rem 0', borderRadius: 0 }} />
