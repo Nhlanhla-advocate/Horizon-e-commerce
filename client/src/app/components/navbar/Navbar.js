@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { FaShoppingCart, FaUser, FaSearch, FaSpinner, FaTimes, FaSignOutAlt, FaTachometerAlt } from 'react-icons/fa';
+import { FaShoppingCart, FaUser, FaSpinner, FaTimes, FaSignOutAlt, FaTachometerAlt } from 'react-icons/fa';
 import { useCart } from '@/app/components/cart/Cart';
 import "../../assets/css/navbar.css";
 
@@ -17,9 +17,7 @@ const ALLOWED_DASHBOARD_ROLES = new Set(['admin', 'super_admin']);
 
 const Navbar = () => {
   const { cartCount, isLoading } = useCart();
-  const [searchQuery, setSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [isAuthed, setIsAuthed] = useState(false);
   const [hasAdminAccess, setHasAdminAccess] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -51,7 +49,6 @@ const Navbar = () => {
   // Close mobile menu when route changes
   useEffect(() => {
     setIsMobileMenuOpen(false);
-    setIsMobileSearchOpen(false);
   }, [pathname]);
 
   const handleLogout = async () => {
@@ -87,26 +84,6 @@ const Navbar = () => {
     }
   };
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      // If we're on the home page, update URL with search parameter
-      if (pathname === '/') {
-        router.push(`/?search=${encodeURIComponent(searchQuery.trim())}`);
-        setIsMobileSearchOpen(false); // Close mobile search if open
-        return;
-      }
-      // Navigate to products page with search query as URL parameter
-      router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery(''); // Clear search after submitting
-      setIsMobileSearchOpen(false); // Close mobile search if open
-    }
-  };
-
-  const clearSearch = () => {
-    setSearchQuery('');
-  };
-
   return (
     <nav className="navbar">
       <div className="navbar-container">
@@ -129,12 +106,6 @@ const Navbar = () => {
                 <FaTachometerAlt />
               </Link>
             )}
-            <button 
-              className="navbar-mobile-icon-btn"
-              onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
-            >
-              <FaSearch />
-            </button>
             <Link href="/cart" className="navbar-mobile-icon-btn">
               <div className="cart-icon-container">
                 {isLoading ? (
@@ -191,43 +162,6 @@ const Navbar = () => {
             <Link href="/deals" className="navbar-link">
               Deals
             </Link>
-          </div>
-
-          {/* Search bar - Hidden on mobile when overlay is active */}
-          <div className={`navbar-search-container ${isMobileSearchOpen ? 'hidden-mobile' : ''}`}>
-            <form onSubmit={handleSearch} className="navbar-search-wrapper">
-              <div className="navbar-search-relative">
-                <div className="navbar-search-icon">
-                  <FaSearch />
-                </div>
-                <input
-                  className="navbar-search-input"
-                  placeholder="Search products..."
-                  type="search"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                {searchQuery && (
-                  <button
-                    type="button"
-                    className="navbar-search-clear"
-                    onClick={clearSearch}
-                    style={{
-                      position: 'absolute',
-                      right: '10px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      background: 'none',
-                      border: 'none',
-                      color: '#666',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <FaTimes />
-                  </button>
-                )}
-              </div>
-            </form>
           </div>
 
           {/* Right side icons */}
@@ -293,52 +227,6 @@ const Navbar = () => {
             <Link href="/deals" className="navbar-link">
               Deals
             </Link>
-          </div>
-        )}
-
-        {/* Mobile Search Overlay */}
-        {isMobileSearchOpen && (
-          <div className="navbar-mobile-search-overlay">
-            <button 
-              className="navbar-mobile-search-close"
-              onClick={() => setIsMobileSearchOpen(false)}
-            >
-              <FaTimes />
-            </button>
-            <form onSubmit={handleSearch} className="navbar-search-wrapper">
-              <div className="navbar-search-relative">
-                <div className="navbar-search-icon">
-                  <FaSearch />
-                </div>
-                <input
-                  className="navbar-search-input"
-                  placeholder="Search products..."
-                  type="search"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  autoFocus
-                />
-                {searchQuery && (
-                  <button
-                    type="button"
-                    className="navbar-search-clear"
-                    onClick={clearSearch}
-                    style={{
-                      position: 'absolute',
-                      right: '10px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      background: 'none',
-                      border: 'none',
-                      color: '#666',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <FaTimes />
-                  </button>
-                )}
-              </div>
-            </form>
           </div>
         )}
       </div>
