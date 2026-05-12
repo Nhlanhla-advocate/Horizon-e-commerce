@@ -18,21 +18,30 @@ const validateReviewInput = (req, res, next) => {
 };
 
 // Post a review for a product
+// Note: Avoid mongoose transactions here — they require a MongoDB replica set and fail on typical local standalone instances.
 const postReview = async (req, res, next) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
   try {
     const { productId } = req.params;
-    const userId = req.user.id; 
-    const { rating, comment } = req.body;
+    const userId = req.user._id || req.user.id;
+    const { comment } = req.body;
+    const rating = Number(req.body?.rating);
 
-    // Validate productId
     if (!mongoose.Types.ObjectId.isValid(productId)) {
       return res.status(400).json({ message: 'Invalid product ID' });
     }
 
-    // Check if user already reviewed this product
-    const existingReview = await Review.findOne({ productId, userId });
+    if (!Number.isFinite(rating) || rating < 1 || rating > 5) {
+      return res.status(400).json({ message: 'Rating must be a number between 1 and 5' });
+    }
+
+    if (!comment || typeof comment !== 'string' || comment.trim().length < 1) {
+      return res.status(400).json({ message: 'Comment is required' });
+    }
+
+    const existingReview = await Review.findOne({
+      product: productId,
+      user: userId
+    });
     if (existingReview) {
       return res.status(409).json({ message: 'You have already reviewed this product' });
     }
@@ -41,34 +50,36 @@ const postReview = async (req, res, next) => {
       user: userId,
       product: productId,
       rating,
-      comment,
-      createdAt: new Date()
+      comment: comment.trim()
     });
 
-    await review.save({ session });
+    await review.save();
 
-    // Update the product with new review details
-    const product = await Product.findById(productId).session(session);
+    const product = await Product.findById(productId);
     if (!product) {
-      throw new Error('Product not found');
+      await Review.findByIdAndDelete(review._id);
+      return res.status(404).json({ message: 'Product not found' });
     }
 
-    // Update product's review count and average rating
-    product.numReviews += 1;
-    product.rating = ((product.rating * (product.numReviews - 1)) + rating) / product.numReviews;
+    try {
+      const prevCount = Number(product.numReviews || 0);
+      const prevRating = Number(product.rating || 0);
+      product.numReviews = prevCount + 1;
+      product.rating =
+        prevCount === 0
+          ? rating
+          : (prevRating * prevCount + rating) / product.numReviews;
 
-    await product.save({ session });
-
-    // Commit the transaction
-    await session.commitTransaction();
-    session.endSession();
+      await product.save();
+    } catch (productErr) {
+      await Review.findByIdAndDelete(review._id);
+      throw productErr;
+    }
 
     res.status(201).json({ success: true, message: 'Review added successfully' });
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
     console.error('Error in postReview:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
       message: 'Error posting review',
       error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
