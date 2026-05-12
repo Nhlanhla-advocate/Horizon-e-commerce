@@ -337,9 +337,16 @@ export default function ProductDetail() {
         })
       });
 
-      const result = await response.json();
+      let result = {};
+      try {
+        result = await response.json();
+      } catch {
+        throw new Error('Invalid response from server. Please try again.');
+      }
+
+      const serverMessage = result?.message || result?.error;
       if (!response.ok) {
-        throw new Error(result?.message || 'Unable to submit review.');
+        throw new Error(serverMessage || 'Unable to submit review.');
       }
 
       setReviewComment('');
