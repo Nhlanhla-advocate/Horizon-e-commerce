@@ -394,27 +394,24 @@ export default function ProductDetail() {
       )}
       <div className="container product-detail-section">
         <div className="mainContent">
-          {/* Left: Images */}
-          <div className="leftImages" style={{ maxWidth: 560, width: '100%' }}>
-            <div className="imageFlexRow" style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-              <div className="mainImageContainer" style={{ position: 'relative', width: 420, maxWidth: 'calc(100vw - 160px)' }}>
-                <Image src={productImages[selected]} alt={`${product.name} ${selected + 1}`} width={420} height={420} unoptimized style={{ borderRadius: 10, objectFit: 'contain', border: '1px solid #eee', cursor: 'pointer', width: '100%', maxWidth: 420, height: 420, background: '#fff' }} onClick={() => setFullscreen(true)} />
-                <button onClick={() => setFullscreen(true)} title="View Fullscreen" style={{ position: 'absolute', bottom: 16, right: 16, background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%', width: 38, height: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 2 }}>
+          <div className="leftImages">
+            <div className="imageFlexRow">
+              <div className="mainImageContainer">
+                <Image src={productImages[selected]} alt={`${product.name} ${selected + 1}`} width={420} height={420} unoptimized className="product-detail-main-image" onClick={() => setFullscreen(true)} />
+                <button type="button" onClick={() => setFullscreen(true)} title="View Fullscreen" className="product-detail-fullscreen-btn">
                   <svg width="22" height="22" fill="#fff" viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4a1 1 0 1 0 2 0V5h4a1 1 0 1 0 0-2zm6 0a1 1 0 1 0 0 2h4v4a1 1 0 1 0 2 0V5a2 2 0 0 0-2-2h-4zm5 14a1 1 0 0 0-1 1v4h-4a1 1 0 1 0 0 2h4a2 2 0 0 0 2-2v-4a1 1 0 0 0-1-1zm-16 1a1 1 0 0 0-1 1v4a2 2 0 0 0 2 2h4a1 1 0 1 0 0-2H5v-4a1 1 0 0 0-1-1z"/></svg>
                 </button>
               </div>
-              <div className="thumbnails" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {/* Thumbnails */}
+              <div className="thumbnails product-detail-thumbnails">
                 {galleryThumbnails.map((img, idx) => (
-                  <div key={img} style={{ border: idx === selected ? '2px solid #2563eb' : '1px solid #eee', borderRadius: 6, cursor: 'pointer', padding: 2, background: idx === selected ? '#e0e7ff' : '#fff' }} onClick={() => setSelected(idx)}>
-                    <Image src={img} alt={`${product.name} thumb ${idx + 1}`} width={72} height={72} unoptimized style={{ borderRadius: 6, objectFit: 'cover', width: 72, height: 72 }} />
+                  <div key={img} className={`product-detail-thumb ${idx === selected ? 'product-detail-thumb--selected' : ''}`} role="button" tabIndex={0} onClick={() => setSelected(idx)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelected(idx); } }}>
+                    <Image src={img} alt={`${product.name} thumb ${idx + 1}`} width={72} height={72} unoptimized className="product-detail-thumb-image" />
                   </div>
                 ))}
               </div>
             </div>
           </div>
-          {/* Right: Details */}
-          <div style={{ flex: 1 }}>
+          <div className="product-detail-info">
             <h1 style={{ fontSize: '2.1rem', marginBottom: 8, fontWeight: 700 }}>{product.name}</h1>
             <div style={{ color: '#2563eb', fontWeight: 600, marginBottom: 6 }}>{product.specifications?.brand || product.category}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>

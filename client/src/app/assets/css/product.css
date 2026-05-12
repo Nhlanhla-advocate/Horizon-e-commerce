@@ -15,8 +15,95 @@
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 2rem;
+}
+
+.product-detail-section .leftImages {
+  flex-shrink: 0;
+  max-width: 560px;
+  width: 100%;
+}
+
+.product-detail-section .imageFlexRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.product-detail-section .mainImageContainer {
+  position: relative;
+  width: 420px;
+  max-width: calc(100vw - 160px);
+  flex-shrink: 0;
+}
+
+.product-detail-main-image {
+  border-radius: 10px;
+  object-fit: contain;
+  border: 1px solid #eee;
+  cursor: pointer;
+  width: 100%;
+  max-width: 420px;
+  height: 420px;
+  background: #fff;
+}
+
+.product-detail-fullscreen-btn {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.product-detail-thumbnails {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.product-detail-thumb {
+  border: 1px solid #eee;
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 2px;
+  background: #fff;
+}
+
+.product-detail-thumb:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.product-detail-thumb--selected {
+  border: 2px solid #2563eb;
+  background: #e0e7ff;
+}
+
+.product-detail-thumb-image {
+  border-radius: 6px;
+  object-fit: cover;
+  width: 72px;
+  height: 72px;
+  display: block;
+}
+
+.product-detail-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.product-detail-info > h1:first-of-type {
+  margin-top: 0;
 }
 
 .you-might-like-slider {
@@ -665,6 +752,16 @@
   .product-detail-section .mainContent {
     flex-direction: column;
     gap: 1.25rem;
+  }
+
+  .product-detail-section .mainImageContainer {
+    max-width: min(420px, calc(100vw - 120px));
+  }
+
+  .product-detail-main-image {
+    height: auto;
+    min-height: 200px;
+    aspect-ratio: 1;
   }
 
   .products-page-container {
