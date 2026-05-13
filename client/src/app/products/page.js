@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/app/components/cart/Cart';
 import '../assets/css/product.css';
+import { productMatchesSearchQuery } from '@/app/utils/productSearch';
 
 const normalizeProductImagePath = (value) => {
     if (typeof value !== 'string') return '/Pictures/placeholder.jpg';
@@ -142,12 +143,10 @@ if (filters.inStock) {
     filtered = filtered.filter(product => product.stockQuantity > 0);
 }
 
-// Apply search filter
+// Apply search filter (includes synonym / typo keywords)
 if (filters.search) {
-    const searchTerm = filters.search.toLowerCase();
-    filtered = filtered.filter(product => 
-        product.name.toLowerCase().includes(searchTerm) ||
-        product.description.toLowerCase().includes(searchTerm)
+    filtered = filtered.filter((product) =>
+        productMatchesSearchQuery(product, filters.search)
     );
 }
 

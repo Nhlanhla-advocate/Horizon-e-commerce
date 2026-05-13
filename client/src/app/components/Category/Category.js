@@ -6,6 +6,7 @@ import { useCart } from '@/app/components/cart/Cart';
 import { FaSearch, FaTimes } from 'react-icons/fa';
 import '@/app/assets/css/product.css';
 import '@/app/assets/css/categoryPage.css';
+import { productMatchesSearchQuery } from '@/app/utils/productSearch';
 
 const normalizeProductImagePath = (value) => {
   if (typeof value !== 'string') return '/Pictures/placeholder.jpg';
@@ -185,15 +186,9 @@ const CategoryPage = () => {
   const clearSearch = () => setSearchQuery('');
 
   const filteredProducts = useMemo(() => {
-    const term = searchQuery.trim().toLowerCase();
-    if (!term) return products;
+    if (!searchQuery.trim()) return products;
 
-    return products.filter((product) => {
-      const name = String(product?.name || '').toLowerCase();
-      const description = String(product?.description || '').toLowerCase();
-      const category = String(product?.category || '').toLowerCase();
-      return name.includes(term) || description.includes(term) || category.includes(term);
-    });
+    return products.filter((product) => productMatchesSearchQuery(product, searchQuery));
   }, [products, searchQuery]);
 
   const groupedProducts = useMemo(() => {

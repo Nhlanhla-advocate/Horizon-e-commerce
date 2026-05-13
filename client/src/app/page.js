@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useCart } from '@/app/components/cart/Cart';
 import { FaSearch, FaTimes } from 'react-icons/fa';
 import { useSearchParams } from 'next/navigation';
+import { productMatchesSearchQuery } from '@/app/utils/productSearch';
 
 const normalizeProductImagePath = (value) => {
     if (typeof value !== 'string') return '/Pictures/placeholder.jpg';
@@ -115,16 +116,9 @@ const Products = () => {
     }, []);
 
     // Filter products based on search query (same logic as products page)
-    const filteredProducts = products.filter(product => {
-        if (!searchQuery) return true;
-        
-        const searchTerm = searchQuery.toLowerCase();
-        return (
-            product.name.toLowerCase().includes(searchTerm) ||
-            product.description.toLowerCase().includes(searchTerm) ||
-            product.category.toLowerCase().includes(searchTerm)
-        );
-    });
+    const filteredProducts = products.filter((product) =>
+        productMatchesSearchQuery(product, searchQuery)
+    );
 
     const productsByCategory = useMemo(() => {
         return filteredProducts.reduce((acc, product) => {
