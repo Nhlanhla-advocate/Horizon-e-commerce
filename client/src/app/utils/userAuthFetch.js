@@ -69,3 +69,21 @@ export async function fetchWithUserAuth(url, options = {}) {
     }
     return { ...options, headers, credentials: 'include' };
   };
+
+  let res = await fetch(fullUrl, buildInit());
+
+  if (res.status !== 401) {
+    return res;
+  }
+
+  const hadToken = Boolean(localStorage.getItem('token'));
+  if (!hadToken) {
+    return res;
+  }
+
+  let body = {};
+  try {
+    body = await res.clone().json();
+  } catch {
+    return res;
+  }
