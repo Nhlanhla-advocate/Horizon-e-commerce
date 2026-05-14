@@ -87,3 +87,15 @@ export async function fetchWithUserAuth(url, options = {}) {
   } catch {
     return res;
   }
+
+  if (!isAccessTokenExpiredPayload(body)) {
+    return res;
+  }
+
+  try {
+    await refreshUserAccessToken();
+    return fetch(fullUrl, buildInit());
+  } catch {
+    return res;
+  }
+}
