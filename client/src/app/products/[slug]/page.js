@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import '../../assets/css/product.css';
 import ImageModal from '../../components/imagemodal/ImageModal';
 import { useCart } from '@/app/components/cart/Cart';
+import { fetchWithUserAuth, getUserApiBaseUrl } from '@/app/utils/userAuthFetch';
 
 const normalizeProductImagePath = (value) => {
   if (typeof value !== 'string') return '';
@@ -324,11 +325,10 @@ export default function ProductDetail() {
       setIsSubmittingReview(true);
       setSubmitReviewError('');
       setSubmitReviewSuccess('');
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-      const response = await fetch(`${baseUrl}/reviews/${matchedProductId}`, {
+      const baseUrl = getUserApiBaseUrl();
+      const response = await fetchWithUserAuth(`${baseUrl}/reviews/${matchedProductId}`, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
