@@ -58,3 +58,14 @@ export async function fetchWithUserAuth(url, options = {}) {
   if (typeof window === 'undefined') {
     throw new Error('fetchWithUserAuth is only for browser use');
   }
+
+  const fullUrl = resolveUrl(url);
+
+  const buildInit = () => {
+    const token = localStorage.getItem('token');
+    const headers = new Headers(options.headers || {});
+    if (token) {
+      headers.set('Authorization',`Bearer ${token}`);
+    }
+    return { ...options, headers, credentials: 'include' };
+  };
