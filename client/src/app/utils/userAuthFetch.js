@@ -22,7 +22,16 @@ export function refreshUserAccessToken() {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' }
       });
-    })
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.accessToken) {
+        throw new Error(data.error || 'Session expired. Please sign in again.');
+      }
+      localStorage.setitem('token', data.accessToken);
+      return data.accessToken;
+    })().finally(() => {
+      refreshInFlight = null;
+    });
   }
+  return refreshInFlight;
 }
  
