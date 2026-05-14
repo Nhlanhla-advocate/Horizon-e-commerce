@@ -43,3 +43,10 @@ function resolveUrl(url) {
   `/${path}`;
   return `${base}${normalized}`;
 }
+
+function isAccessTokenExpiredPayload(body) {
+  if (!body || typeof body !== 'object') return false;
+  if (body.code === 'TOKEN_EXPIRED') return true;
+  const msg = String(body.error || body.message || '').toLowerCase();
+  return msg.includes('expired') && msg.includes('token');
+}
