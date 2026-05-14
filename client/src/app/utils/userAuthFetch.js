@@ -50,3 +50,22 @@ function isAccessTokenExpiredPayload(body) {
   const msg = String(body.error || body.message || '').toLowerCase();
   return msg.includes('expired') && msg.includes('token');
 }
+
+/**
+ * Like fetch(), but sends the user Bearer token, includes cookies, and retries once after a successful refresh when the access JWT expired.
+ */
+export async function fetchWithUserAuth(url, options = {}) {
+  if (typeof window === 'undefined') {
+    throw new Error('fetchWithUserAuth is only for browser use');
+  }
+
+  const fullUrl = resolveUrl(url);
+
+  const buildInit = () => {
+    const token = localStorage.getItem('token');
+    const headers = new Headers(options.headers || {});
+    if (token) {
+      headers.set('Authorization',`Bearer ${token}`);
+    }
+    return { ...options, headers, credentials: 'include' };
+  };
