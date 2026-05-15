@@ -77,6 +77,9 @@
   cursor: pointer;
   padding: 2px;
   background: #fff;
+  display: block;
+  text-decoration: none;
+  color: inherit;
 }
 
 .product-detail-thumb:focus-visible {

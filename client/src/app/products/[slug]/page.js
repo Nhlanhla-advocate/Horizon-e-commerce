@@ -7,74 +7,13 @@ import '../../assets/css/product.css';
 import ImageModal from '../../components/imagemodal/ImageModal';
 import { useCart } from '@/app/components/cart/Cart';
 import { fetchWithUserAuth, getUserApiBaseUrl } from '@/app/utils/userAuthFetch';
-
-const normalizeProductImagePath = (value) => {
-  if (typeof value !== 'string') return '';
-
-  const cleaned = value
-    .trim()
-    .replace(/^['"]+|['"]+$/g, '')
-    .replace(/[,\s]+$/g, '');
-
-  if (!cleaned) return '';
-  if (cleaned.startsWith('http')) return cleaned;
-
-  const normalized = cleaned
-    .replace(/\\/g, '/')
-    .replace(/^\.\//, '')
-    .replace(/^client\/public\//i, '')
-    .replace(/^public\//i, '')
-    .replace(/^\//, '');
-
-  const hasFileExtension = /\.[a-z0-9]{2,5}$/i.test(
-    normalized.split('?')[0].split('#')[0].split('/').pop() || ''
-  );
-  const normalizedWithExtension = hasFileExtension ? normalized : `${normalized}.jpg`;
-
-  if (/^pictures\//i.test(normalizedWithExtension)) return `/${normalizedWithExtension}`;
-  if (!normalizedWithExtension.includes('/')) return `/Pictures/${normalizedWithExtension}`;
-  return `/${normalizedWithExtension}`;
-};
-
-const getProductImageCandidates = (product) => {
-  const fromApi = Array.isArray(product?.images) && product.images.length > 0
-    ? product.images
-    : (typeof product?.image === 'string' && product.image.length > 0 ? [product.image] : []);
-
-  const nameCandidates = [];
-  if (product?.name) {
-    nameCandidates.push(product.name);
-    nameCandidates.push(String(product.name).replace(/\bnecklace\b/gi, 'necklaces'));
-  }
-
-  const normalized = [...fromApi, ...nameCandidates]
-    .map(normalizeProductImagePath)
-    .filter(Boolean);
-
-  return [...new Set(normalized)];
-};
-
-const playstationFallbackImages = {
-  ps5: [
-    '/Pictures/Playstation 5.jpg',
-    '/Pictures/Playstation 5 disk.jpg',
-    '/Pictures/Playstation 5 pro.jpg',
-    '/Pictures/Playstation 5 Digital.jpg'
-  ],
-  ps4: [
-    '/Pictures/Playstation 4.jpg',
-    '/Pictures/Playstation4.jpg',
-    '/Pictures/Playstation 4 Pro.jpg',
-    '/Pictures/Playstation 4 Slim.jpg',
-    '/Pictures/Playstation 4 pro.jpg'
-  ]
-};
-
-const pinnedThumbnailImages = [
-  '/Pictures/Playstation 4 pro.jpg',
-  '/Pictures/Playstation 5 Digital.jpg',
-  '/Pictures/Playstation 5 disk.jpg'
-];
+import {
+  buildCategoryGalleryItems,
+  buildProductDetailHref,
+  normalizeProductImagePath,
+  PRODUCT_DETAIL_THUMBNAIL_COUNT,
+  resolveProductPrimaryImage,
+} from '@/app/utils/productGallery';
 
 export default function ProductDetail() {
   const params = useParams();
@@ -101,16 +40,6 @@ export default function ProductDetail() {
   const [submitReviewError, setSubmitReviewError] = useState('');
   const [submitReviewSuccess, setSubmitReviewSuccess] = useState('');
   const { addToCart } = useCart();
-
-  const buildProductDetailHref = (item) => {
-    if (!item?._id) return '#';
-    const baseSlug = typeof item.slug === 'string' && item.slug.trim().length > 0
-      ? item.slug.trim()
-      : String(item.name || 'product').toLowerCase().replace(/\s+/g, '-');
-
-    const slugWithId = baseSlug.endsWith(item._id) ? baseSlug : `${baseSlug}-${item._id}`;
-    return `/products/${slugWithId}`;
-  };
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -221,38 +150,30 @@ export default function ProductDetail() {
     fetchRelatedProducts();
   }, [product?.category]);
 
-  const productImages = useMemo(() => {
-    if (!product) return ['/Pictures/placeholder.jpg'];
+  const mainProductImage = useMemo(
+    () => (product ? resolveProductPrimaryImage(product) : '/Pictures/placeholder.jpg'),
+    [product]
+  );
 
-    const normalizedImages = getProductImageCandidates(product);
+  const categoryGalleryItems = useMemo(
+    () => buildCategoryGalleryItems(product, relatedProducts, PRODUCT_DETAIL_THUMBNAIL_COUNT),
+    [product, relatedProducts]
+  );
 
-    const productName = String(product.name || '').toLowerCase();
-    const isPS5 = productName.includes('playstation 5') || productName.includes('ps5');
-    const isPS4 = productName.includes('playstation 4') || productName.includes('ps4');
-    const fallbackSet = isPS5 ? playstationFallbackImages.ps5 : (isPS4 ? playstationFallbackImages.ps4 : []);
-
-    const merged = [...normalizedImages];
-    [...fallbackSet, ...pinnedThumbnailImages].forEach((img) => {
-      const normalizedFallback = normalizeProductImagePath(img);
-      if (normalizedFallback && !merged.includes(normalizedFallback)) {
-        merged.push(normalizedFallback);
-      }
-    });
-
-    return merged.length > 0 ? merged : ['/Pictures/placeholder.jpg'];
-  }, [product]);
-
-  const galleryThumbnails = useMemo(() => productImages.slice(0, 6), [productImages]);
+  const galleryModalImages = useMemo(
+    () => categoryGalleryItems.map((item) => item.image),
+    [categoryGalleryItems]
+  );
 
   useEffect(() => {
     setSelected(0);
   }, [matchedProductId]);
 
   useEffect(() => {
-    if (selected > productImages.length - 1) {
+    if (selected > galleryModalImages.length - 1) {
       setSelected(0);
     }
-  }, [productImages, selected]);
+  }, [galleryModalImages, selected]);
 
   const displayPrice = useMemo(() => {
     const price = Number(product?.price ?? 0);
@@ -364,11 +285,11 @@ export default function ProductDetail() {
   // Navigation handlers for modal
   const handlePrev = (e) => {
     e.stopPropagation();
-    setSelected((prev) => (prev === 0 ? productImages.length - 1 : prev - 1));
+    setSelected((prev) => (prev === 0 ? galleryModalImages.length - 1 : prev - 1));
   };
   const handleNext = (e) => {
     e.stopPropagation();
-    setSelected((prev) => (prev === productImages.length - 1 ? 0 : prev + 1));
+    setSelected((prev) => (prev === galleryModalImages.length - 1 ? 0 : prev + 1));
   };
   const handleClose = () => setFullscreen(false);
 
@@ -392,7 +313,7 @@ export default function ProductDetail() {
       {/* Fullscreen Modal Overlay */}
       {fullscreen && (
         <ImageModal
-          images={productImages}
+          images={galleryModalImages}
           currentIndex={selected}
           onClose={handleClose}
           onPrev={handlePrev}
@@ -404,17 +325,58 @@ export default function ProductDetail() {
           <div className="leftImages">
             <div className="imageFlexRow">
               <div className="mainImageContainer">
-                <Image src={productImages[selected]} alt={`${product.name} ${selected + 1}`} width={420} height={420} unoptimized className="product-detail-main-image" onClick={() => setFullscreen(true)} />
+                <Image src={mainProductImage} alt={product.name} width={420} height={420} unoptimized className="product-detail-main-image" onClick={() => { setSelected(0); setFullscreen(true); }} />
                 <button type="button" onClick={() => setFullscreen(true)} title="View Fullscreen" className="product-detail-fullscreen-btn">
                   <svg width="22" height="22" fill="#fff" viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4a1 1 0 1 0 2 0V5h4a1 1 0 1 0 0-2zm6 0a1 1 0 1 0 0 2h4v4a1 1 0 1 0 2 0V5a2 2 0 0 0-2-2h-4zm5 14a1 1 0 0 0-1 1v4h-4a1 1 0 1 0 0 2h4a2 2 0 0 0 2-2v-4a1 1 0 0 0-1-1zm-16 1a1 1 0 0 0-1 1v4a2 2 0 0 0 2 2h4a1 1 0 1 0 0-2H5v-4a1 1 0 0 0-1-1z"/></svg>
                 </button>
               </div>
               <div className="thumbnails product-detail-thumbnails">
-                {galleryThumbnails.map((img, idx) => (
-                  <div key={img} className={`product-detail-thumb ${idx === selected ? 'product-detail-thumb--selected' : ''}`} role="button" tabIndex={0} onClick={() => setSelected(idx)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelected(idx); } }}>
-                    <Image src={img} alt={`${product.name} thumb ${idx + 1}`} width={72} height={72} unoptimized className="product-detail-thumb-image" />
-                  </div>
-                ))}
+                {categoryGalleryItems.map((item, idx) => {
+                  const thumbClass = `product-detail-thumb${item.isCurrent ? ' product-detail-thumb--selected' : ''}`;
+                  const thumbImage = (
+                    <Image
+                      src={item.image}
+                      alt={item.isCurrent ? product.name : item.name || 'Related product'}
+                      width={72}
+                      height={72}
+                      unoptimized
+                      className="product-detail-thumb-image"
+                    />
+                  );
+
+                  if (item.isCurrent) {
+                    return (
+                      <div
+                        key={item.key}
+                        className={thumbClass}
+                        role="button"
+                        tabIndex={0}
+                        title={product.name}
+                        onClick={() => { setSelected(idx); setFullscreen(true); }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            setSelected(idx);
+                            setFullscreen(true);
+                          }
+                        }}
+                      >
+                        {thumbImage}
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <Link
+                      key={item.key}
+                      href={item.href}
+                      className={thumbClass}
+                      title={item.name || 'View product'}
+                    >
+                      {thumbImage}
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -444,7 +406,7 @@ export default function ProductDetail() {
                 addToCart(product._id, 1, {
                   name: product.name,
                   price: product.price,
-                  image: productImages[0]
+                  image: mainProductImage
                 });
               }}
               disabled={stockQuantity === 0}
