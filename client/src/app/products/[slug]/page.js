@@ -165,6 +165,8 @@ export default function ProductDetail() {
     [categoryGalleryItems]
   );
 
+  const previewImage = galleryModalImages[selected] ?? mainProductImage;
+
   useEffect(() => {
     setSelected(0);
   }, [matchedProductId]);
@@ -325,58 +327,39 @@ export default function ProductDetail() {
           <div className="leftImages">
             <div className="imageFlexRow">
               <div className="mainImageContainer">
-                <Image src={mainProductImage} alt={product.name} width={420} height={420} unoptimized className="product-detail-main-image" onClick={() => { setSelected(0); setFullscreen(true); }} />
+                <Image src={previewImage} alt={product.name} width={420} height={420} unoptimized className="product-detail-main-image" onClick={() => setFullscreen(true)} />
                 <button type="button" onClick={() => setFullscreen(true)} title="View Fullscreen" className="product-detail-fullscreen-btn">
                   <svg width="22" height="22" fill="#fff" viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4a1 1 0 1 0 2 0V5h4a1 1 0 1 0 0-2zm6 0a1 1 0 1 0 0 2h4v4a1 1 0 1 0 2 0V5a2 2 0 0 0-2-2h-4zm5 14a1 1 0 0 0-1 1v4h-4a1 1 0 1 0 0 2h4a2 2 0 0 0 2-2v-4a1 1 0 0 0-1-1zm-16 1a1 1 0 0 0-1 1v4a2 2 0 0 0 2 2h4a1 1 0 1 0 0-2H5v-4a1 1 0 0 0-1-1z"/></svg>
                 </button>
               </div>
               <div className="thumbnails product-detail-thumbnails">
-                {categoryGalleryItems.map((item, idx) => {
-                  const thumbClass = `product-detail-thumb${item.isCurrent ? ' product-detail-thumb--selected' : ''}`;
-                  const thumbImage = (
+                {categoryGalleryItems.map((item, idx) => (
+                  <div
+                    key={item.key}
+                    className={`product-detail-thumb${idx === selected ? ' product-detail-thumb--selected' : ''}`}
+                    role="button"
+                    tabIndex={0}
+                    title={item.label ? `Preview: ${item.label}` : 'Preview image'}
+                    aria-label={item.label ? `Preview image: ${item.label}` : `Preview image ${idx + 1}`}
+                    aria-pressed={idx === selected}
+                    onClick={() => setSelected(idx)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setSelected(idx);
+                      }
+                    }}
+                  >
                     <Image
                       src={item.image}
-                      alt={item.isCurrent ? product.name : item.name || 'Related product'}
+                      alt=""
                       width={72}
                       height={72}
                       unoptimized
                       className="product-detail-thumb-image"
                     />
-                  );
-
-                  if (item.isCurrent) {
-                    return (
-                      <div
-                        key={item.key}
-                        className={thumbClass}
-                        role="button"
-                        tabIndex={0}
-                        title={product.name}
-                        onClick={() => { setSelected(idx); setFullscreen(true); }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            setSelected(idx);
-                            setFullscreen(true);
-                          }
-                        }}
-                      >
-                        {thumbImage}
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <Link
-                      key={item.key}
-                      href={item.href}
-                      className={thumbClass}
-                      title={item.name || 'View product'}
-                    >
-                      {thumbImage}
-                    </Link>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
             </div>
           </div>
