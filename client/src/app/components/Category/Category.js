@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/app/components/cart/Cart';
 import { FaSearch, FaTimes } from 'react-icons/fa';
@@ -107,12 +107,23 @@ const getNormalizedCategoryKey = (product) => {
   return categoryValue || 'uncategorized';
 };
 
+
+
 const CategoryPage = () => {
   const { addToCart } = useCart();
   const [searchQuery, setSearchQuery] = useState('');
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
+  const [activeCarousel, setActiveCarousel] = useState(null);
+
+  const activateCarousel = useCallback((categoryName) => {
+    setActiveCarousel(categoryName);
+  }, []);
+
+  const deactivateCarousel = useCallback(() => {
+    setActiveCarousel(null);
+  }, []);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -292,77 +303,14 @@ const CategoryPage = () => {
         sortedCategoryNames.map((categoryName) => (
           <section key={categoryName} className="category-section">
             <h2 className="category-title">{toTitleCase(categoryName)}</h2>
-            <div className="products-grid category-products-grid">
-              {groupedProducts[categoryName].map((product) => (
-                <article key={product._id || product.id} className="product-card">
-                  <div className="product-image-container">
-                    <Link href={`/products/${product.slug}`}>
-                      <div className="image-wrapper">
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                          className="product-image"
-                          width={250}
-                          height={250}
-                          loading="lazy"
-                          style={{ objectFit: 'cover' }}
-                          onError={(event) => {
-                            const candidates = Array.isArray(product.imageCandidates)
-                              ? product.imageCandidates
-                              : [];
-                            const currentIndex = Number(event.currentTarget.dataset.candidateIndex || 0);
-                            const nextIndex = currentIndex + 1;
-
-                            if (nextIndex < candidates.length) {
-                              event.currentTarget.dataset.candidateIndex = String(nextIndex);
-                              event.currentTarget.src = candidates[nextIndex];
-                              return;
-                            }
-
-                            event.currentTarget.src = '/Pictures/placeholder.jpg';
-                          }}
-                          data-candidate-index="0"
-                        />
-                        {product.stockQuantity === 0 && (
-                          <div className="out-of-stock-badge">Out of Stock</div>
-                        )}
-                      </div>
-                    </Link>
-                  </div>
-
-                  <div className="product-info">
-                    <Link href={`/products/${product.slug}`}>
-                      <h3 className="product-name">{product.name}</h3>
-                    </Link>
-                    <div className="product-category">{toTitleCase(product.category)}</div>
-                    <div className="product-price">{formatPrice(product.price)}</div>
-                    <div className="product-stock">
-                      {product.stockQuantity > 0 ? (
-                        <span className="in-stock">{product.stockQuantity} in stock</span>
-                      ) : (
-                        <span className="out-of-stock">Out of stock</span>
-                      )}
-                    </div>
-                    <button
-                      type="button"
-                      className="add-to-cart-button"
-                      onClick={() =>
-                        addToCart(product._id, 1, {
-                          name: product.name,
-                          price: product.price,
-                          image: product.image,
-                          description: product.description,
-                          category: product.category,
-                        })
-                      }
-                      disabled={product.stockQuantity === 0}
-                    >
-                      Add to Cart
-                    </button>
-                  </div>
-                </article>
-              ))}
-            </div>
+            <CategoryProductCarousel
+              products={groupedProducts[categoryName]}
+              isActive={activeCarousel === categoryName}
+              onActivate={() => activateCarousel(categoryName)}
+              onDeactivate={deactivateCarousel}
+              addToCart={addToCart}
+              formatPrice={formatPrice}
+            />
           </section>
         ))}
     </div>

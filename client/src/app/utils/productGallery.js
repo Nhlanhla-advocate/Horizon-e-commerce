@@ -126,10 +126,8 @@ export const buildCategoryGalleryItems = (
   const items = [
     {
       key: currentId || 'current',
-      productId: currentId,
       image: currentImage,
-      name: product.name,
-      href: buildProductDetailHref(product),
+      label: product.name,
       isCurrent: true,
     },
   ];
@@ -149,10 +147,8 @@ export const buildCategoryGalleryItems = (
     seenImages.add(image);
     items.push({
       key: item._id.toString(),
-      productId: item._id.toString(),
       image,
-      name: item.name,
-      href: buildProductDetailHref(item),
+      label: item.name,
       isCurrent: false,
     });
   }
