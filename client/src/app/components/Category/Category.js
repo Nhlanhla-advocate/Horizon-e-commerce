@@ -135,6 +135,21 @@ const ProductImage = ({ product }) => (
   />
 );
 
+const CategoryProductCarousel = ({
+  products,
+  isActive,
+  onActivate,
+  onDeactivate,
+  addToCart,
+  formatPrice,
+}) => {
+  const canlide = products.length > VISIBLE_CAROUSEL_ITEMS;
+  const travkProducts = canSlide ? [...products,
+    ...products] : products;
+    const isSliding = isActive && canSlide;
+  
+}
+
 const CategoryPage = () => {
   const { addToCart } = useCart();
   const [searchQuery, setSearchQuery] = useState('');
