@@ -113,7 +113,7 @@ const ProductImage = ({ product }) => (
   <img 
   src={product.image}
   alt={product.name}
-  ClassName="product-image"
+  className="product-image"
   width={250}
   height={250}
   loading="lazy"
@@ -121,6 +121,13 @@ const ProductImage = ({ product }) => (
   onError={(event) => {
     Array.isArray(product.imageCandidates) ? product.imageCandidates : [];
     const currentIndex = Number(event.currentTarget.dataset.candidateIndex || 0);
+    const nextIndex = currentIndex + 1;
+
+    if (nextIndex < candidates.length) {
+      event.currentTarget.dataset.candidateIndex = String(nextIndex);
+      event.currentTarget.src = candidates[nextIndex];
+      return;
+    }
   }}
 )
 
