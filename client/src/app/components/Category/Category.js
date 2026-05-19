@@ -107,7 +107,22 @@ const getNormalizedCategoryKey = (product) => {
   return categoryValue || 'uncategorized';
 };
 
+const VISIBLE_CAROUSEL_ITEMS = 4;
 
+const ProductImage = ({ product }) => (
+  <img 
+  src={product.image}
+  alt={product.name}
+  ClassName="product-image"
+  width={250}
+  height={250}
+  loading="lazy"
+  style={{ objectFit: 'cover' }}
+  onError={(event) => {
+    Array.isArray(product.imageCandidates) ? product.imageCandidates : [];
+    const currentIndex = Number(event.currentTarget.dataset.candidateIndex || 0);
+  }}
+)
 
 const CategoryPage = () => {
   const { addToCart } = useCart();
