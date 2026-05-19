@@ -128,8 +128,12 @@ const ProductImage = ({ product }) => (
       event.currentTarget.src = candidates[nextIndex];
       return;
     }
+
+    event.currentTarget.src = 'Pictures/placeholder.jpg';
   }}
-)
+  data-candidate-index="0"
+  />
+);
 
 const CategoryPage = () => {
   const { addToCart } = useCart();
