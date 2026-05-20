@@ -143,10 +143,37 @@ const CategoryProductCarousel = ({
   addToCart,
   formatPrice,
 }) => {
-  const canlide = products.length > VISIBLE_CAROUSEL_ITEMS;
-  const travkProducts = canSlide ? [...products,
+  const canSlide = products.length > VISIBLE_CAROUSEL_ITEMS;
+  const trackProducts = canSlide ? [...products,
     ...products] : products;
     const isSliding = isActive && canSlide;
+
+    return (
+      <div 
+      className="category-carousel"
+      onMouseLeave={onDeactivate}
+      >
+        <div className="category-carousel-viewport">
+          <div className="category-carousel-viewport">
+            <div className={ `category-carousel-track${isSliding ? 'is-sliding' : ''}`}
+            style={{
+              '_carousel-item-count': products.length,
+              '_carousel-visible-count': VISIBLE_CAROUSEL_ITEMS,
+            }}
+            >
+              {trackProducts.map((product, index) => (
+                <article
+                key={ `${product._id} || product.id} -${index}` }
+                className="product-card category-carousel-item"
+                onMouseEnter={index === 0 ? onActive : undefined}
+                >
+                  
+                </article>
+              ))}
+            </div>
+          </div>
+      </div>
+    )
   
 }
 
