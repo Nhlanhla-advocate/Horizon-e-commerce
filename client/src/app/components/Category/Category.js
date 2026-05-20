@@ -110,28 +110,28 @@ const getNormalizedCategoryKey = (product) => {
 const VISIBLE_CAROUSEL_ITEMS = 4;
 
 const ProductImage = ({ product }) => (
-  <img 
-  src={product.image}
-  alt={product.name}
-  className="product-image"
-  width={250}
-  height={250}
-  loading="lazy"
-  style={{ objectFit: 'cover' }}
-  onError={(event) => {
-    Array.isArray(product.imageCandidates) ? product.imageCandidates : [];
-    const currentIndex = Number(event.currentTarget.dataset.candidateIndex || 0);
-    const nextIndex = currentIndex + 1;
+  <img
+    src={product.image}
+    alt={product.name}
+    className="product-image"
+    width={250}
+    height={250}
+    loading="lazy"
+    style={{ objectFit: 'cover' }}
+    onError={(event) => {
+      const candidates = Array.isArray(product.imageCandidates) ? product.imageCandidates : [];
+      const currentIndex = Number(event.currentTarget.dataset.candidateIndex || 0);
+      const nextIndex = currentIndex + 1;
 
-    if (nextIndex < candidates.length) {
-      event.currentTarget.dataset.candidateIndex = String(nextIndex);
-      event.currentTarget.src = candidates[nextIndex];
-      return;
-    }
+      if (nextIndex < candidates.length) {
+        event.currentTarget.dataset.candidateIndex = String(nextIndex);
+        event.currentTarget.src = candidates[nextIndex];
+        return;
+      }
 
-    event.currentTarget.src = 'Pictures/placeholder.jpg';
-  }}
-  data-candidate-index="0"
+      event.currentTarget.src = '/Pictures/placeholder.jpg';
+    }}
+    data-candidate-index="0"
   />
 );
 
@@ -143,59 +143,66 @@ const CategoryProductCarousel = ({
   addToCart,
   formatPrice,
 }) => {
+  const [isPaused, setIsPaused] = useState(false);
   const canSlide = products.length > VISIBLE_CAROUSEL_ITEMS;
-  const trackProducts = canSlide ? [...products,
-    ...products] : products;
-    const isSliding = isActive && canSlide;
+  const trackProducts = canSlide ? [...products, ...products] : products;
+  const isSliding = isActive && canSlide;
+  const isMoving = isSliding && !isPaused;
 
-    return (
-      <div 
-      className="category-carousel"
-      onMouseLeave={onDeactivate}
-      >
-        <div className="category-carousel-viewport">
-            <div className={ `category-carousel-track${isSliding ? 'is-sliding' : ''}`}
-            style={{
-              '_carousel-item-count': products.length,
-              '_carousel-visible-count': VISIBLE_CAROUSEL_ITEMS,
-            }}
+  useEffect(() => {
+    if (!isActive) {
+      setIsPaused(false);
+    }
+  }, [isActive]);
+
+  const handleCardClick = () => {
+    if (isMoving) {
+      setIsPaused(true);
+    }
+  };
+
+  return (
+    <div className="category-carousel" onMouseLeave={onDeactivate}>
+      <div className="category-carousel-viewport">
+        <div
+          className={`category-carousel-track${isSliding ? ' is-sliding' : ''}${isPaused ? ' is-paused' : ''}`}
+          style={{
+            '--carousel-item-count': products.length,
+            '--carousel-visible-count': VISIBLE_CAROUSEL_ITEMS,
+          }}
+        >
+          {trackProducts.map((product, index) => (
+            <article
+              key={`${product._id || product.id}-${index}`}
+              className={`product-card category-carousel-item${isMoving ? ' category-carousel-item--moving' : ''}`}
+              onMouseEnter={index === 0 ? onActivate : undefined}
+              onClick={handleCardClick}
             >
-              {trackProducts.map((product, index) => (
-                <article
-                key={ `${product._id} || product.id}-${index}` }
-                className="product-card category-carousel-item"
-                onMouseEnter={index === 0 ? onActivate : undefined}
-                >
-
-                  <div className="product-image-container">
-                    <Link href={ `/products/${product.slug}` }>
-                    <div className="image-wrapper">
-                      <ProductImage product={product} />
-                      {product.stockQuantity === 0 && (
-                        <div className="out-of-stock-badge">Out of stock</div>
-                      )}
-                    </div>
-                    </Link>     
+              <div className="product-image-container">
+                <Link href={`/products/${product.slug}`}>
+                  <div className="image-wrapper">
+                    <ProductImage product={product} />
+                    {product.stockQuantity === 0 && (
+                      <div className="out-of-stock-badge">Out of Stock</div>
+                    )}
                   </div>
+                </Link>
+              </div>
 
-                  <div className="product-info">
-                    <Link href={ `/products/${product.slug}` }>
-                    <h3 className="product-name">{product.name}</h3>
-                    </Link>
-                    <div className="product-category">
-                      {toTitleCase(product.category)}</div>
-                      <div className="product-price">
-                        {formatPrice(product.price)}</div>
-                        <div className="product-stock">
-                          {product.stockQuantity > 0 ? (
-                            <span className="in-stock">
-                              {product.stockQuantity} in stock</span>
-                          ) : (
-                            <span className="out-of-stock">Out of stock</span>
-                          )}
-                        
-                        </div>
-                        <button
+              <div className="product-info">
+                <Link href={`/products/${product.slug}`}>
+                  <h3 className="product-name">{product.name}</h3>
+                </Link>
+                <div className="product-category">{toTitleCase(product.category)}</div>
+                <div className="product-price">{formatPrice(product.price)}</div>
+                <div className="product-stock">
+                  {product.stockQuantity > 0 ? (
+                    <span className="in-stock">{product.stockQuantity} in stock</span>
+                  ) : (
+                    <span className="out-of-stock">Out of stock</span>
+                  )}
+                </div>
+                <button
                   type="button"
                   className="add-to-cart-button"
                   onClick={() =>
@@ -204,25 +211,29 @@ const CategoryProductCarousel = ({
                       price: product.price,
                       image: product.image,
                       description: product.description,
-                      category: product.category,  
+                      category: product.category,
                     })
                   }
                   disabled={product.stockQuantity === 0}
-                  >
-                        Add to Cart
-                        </button>
-                    </div>
-                </article>
-              ))}
-            </div>
-          </div>
-          {canSlide && (
-            <p className="category-carousel-hint">
-              isSliding ? 'Browsing products...' : 'Hover the first product to browse more'.
-            </p>
-          )}
+                >
+                  Add to Cart
+                </button>
+              </div>
+            </article>
+          ))}
+        </div>
       </div>
-    );
+      {canSlide && (
+        <p className="category-carousel-hint">
+          {isPaused
+            ? 'Paused — move away and hover the first product to browse again'
+            : isSliding
+              ? 'Browsing products… click any card to pause and interact'
+              : 'Hover the first product to browse more'}
+        </p>
+      )}
+    </div>
+  );
 };
 
 const CategoryPage = () => {
@@ -332,6 +343,14 @@ const CategoryPage = () => {
     [groupedProducts]
   );
 
+  const hasSlidableCategories = useMemo(
+    () =>
+      sortedCategoryNames.some(
+        (categoryName) => groupedProducts[categoryName].length > VISIBLE_CAROUSEL_ITEMS
+      ),
+    [sortedCategoryNames, groupedProducts]
+  );
+
   const formatPrice = (price) =>
     `R ${Number(price || 0)
       .toFixed(2)
@@ -412,6 +431,10 @@ const CategoryPage = () => {
             Clear Search
           </button>
         </div>
+      )}
+
+      {!isLoading && !fetchError && hasSlidableCategories && sortedCategoryNames.length > 0 && (
+        <p className="category-page-hint">Hover the first product to browse more</p>
       )}
 
       {!isLoading &&
