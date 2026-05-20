@@ -184,7 +184,7 @@ const CategoryProductCarousel = ({
                     </Link>
                     <div className="product-category">
                       {toTitleCase(product.category)}</div>
-                      <div className="prodcut-price">
+                      <div className="product-price">
                         {formatPrice(product.price)}</div>
                         <div className="product-stock">
                           {product.stockQuantity > 0 ? (
@@ -193,20 +193,37 @@ const CategoryProductCarousel = ({
                           ) : (
                             <span className="out-of-stock">Out of stock</span>
                           )}
-                        }
-                        disabled={product.stockQuantity === 0}
-                        >
+                        
+                        </div>
+                        <button
+                  type="button"
+                  className="add-to-cart-button"
+                  onClick={() =>
+                    addToCart(product._id, 1, {
+                      name: product.name,
+                      price: product.price,
+                      image: product.image,
+                      description: product.description,
+                      category: product.category,  
+                    })
+                  }
+                  disabled={product.stockQuantity === 0}
+                  >
+                        Add to Cart
+                        </button>
                     </div>
-                  </div>
-                  
                 </article>
               ))}
             </div>
           </div>
+          {canSlide && (
+            <p className="category-carousel-hint">
+              isSliding ? 'Browsing products...' : 'Hover the first product to browse more'.
+            </p>
+          )}
       </div>
-    )
-  
-}
+    );
+};
 
 const CategoryPage = () => {
   const { addToCart } = useCart();
