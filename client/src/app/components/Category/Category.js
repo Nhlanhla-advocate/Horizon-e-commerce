@@ -175,8 +175,28 @@ const CategoryProductCarousel = ({
                         <div className="out-of-stock-badge">Out of stock</div>
                       )}
                     </div>
+                    </Link>     
+                  </div>
+
+                  <div className="product-info">
+                    <Link href={ `/products/${product.slug}` }>
+                    <h3 className="product-name">{product.name}</h3>
                     </Link>
-                      
+                    <div className="product-category">
+                      {toTitleCase(product.category)}</div>
+                      <div className="prodcut-price">
+                        {formatPrice(product.price)}</div>
+                        <div className="product-stock">
+                          {product.stockQuantity > 0 ? (
+                            <span className="in-stock">
+                              {product.stockQuantity} in stock</span>
+                          ) : (
+                            <span className="out-of-stock">Out of stock</span>
+                          )}
+                        }
+                        disabled={product.stockQuantity === 0}
+                        >
+                    </div>
                   </div>
                   
                 </article>
