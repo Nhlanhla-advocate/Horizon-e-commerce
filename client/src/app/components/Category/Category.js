@@ -154,7 +154,6 @@ const CategoryProductCarousel = ({
       onMouseLeave={onDeactivate}
       >
         <div className="category-carousel-viewport">
-          <div className="category-carousel-viewport">
             <div className={ `category-carousel-track${isSliding ? 'is-sliding' : ''}`}
             style={{
               '_carousel-item-count': products.length,
@@ -163,10 +162,22 @@ const CategoryProductCarousel = ({
             >
               {trackProducts.map((product, index) => (
                 <article
-                key={ `${product._id} || product.id} -${index}` }
+                key={ `${product._id} || product.id}-${index}` }
                 className="product-card category-carousel-item"
-                onMouseEnter={index === 0 ? onActive : undefined}
+                onMouseEnter={index === 0 ? onActivate : undefined}
                 >
+
+                  <div className="product-image-container">
+                    <Link href={ `/products/${product.slug}` }>
+                    <div className="image-wrapper">
+                      <ProductImage product={product} />
+                      {product.stockQuantity === 0 && (
+                        <div className="out-of-stock-badge">Out of stock</div>
+                      )}
+                    </div>
+                    </Link>
+                      
+                  </div>
                   
                 </article>
               ))}
