@@ -1,7 +1,24 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
+const AddressSchema = new mongoose.Schema({
+    label: {
+        type: String,
+        enum: ['home', 'work', 'other'],
+        default: 'home'
+    },
+    fullName: { type: String },
+    phone: { type: String },
+    street: { type: String },
+    city: { type: String },
+    state: { type: String },
+    postalCode: { type: String },
+    country: { type: String },
+    isDefault: { type: Boolean, default: false }
+}, { _id: true });
+
 const userSchema = new mongoose.Schema({
+    // Auth & account
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     username: { type: String, required: true },
@@ -10,11 +27,11 @@ const userSchema = new mongoose.Schema({
         enum: ['user', 'admin', 'manager', 'support', 'super_admin'],
         default: 'user'
     },
-    permissions: [{ type: String }], // e.g. 'manage_products', 'manage_orders', 'handle_refunds'
+    permissions: [{ type: String }],
     wishlist: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Wishlist'
-      }, 
+    },
     status: {
         type: String,
         enum: ['active', 'inactive', 'suspended', 'banned'],
@@ -29,7 +46,9 @@ const userSchema = new mongoose.Schema({
     refreshTokenExpiry: { type: Date },
     tokenBlacklist: [{ type: String }],
     resetPasswordToken: String,
-    resetPasswordExpires: Date
+    resetPasswordExpires: Date,
+
+   
 }, {
     timestamps: true
 });
@@ -42,6 +61,8 @@ userSchema.pre('save', async function(next) {
     try {
         const salt = await bcrypt.genSalt(10);
         this.password = await bcrypt.hash(this.password, salt);
+        this.activity = this.activity || {};
+        this.activity.passwordChangedAt = new Date();
         next();
     } catch (error) {
         next(error);
