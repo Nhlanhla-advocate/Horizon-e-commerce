@@ -135,91 +135,76 @@ const ProductImage = ({ product }) => (
   />
 );
 
-const CategoryProductCarousel = ({
-  products,
-  isActive,
-  onActivate,
-  onDeactivate,
+const CategoryProductCard = ({
+  product,
   addToCart,
   formatPrice,
-}) => {
-  const [isPaused, setIsPaused] = useState(false);
-  const canSlide = products.length > VISIBLE_CAROUSEL_ITEMS;
-  const trackProducts = canSlide ? [...products, ...products] : products;
-  const isSliding = isActive && canSlide;
-  const isMoving = isSliding && !isPaused;
+  className = '',
+  onClick,
+  onMouseEnter,
+}) => (
+  <article
+    className={`product-card ${className}`.trim()}
+    onClick={onClick}
+    onMouseEnter={onMouseEnter}
+  >
+    <div className="product-image-container">
+      <Link href={`/products/${product.slug}`}>
+        <div className="image-wrapper">
+          <ProductImage product={product} />
+          {product.stockQuantity === 0 && (
+            <div className="out-of-stock-badge">Out of Stock</div>
+          )}
+        </div>
+      </Link>
+    </div>
 
-  useEffect(() => {
-    if (!isActive) {
-      setIsPaused(false);
-    }
-  }, [isActive]);
+    <div className="product-info">
+      <Link href={`/products/${product.slug}`}>
+        <h3 className="product-name">{product.name}</h3>
+      </Link>
+      <div className="product-category">{toTitleCase(product.category)}</div>
+      <div className="product-price">{formatPrice(product.price)}</div>
+      <div className="product-stock">
+        {product.stockQuantity > 0 ? (
+          <span className="in-stock">{product.stockQuantity} in stock</span>
+        ) : (
+          <span className="out-of-stock">Out of stock</span>
+        )}
+      </div>
+      <button
+        type="button"
+        className="add-to-cart-button"
+        onClick={() =>
+          addToCart(product._id, 1, {
+            name: product.name,
+            price: product.price,
+            image: product.image,
+            description: product.description,
+            category: product.category,
+          })
+        }
+        disabled={product.stockQuantity === 0}
+      >
+        Add to Cart
+      </button>
+    </div>
+  </article>
+);
 
-  const handleCardClick = () => {
-    if (isMoving) {
-      setIsPaused(true);
-    }
-  };
+const CategoryProductsGrid = ({ products, addToCart, formatPrice }) => (
+  <div className="products-grid category-products-grid">
+    {products.map((product) => (
+      <CategoryProductCard
+        key={product._id || product.id}
+        product={product}
+        addToCart={addToCart}
+        formatPrice={formatPrice}
+      />
+    ))}
+  </div>
+);
 
-  return (
-    <div className="category-carousel" onMouseLeave={onDeactivate}>
-      <div className="category-carousel-viewport">
-        <div
-          className={`category-carousel-track${isSliding ? ' is-sliding' : ''}${isPaused ? ' is-paused' : ''}`}
-          style={{
-            '--carousel-item-count': products.length,
-            '--carousel-visible-count': VISIBLE_CAROUSEL_ITEMS,
-          }}
-        >
-          {trackProducts.map((product, index) => (
-            <article
-              key={`${product._id || product.id}-${index}`}
-              className={`product-card category-carousel-item${isMoving ? ' category-carousel-item--moving' : ''}`}
-              onMouseEnter={index === 0 ? onActivate : undefined}
-              onClick={handleCardClick}
-            >
-              <div className="product-image-container">
-                <Link href={`/products/${product.slug}`}>
-                  <div className="image-wrapper">
-                    <ProductImage product={product} />
-                    {product.stockQuantity === 0 && (
-                      <div className="out-of-stock-badge">Out of Stock</div>
-                    )}
-                  </div>
-                </Link>
-              </div>
-
-              <div className="product-info">
-                <Link href={`/products/${product.slug}`}>
-                  <h3 className="product-name">{product.name}</h3>
-                </Link>
-                <div className="product-category">{toTitleCase(product.category)}</div>
-                <div className="product-price">{formatPrice(product.price)}</div>
-                <div className="product-stock">
-                  {product.stockQuantity > 0 ? (
-                    <span className="in-stock">{product.stockQuantity} in stock</span>
-                  ) : (
-                    <span className="out-of-stock">Out of stock</span>
-                  )}
-                </div>
-                <button
-                  type="button"
-                  className="add-to-cart-button"
-                  onClick={() =>
-                    addToCart(product._id, 1, {
-                      name: product.name,
-                      price: product.price,
-                      image: product.image,
-                      description: product.description,
-                      category: product.category,
-                    })
-                  }
-                  disabled={product.stockQuantity === 0}
-                >
-                  Add to Cart
-                </button>
-              </div>
-            </article>
           ))}
         </div>
       </div>
@@ -243,6 +228,7 @@ const CategoryPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
   const [activeCarousel, setActiveCarousel] = useState(null);
+  const [expandedCategories, setExpandedCategories] = useState({});
 
   const activateCarousel = useCallback((categoryName) => {
     setActiveCarousel(categoryName);
@@ -250,6 +236,16 @@ const CategoryPage = () => {
 
   const deactivateCarousel = useCallback(() => {
     setActiveCarousel(null);
+  }, []);
+
+  const toggleCategoryExpanded = useCallback((categoryName) => {
+    setExpandedCategories((prev) => {
+      const isExpanded = Boolean(prev[categoryName]);
+      if (!isExpanded) {
+        setActiveCarousel(null);
+      }
+      return { ...prev, [categoryName]: !isExpanded };
+    });
   }, []);
 
   useEffect(() => {
@@ -439,19 +435,41 @@ const CategoryPage = () => {
 
       {!isLoading &&
         !fetchError &&
-        sortedCategoryNames.map((categoryName) => (
+        sortedCategoryNames.map((categoryName) => {
+          const isExpanded = Boolean(expandedCategories[categoryName]);
+
+          return (
           <section key={categoryName} className="category-section">
-            <h2 className="category-title">{toTitleCase(categoryName)}</h2>
-            <CategoryProductCarousel
-              products={groupedProducts[categoryName]}
-              isActive={activeCarousel === categoryName}
-              onActivate={() => activateCarousel(categoryName)}
-              onDeactivate={deactivateCarousel}
-              addToCart={addToCart}
-              formatPrice={formatPrice}
-            />
+            <div className="category-section-header">
+              <h2 className="category-title">{toTitleCase(categoryName)}</h2>
+              <button
+                type="button"
+                className="category-view-products-button"
+                onClick={() => toggleCategoryExpanded(categoryName)}
+                aria-expanded={isExpanded}
+              >
+                {isExpanded ? 'Show Less' : 'View Products'}
+              </button>
+            </div>
+            {isExpanded ? (
+              <CategoryProductsGrid
+                products={groupedProducts[categoryName]}
+                addToCart={addToCart}
+                formatPrice={formatPrice}
+              />
+            ) : (
+              <CategoryProductCarousel
+                products={groupedProducts[categoryName]}
+                isActive={activeCarousel === categoryName}
+                onActivate={() => activateCarousel(categoryName)}
+                onDeactivate={deactivateCarousel}
+                addToCart={addToCart}
+                formatPrice={formatPrice}
+              />
+            )}
           </section>
-        ))}
+          );
+        })}
     </div>
   );
 };
