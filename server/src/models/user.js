@@ -58,6 +58,13 @@ const userSchema = new mongoose.Schema({
     bio: { type: String, maxlength: 500 }
 },
 
+//Saved addresses (Shipping / billing)
+addresses: [AddressSchema],
+
+//Profile photo and optional gallery
+avatar: { type: String },
+profileImage: [{ type: String }],
+
 
 }, {
     timestamps: true
