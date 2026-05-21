@@ -207,49 +207,50 @@ const CategoryProductsGrid = ({ products, addToCart, formatPrice }) => (
 
 const CategoryProductCarousel = ({
   products,
-  isActive,onActive,
+  isActive,
+  onActivate,
   onDeactivate,
   addToCart,
   formatPrice,
 }) => {
   const [isPaused, setIsPaused] = useState(false);
   const canSlide = products.length > VISIBLE_CAROUSEL_ITEMS;
-  const trackProducts = canSlide ? [...products,
-    ...products] : products;
-    const isSliding = isActive && canSlide;
-    const isMoving = isSliding && !isPaused;
+  const trackProducts = canSlide ? [...products, ...products] : products;
+  const isSliding = isActive && canSlide;
+  const isMoving = isSliding && !isPaused;
 
-    useEffect(() => {
-      if (!isActive) {
-        setIsPaused(false);
-      }
-    }, [isActive]);
-
-    const handleCardClick = () => {
-      if (isMoving) {
-        setIsPaused(true);
-      
+  useEffect(() => {
+    if (!isActive) {
+      setIsPaused(false);
     }
-};
+  }, [isActive]);
 
-return (
-  <div
-    className="category-carousel"
-    onMouseLeave={onDeactivate}
-  >
-    <div className="category-carousel-viewport">
-      <div
-        className={`category-carousel-track${isSliding ? ' is-sliding' : ''}${isPaused ? ' is-paused' : ''}`}
-        style={{
-          '--carousel-item-count': products.length,
-          '--carousel-visible-count': VISIBLE_CAROUSEL_ITEMS,
-        }}
-      >
-      </div>
-    </div>
-  </div>
-);
+  const handleCardClick = () => {
+    if (isMoving) {
+      setIsPaused(true);
+    }
+  };
 
+  return (
+    <div className="category-carousel" onMouseLeave={onDeactivate}>
+      <div className="category-carousel-viewport">
+        <div
+          className={`category-carousel-track${isSliding ? ' is-sliding' : ''}${isPaused ? ' is-paused' : ''}`}
+          style={{
+            '--carousel-item-count': products.length,
+            '--carousel-visible-count': VISIBLE_CAROUSEL_ITEMS,
+          }}
+        >
+          {trackProducts.map((product, index) => (
+            <CategoryProductCard
+              key={`${product._id || product.id}-${index}`}
+              product={product}
+              addToCart={addToCart}
+              formatPrice={formatPrice}
+              className={`category-carousel-item${isMoving ? ' category-carousel-item--moving' : ''}`}
+              onMouseEnter={index === 0 ? onActivate : undefined}
+              onClick={handleCardClick}
+            />
           ))}
         </div>
       </div>
@@ -264,8 +265,6 @@ return (
       )}
     </div>
   );
-
-  
 };
 
 const CategoryPage = () => {
