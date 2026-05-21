@@ -65,6 +65,16 @@ addresses: [AddressSchema],
 avatar: { type: String },
 profileImage: [{ type: String }],
 
+// Site activity (updated by the app, not edited directly by the user)
+activity: {
+    lastLoginAt: { type: Date },
+    lastActiveAt: { type: Date },
+    loginCount: { type: Number, default: 0 },
+    orderCount: { type: Number, default: 0 },
+    lastOrderAt: {type: Date },
+    passwordChangedAt: { type: Date }
+},
+
 
 }, {
     timestamps: true
