@@ -232,6 +232,24 @@ const CategoryProductCarousel = ({
     }
 };
 
+return (
+  <div
+    className="category-carousel"
+    onMouseLeave={onDeactivate}
+  >
+    <div className="category-carousel-viewport">
+      <div
+        className={`category-carousel-track${isSliding ? ' is-sliding' : ''}${isPaused ? ' is-paused' : ''}`}
+        style={{
+          '--carousel-item-count': products.length,
+          '--carousel-visible-count': VISIBLE_CAROUSEL_ITEMS,
+        }}
+      >
+      </div>
+    </div>
+  </div>
+);
+
           ))}
         </div>
       </div>
