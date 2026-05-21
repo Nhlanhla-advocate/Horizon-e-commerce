@@ -205,6 +205,33 @@ const CategoryProductsGrid = ({ products, addToCart, formatPrice }) => (
   </div>
 );
 
+const CategoryProductCarousel = ({
+  products,
+  isActive,onActive,
+  onDeactivate,
+  addToCart,
+  formatPrice,
+}) => {
+  const [isPaused, setIsPaused] = useState(false);
+  const canSlide = products.length > VISIBLE_CAROUSEL_ITEMS;
+  const trackProducts = canSlide ? [...products,
+    ...products] : products;
+    const isSliding = isActive && canSlide;
+    const isMoving = isSliding && !isPaused;
+
+    useEffect(() => {
+      if (!isActive) {
+        setIsPaused(false);
+      }
+    }, [isActive]);
+
+    const handleCardClick = () => {
+      if (isMoving) {
+        setIsPaused(true);
+      
+    }
+};
+
           ))}
         </div>
       </div>
@@ -219,6 +246,8 @@ const CategoryProductsGrid = ({ products, addToCart, formatPrice }) => (
       )}
     </div>
   );
+
+  
 };
 
 const CategoryPage = () => {
