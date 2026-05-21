@@ -75,6 +75,21 @@ activity: {
     passwordChangedAt: { type: Date }
 },
 
+// User preferences and account settings
+preferences: {
+    newsletter: { type: Boolean, default: false },
+    marketingEmails: { type: Boolean, default: false },
+    orderUpdates: { type: Boolean, default: true },
+    smsNotifications: { type: Boolean, default: false },
+    language: { type: String, default: 'en' },
+    currency: { type: String, default: 'USD' },
+    theme: {
+        type: String,
+        enum: ['light', 'dark', 'system'],
+        default: 'system'
+    }
+}
+
 
 }, {
     timestamps: true
