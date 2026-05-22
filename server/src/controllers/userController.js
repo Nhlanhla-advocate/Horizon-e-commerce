@@ -1,6 +1,6 @@
 const User = require('../models/user');
 
-
+const PROFILE_FIELDS = '-password -refreshToken -refreshTokenExpiry -tokenBlacklist -resetPasswordToken -resetPasswordExpires';
 
 // Getting the user profile
 const getUser = async (req, res, next) => {
