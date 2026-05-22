@@ -1,9 +1,11 @@
 const User = require('../models/user');
 
+
+
 // Getting the user profile
 const getUser = async (req, res, next) => {
     try {
-        const user = await User.findById(req.user._id).select('-password');
+        const user = await User.findById(req.user._id).select(PROFILE_FIELDS);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -13,27 +15,43 @@ const getUser = async (req, res, next) => {
     }
 };
 
-// Updating the user profile
-const updateUser = async (req, res, next) => {
-    const { username, email, address } = req.body;
 
-    try {
-        const existingUser = await User.findOne({ email, _id: { $ne: req.user._id } });
-        if (existingUser) {
-            return res.status(400).json({ message: 'Email is already in use' });
-        }
 
         const user = await User.findByIdAndUpdate(
             req.user._id,
-            { $set: { username, email, address } },
+            { $set: updates },
             { new: true, runValidators: true }
-        ).select('-password');
+        ).select(PROFILE_FIELDS);
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
         res.json(user);
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Change password from profile settings
+const changePassword = async (req, res, next) => {
+    const { currentPassword, newPassword } = req.body;
+
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const isMatch = await user.comparePassword(currentPassword);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Current password is incorrect' });
+        }
+
+        user.password = newPassword;
+        await user.save();
+
+        res.json({ message: 'Password updated successfully' });
     } catch (error) {
         next(error);
     }
@@ -51,5 +69,6 @@ exports.getUserDetails = async (userId) => {
 
 module.exports = {
     getUser,
-    updateUser
+    updateUser,
+    changePassword
 };
