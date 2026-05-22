@@ -30,7 +30,15 @@ const buildProfileUpdates = (body) => {
 
 const normalAddresses = (addresses) => {
     if (!Array.isArray(addresses) || addresses.length === 0) return addresses;
-}
+
+    const defaultIndex = addresses.findIndex((address) => address.isDefault);
+    const resolvedDefaultIndex = defaultIndex === -1 ? 0 : defaultIndex;
+
+    return addresses.map((address, index) => ({
+        ...address,
+        isDefault: index === resolvedDefaultIndex
+    }));
+};
 
 // Getting the user profile
 const getUser = async (req, res, next) => {
