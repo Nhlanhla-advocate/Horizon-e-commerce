@@ -4,6 +4,7 @@ const Product = require('../models/product');
 const User = require('../models/user');
 const mongoose = require("mongoose");
 const { calculateTotalPriceAndValidateStock, updateProductStock } = require('../utilities/stock');
+const { recordUserOrder } = require('../utilities/userActivity');
 // const stripe = require('stripe');
 require('dotenv').config();
 
@@ -21,13 +22,13 @@ exports.createOrder = async (req, res, next) => {
       return res.status(400).json({ message: "customerId is required" });
     }
 
-    const user = await User.findById(customerId).select("name email");
+    const user = await User.findById(customerId).select("username email");
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    console.log(`Creating order for user ${user.name} (${user.email})`);
+    console.log(`Creating order for user ${user.username} (${user.email})`);
 
     let totalPrice = 0;
     let formattedItems = [];
@@ -59,6 +60,7 @@ exports.createOrder = async (req, res, next) => {
     });
 
     const savedOrder = await newOrder.save();
+    await recordUserOrder(customerId);
 
     for (let item of formattedItems) {
       await Product.findByIdAndUpdate(item.productId, {

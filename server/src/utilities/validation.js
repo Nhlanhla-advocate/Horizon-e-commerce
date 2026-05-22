@@ -1,4 +1,4 @@
-const { check, body, validationResult } = require("express-validator");
+const { check, body, param, validationResult } = require("express-validator");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 
@@ -99,11 +99,20 @@ const validateUpdateProfile = [
     .trim()
     .notEmpty()
     .withMessage("Last name cannot be empty"),
+  body("personalInfo.displayName")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("Display name cannot be empty"),
   body("personalInfo.phone")
     .optional()
     .trim()
     .notEmpty()
     .withMessage("Phone number cannot be empty"),
+  body("personalInfo.dateOfBirth")
+    .optional()
+    .isISO8601()
+    .withMessage("Date of birth must be a valid date"),
   body("personalInfo.bio")
     .optional()
     .isLength({ max: 500 })
@@ -112,6 +121,25 @@ const validateUpdateProfile = [
     .optional()
     .isArray()
     .withMessage("Addresses must be an array"),
+  body("addresses.*.label")
+    .optional()
+    .isIn(["home", "work", "other"])
+    .withMessage("Address label must be home, work, or other"),
+  body("addresses.*.street")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("Street cannot be empty"),
+  body("addresses.*.city")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("City cannot be empty"),
+  body("addresses.*.country")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("Country cannot be empty"),
   body("avatar")
     .optional()
     .trim()
@@ -121,14 +149,120 @@ const validateUpdateProfile = [
     .optional()
     .isArray()
     .withMessage("Profile images must be an array"),
+  body("profileImage.*")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("Profile image URL cannot be empty"),
   body("preferences")
     .optional()
     .isObject()
     .withMessage("Preferences must be an object"),
+  body("preferences.newsletter")
+    .optional()
+    .isBoolean()
+    .withMessage("Newsletter preference must be true or false"),
+  body("preferences.marketingEmails")
+    .optional()
+    .isBoolean()
+    .withMessage("Marketing emails preference must be true or false"),
+  body("preferences.orderUpdates")
+    .optional()
+    .isBoolean()
+    .withMessage("Order updates preference must be true or false"),
+  body("preferences.smsNotifications")
+    .optional()
+    .isBoolean()
+    .withMessage("SMS notifications preference must be true or false"),
+  body("preferences.language")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("Language cannot be empty"),
+  body("preferences.currency")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("Currency cannot be empty"),
   body("preferences.theme")
     .optional()
     .isIn(["light", "dark", "system"])
     .withMessage("Theme must be light, dark, or system"),
+];
+
+const addressBodyValidators = [
+  body("label")
+    .optional()
+    .isIn(["home", "work", "other"])
+    .withMessage("Address label must be home, work, or other"),
+  body("fullName")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("Full name cannot be empty"),
+  body("phone")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("Phone number cannot be empty"),
+  body("street")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("Street cannot be empty"),
+  body("city")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("City cannot be empty"),
+  body("state")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("State cannot be empty"),
+  body("postalCode")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("Postal code cannot be empty"),
+  body("country")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("Country cannot be empty"),
+  body("isDefault")
+    .optional()
+    .isBoolean()
+    .withMessage("isDefault must be true or false"),
+];
+
+const validateAddAddress = [
+  body("street")
+    .trim()
+    .notEmpty()
+    .withMessage("Street is required"),
+  body("city")
+    .trim()
+    .notEmpty()
+    .withMessage("City is required"),
+  body("country")
+    .trim()
+    .notEmpty()
+    .withMessage("Country is required"),
+  ...addressBodyValidators,
+];
+
+const validateUpdateAddress = [
+  param("addressId")
+    .isMongoId()
+    .withMessage("Invalid address ID"),
+  ...addressBodyValidators,
+];
+
+const validateAddressId = [
+  param("addressId")
+    .isMongoId()
+    .withMessage("Invalid address ID"),
 ];
 
 const validateChangePassword = [
@@ -256,4 +390,7 @@ module.exports = {
   validateForgotPassword,
   validateUpdateProfile,
   validateChangePassword,
+  validateAddAddress,
+  validateUpdateAddress,
+  validateAddressId,
 };
