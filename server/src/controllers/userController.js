@@ -28,6 +28,10 @@ const buildProfileUpdates = (body) => {
     return updates;
 };
 
+const normalAddresses = (addresses) => {
+    if (!Array.isArray(addresses) || addresses.length === 0) return addresses;
+}
+
 // Getting the user profile
 const getUser = async (req, res, next) => {
     try {
