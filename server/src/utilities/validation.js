@@ -73,17 +73,86 @@ const validateSignIn = [
   check("password").not().isEmpty().withMessage("Password is required"),
 ];
 
-// Update Profile
-const updateProfile = [
-  body("name").trim().notEmpty().withMessage("Name is required"),
-
-  body("email").isEmail().withMessage("Invalid email format"),
-
-  body("address")
+// Update user profile
+const validateUpdateProfile = [
+  body("username")
+    .optional()
+    .trim()
+    .isLength({ min: 3 })
+    .withMessage("Username must be at least 3 characters long"),
+  body("email")
+    .optional()
+    .trim()
+    .isEmail()
+    .withMessage("Invalid email format"),
+  body("personalInfo")
+    .optional()
+    .isObject()
+    .withMessage("Personal info must be an object"),
+  body("personalInfo.firstName")
     .optional()
     .trim()
     .notEmpty()
-    .withMessage("Address cannot be empty"),
+    .withMessage("First name cannot be empty"),
+  body("personalInfo.lastName")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("Last name cannot be empty"),
+  body("personalInfo.phone")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("Phone number cannot be empty"),
+  body("personalInfo.bio")
+    .optional()
+    .isLength({ max: 500 })
+    .withMessage("Bio cannot exceed 500 characters"),
+  body("addresses")
+    .optional()
+    .isArray()
+    .withMessage("Addresses must be an array"),
+  body("avatar")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("Avatar URL cannot be empty"),
+  body("profileImage")
+    .optional()
+    .isArray()
+    .withMessage("Profile images must be an array"),
+  body("preferences")
+    .optional()
+    .isObject()
+    .withMessage("Preferences must be an object"),
+  body("preferences.theme")
+    .optional()
+    .isIn(["light", "dark", "system"])
+    .withMessage("Theme must be light, dark, or system"),
+];
+
+const validateChangePassword = [
+  body("currentPassword")
+    .notEmpty()
+    .withMessage("Current password is required"),
+  body("newPassword")
+    .isLength({ min: 6 })
+    .withMessage("Password must be at least 6 characters long")
+    .matches(
+      /^(?=.*[A-Za-z])(?=.*\d)(?=.*[A-Z])(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{6,}$/
+    )
+    .withMessage(
+      "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+    ),
+  body("confirmPassword")
+    .notEmpty()
+    .withMessage("Confirm password is required")
+    .custom((value, { req }) => {
+      if (value !== req.body.newPassword) {
+        throw new Error("Passwords do not match");
+      }
+      return true;
+    }),
 ];
 
 // catch express-validator errors
@@ -185,5 +254,6 @@ module.exports = {
   validateNewOrder,
   validateResetPassword,
   validateForgotPassword,
-  updateProfile,
+  validateUpdateProfile,
+  validateChangePassword,
 };

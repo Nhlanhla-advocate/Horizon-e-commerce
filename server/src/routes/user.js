@@ -1,20 +1,28 @@
 const express = require('express');
 const router = express.Router();
-const { handleErrors } = require('../utilities/validation'); 
+const {
+  handleErrors,
+  validate,
+  validateUpdateProfile,
+  validateChangePassword
+} = require('../utilities/validation');
 const { authMiddleware } = require('../middleware/authMiddleware');
 const {
   getUser,
-  updateUser
+  updateUser,
+  changePassword
 } = require('../controllers/userController');
 
 // Route to get the user's profile (Protected route)
 router.get('/profile', authMiddleware, getUser);
 
 // Route to update user profile (Protected route)
-router.put('/profile',authMiddleware, updateUser);
+router.put('/profile', authMiddleware, validateUpdateProfile, validate, updateUser);
+
+// Route to change password from profile settings (Protected route)
+router.put('/profile/password', authMiddleware, validateChangePassword, validate, changePassword);
 
 // Global error handling middleware
 router.use(handleErrors);
-
 
 module.exports = router;
