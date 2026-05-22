@@ -2,6 +2,11 @@ const User = require('../models/user');
 
 const PROFILE_FIELDS = '-password -refreshToken -refreshTokenExpiry -tokenBlacklist -resetPasswordToken -resetPasswordExpires';
 
+const buildProfileUpdates = (body) => {
+    const { username, email, personalInfo, addresses, avatar, profileImage, preferencases } = body;
+    const updates = {};
+}
+
 // Getting the user profile
 const getUser = async (req, res, next) => {
     try {
