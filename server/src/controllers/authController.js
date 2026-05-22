@@ -1,5 +1,6 @@
 const User = require("../models/user");
 const Admin = require("../models/admin");
+const { recordUserLogin, recordUserActive } = require("../utilities/userActivity");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
@@ -230,9 +231,10 @@ exports.signIn = async (req, res) => {
         // Generate tokens
         const { accessToken, refreshToken } = generateTokens(user);
 
-        // Save refresh token to user
+        // Save refresh token and record login activity
         user.refreshToken = refreshToken;
         user.refreshTokenExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+        recordUserLogin(user);
         await user.save();
 
         // Set refresh token in HTTP-only cookie
@@ -285,9 +287,10 @@ exports.refreshToken = async (req, res) => {
         // Generate new tokens
         const tokens = generateTokens(user);
 
-        // Update refresh token
+        // Update refresh token and last active time
         user.refreshToken = tokens.refreshToken;
         user.refreshTokenExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+        recordUserActive(user);
         await user.save();
 
         // Set new refresh token in cookie

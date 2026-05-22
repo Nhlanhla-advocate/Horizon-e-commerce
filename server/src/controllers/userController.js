@@ -125,6 +125,34 @@ const changePassword = async (req, res, next) => {
     }
 };
 
+const fetchProfile = (userId) => User.findById(userId).select(PROFILE_FIELDS);
+
+// Add a single address
+const addAddress = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        user.addresses.push(req.body);
+        const normalized = normalizeAddresses(
+            user.addresses.map((address) => (
+                typeof address.toObject === 'function' ? address.toObject() : address
+            ))
+        );
+        user.set('addresses', normalized);
+        await user.save();
+
+        const updatedUser = await fetchProfile(req.user._id);
+        res.status(201).json(updatedUser);
+    } catch (error) {
+        next(error);
+    }
+};
+
+
+
 // New function to get user details
 exports.getUserDetails = async (userId) => {
     try {
@@ -138,5 +166,8 @@ exports.getUserDetails = async (userId) => {
 module.exports = {
     getUser,
     updateUser,
-    changePassword
+    changePassword,
+    addAddress,
+    updateAddress,
+    deleteAddress
 };

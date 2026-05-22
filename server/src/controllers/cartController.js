@@ -1,6 +1,7 @@
 const Cart = require('../models/cart');
 const Product = require('../models/product');
 const Order = require('../models/order');
+const { recordUserOrder } = require('../utilities/userActivity');
 const User = require('../models/user');
 const mongoose = require('mongoose');
 
@@ -348,6 +349,7 @@ exports.createOrderFromCart = async (userId) => {
 
         // Save the order
         await order.save();
+        await recordUserOrder(userId);
 
         // Clear the cart
         cart.items = [];
