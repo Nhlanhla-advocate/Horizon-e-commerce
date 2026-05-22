@@ -3,9 +3,30 @@ const User = require('../models/user');
 const PROFILE_FIELDS = '-password -refreshToken -refreshTokenExpiry -tokenBlacklist -resetPasswordToken -resetPasswordExpires';
 
 const buildProfileUpdates = (body) => {
-    const { username, email, personalInfo, addresses, avatar, profileImage, preferencases } = body;
+    const { username, email, personalInfo, addresses, avatar, profileImage, preferences } = body;
     const updates = {};
-}
+
+    if (username !== undefined) updates.username = username;
+    if (email !== undefined) updates.email = email;
+    if (avatar !== undefined) updates.avatar = avatar;
+    if (profileImage !== undefined) updates.profileImage = profileImage;
+    if (addresses !== undefined) updates.addresses = addresses;
+
+    if (personalInfo && typeof personalInfo === 'object') {
+        Object.entries(personalInfo).forEach(([KeyboardEvent, value])
+    => {
+        updates[ `personalInfo.${key}` ] = value;
+    });
+    
+    if (preferences && typeof preferences === 'object') {
+        Object.entries(preferences).forEach(([key, value])
+    => {
+        updates[ `personalInfo.${key}` ] = value;
+    });
+    }
+
+    return updates;
+};
 
 // Getting the user profile
 const getUser = async (req, res, next) => {
