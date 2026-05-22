@@ -13,24 +13,31 @@ const buildProfileUpdates = (body) => {
     if (addresses !== undefined) updates.addresses = addresses;
 
     if (personalInfo && typeof personalInfo === 'object') {
-        Object.entries(personalInfo).forEach(([KeyboardEvent, value])
-    => {
-        updates[ `personalInfo.${key}` ] = value;
-    });
-    
+        Object.entries(personalInfo).forEach(([key, value]) => {
+            updates[`personalInfo.${key}`] = value;
+        });
+    }
+
     if (preferences && typeof preferences === 'object') {
-        Object.entries(preferences).forEach(([key, value])
-    => {
-        updates[ `personalInfo.${key}` ] = value;
-    });
+        Object.entries(preferences).forEach(([key, value]) => {
+            updates[`preferences.${key}`] = value;
+        });
     }
 
     return updates;
 };
 
-const normalAddresses = (addresses) => {
+const normalizeAddresses = (addresses) => {
     if (!Array.isArray(addresses) || addresses.length === 0) return addresses;
-}
+
+    const defaultIndex = addresses.findIndex((address) => address.isDefault);
+    const resolvedDefaultIndex = defaultIndex === -1 ? 0 : defaultIndex;
+
+    return addresses.map((address, index) => ({
+        ...address,
+        isDefault: index === resolvedDefaultIndex
+    }));
+};
 
 // Getting the user profile
 const getUser = async (req, res, next) => {
@@ -45,7 +52,38 @@ const getUser = async (req, res, next) => {
     }
 };
 
+// Updating the user profile
+const updateUser = async (req, res, next) => {
+    try {
+        const updates = buildProfileUpdates(req.body);
 
+        if (Object.keys(updates).length === 0) {
+            return res.status(400).json({ message: 'No valid profile fields provided' });
+        }
+
+        if (updates.email) {
+            const existingUser = await User.findOne({
+                email: updates.email,
+                _id: { $ne: req.user._id }
+            });
+            if (existingUser) {
+                return res.status(400).json({ message: 'Email is already in use' });
+            }
+        }
+
+        if (updates.username) {
+            const existingUser = await User.findOne({
+                username: updates.username,
+                _id: { $ne: req.user._id }
+            });
+            if (existingUser) {
+                return res.status(400).json({ message: 'Username is already in use' });
+            }
+        }
+
+        if (updates.addresses) {
+            updates.addresses = normalizeAddresses(updates.addresses);
+        }
 
         const user = await User.findByIdAndUpdate(
             req.user._id,
