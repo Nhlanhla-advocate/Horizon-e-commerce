@@ -193,6 +193,20 @@ const deleteAddress = async (req, res, next) => {
         if (!user) {
             return res.status(404).json({ message: 'User not found'});
         }
+
+        const address = user.addresses.id(addressId);
+        if (!address) {
+            return res.status(404).json({ message: 'Address not found' });
+        }
+
+        const wasDefault = address.isDefault;
+        user.addresses.pull(addressId);
+
+        if (wasDefault && user.addresses.length > 0) {
+            user.addresses[0].isDefault = true;
+        }
+
+        await user.save();
     }
 }
 
