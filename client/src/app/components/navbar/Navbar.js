@@ -84,6 +84,37 @@ const Navbar = () => {
     }
   };
 
+  const showAuthActions = isAuthed || hasAdminAccess;
+  const accountHref = isAuthed ? '/account' : '/admin';
+  const accountLabel = isAuthed ? 'My account' : 'Admin account';
+
+  const renderAuthIcons = (linkClassName, logoutClassName) => {
+    if (!showAuthActions) {
+      return (
+        <Link href="/auth/signin" className={linkClassName} aria-label="Sign in">
+          <FaUser />
+        </Link>
+      );
+    }
+
+    return (
+      <>
+        <Link href={accountHref} className={linkClassName} aria-label={accountLabel}>
+          <FaUser />
+        </Link>
+        <button
+          type="button"
+          className={logoutClassName}
+          onClick={handleLogout}
+          aria-label="Log out"
+          disabled={isSigningOut}
+        >
+          {isSigningOut ? <FaSpinner className="animate-spin" /> : <FaSignOutAlt />}
+        </button>
+      </>
+    );
+  };
+
   return (
     <nav className="navbar">
       <div className="navbar-container">
@@ -122,21 +153,7 @@ const Navbar = () => {
                 )}
               </div>
             </Link>
-            {isAuthed ? (
-              <button
-                type="button"
-                className="navbar-mobile-icon-btn"
-                onClick={handleLogout}
-                aria-label="Log out"
-                disabled={isSigningOut}
-              >
-                {isSigningOut ? <FaSpinner className="animate-spin" /> : <FaSignOutAlt />}
-              </button>
-            ) : (
-              <Link href="/auth/signin" className="navbar-mobile-icon-btn" aria-label="Sign in">
-                <FaUser />
-              </Link>
-            )}
+            {renderAuthIcons('navbar-mobile-icon-btn', 'navbar-mobile-icon-btn')}
           </div>
         </div>
 
@@ -187,22 +204,7 @@ const Navbar = () => {
                 )}
               </div>
             </Link>
-            {isAuthed ? (
-              <button
-                type="button"
-                className="navbar-icon-link navbar-logout-btn"
-                onClick={handleLogout}
-                aria-label="Log out"
-                disabled={isSigningOut}
-                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
-              >
-                {isSigningOut ? <FaSpinner className="animate-spin" /> : <FaSignOutAlt />}
-              </button>
-            ) : (
-              <Link href="/auth/signin" className="navbar-icon-link" aria-label="Sign in">
-                <FaUser />
-              </Link>
-            )}
+            {renderAuthIcons('navbar-icon-link', 'navbar-icon-link navbar-logout-btn')}
           </div>
         </div>
 

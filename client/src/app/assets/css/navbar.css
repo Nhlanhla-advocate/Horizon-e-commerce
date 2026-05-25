@@ -73,6 +73,13 @@ html, body {
     color: #2563eb;
 }
 
+.navbar-logout-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
 .navbar-logout-btn:disabled,
 .navbar-mobile-icon-btn:disabled {
     opacity: 0.65;
