@@ -169,8 +169,21 @@ const updateAddress = async (req, res, next) => {
                 address[key] = value;
             }
         });
+
+        if (req.body.isDefault === true) {
+            user.addresses.forEach((addr) => {
+                addr.isDefault = addr._id.toString() === addressId;
+            });
+        }
+
+        await user.save();
+
+        const updatedUser = await fetchProfile(req.user._id);
+        res.json(updatedUser);
+    } catch (error) {
+        next(error);
     }
-}
+};
 
 
 
