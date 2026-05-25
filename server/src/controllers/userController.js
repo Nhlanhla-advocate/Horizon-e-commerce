@@ -163,6 +163,12 @@ const updateAddress = async (req, res, next) => {
         if (!address) {
             return res.status(404).json({ message: 'Address not found' });
         }
+
+        Object.entries(req.body).forEach(([key, value]) => {
+            if (value !==undefined) {
+                address[key] = value;
+            }
+        });
     }
 }
 
