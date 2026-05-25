@@ -209,7 +209,7 @@ const deleteAddress = async (req, res, next) => {
         await user.save();
 
         const updatedUser = await fetchProfile(req.user._id);
-        res.json(req.user._id);
+        res.json(updatedUser);
     } catch (error) {
         next(error);
     }
