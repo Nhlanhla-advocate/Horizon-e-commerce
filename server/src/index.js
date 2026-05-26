@@ -49,6 +49,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Serve uploaded profile images
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 // Global error handling middleware
 app.use((err, req, res, next) => {
   console.error(err);
