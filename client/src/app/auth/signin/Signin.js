@@ -85,6 +85,7 @@ const Signin = () => {
                 if (data.user && data.user._id) {
                     localStorage.setItem("userId", data.user._id);
                 }
+                window.dispatchEvent(new Event('horizon-auth-change'));
                 router.push("/");
                 return;
             }

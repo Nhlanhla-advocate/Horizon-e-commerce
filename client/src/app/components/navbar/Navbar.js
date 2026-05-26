@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { FaShoppingCart, FaUser, FaSpinner, FaTimes, FaSignOutAlt, FaTachometerAlt } from 'react-icons/fa';
+import { FaShoppingCart, FaUser, FaUserCircle, FaTimes, FaSignOutAlt, FaTachometerAlt, FaSpinner } from 'react-icons/fa';
 import { useCart } from '@/app/components/cart/Cart';
 import "../../assets/css/navbar.css";
 
@@ -15,220 +15,290 @@ const normalizeRole = (roleValue) =>
 
 const ALLOWED_DASHBOARD_ROLES = new Set(['admin', 'super_admin']);
 
+const readAuthFromStorage = () => {
+  try {
+    const token = localStorage.getItem('token');
+    const adminToken = localStorage.getItem('adminToken');
+    const adminRole = normalizeRole(localStorage.getItem('adminRole'));
+    return {
+      isAuthed: Boolean(token),
+      hasAdminAccess: Boolean(adminToken) && ALLOWED_DASHBOARD_ROLES.has(adminRole),
+    };
+  } catch {
+    return { isAuthed: false, hasAdminAccess: false };
+  }
+};
+
 const Navbar = () => {
-  const { cartCount, isLoading } = useCart();
+  const { cartCount } = useCart();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAuthed, setIsAuthed] = useState(false);
   const [hasAdminAccess, setHasAdminAccess] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
-  useEffect(() => {
-    console.log('Navbar cartCount changed:', cartCount);
-  }, [cartCount]);
-
-  useEffect(() => {
-    const readAuth = () => {
-      try {
-        const token = localStorage.getItem('token');
-        const adminToken = localStorage.getItem('adminToken');
-        const adminRole = normalizeRole(localStorage.getItem('adminRole'));
-        setIsAuthed(Boolean(token));
-        setHasAdminAccess(Boolean(adminToken) && ALLOWED_DASHBOARD_ROLES.has(adminRole));
-      } catch {
-        setIsAuthed(false);
-        setHasAdminAccess(false);
-      }
-    };
-    readAuth();
-    window.addEventListener('storage', readAuth);
-    return () => window.removeEventListener('storage', readAuth);
+  const syncAuthState = useCallback(() => {
+    const { isAuthed: authed, hasAdminAccess: adminAccess } = readAuthFromStorage();
+    setIsAuthed(authed);
+    setHasAdminAccess(adminAccess);
+    setAuthReady(true);
   }, []);
 
-  // Close mobile menu when route changes
+  useEffect(() => {
+    syncAuthState();
+    window.addEventListener('storage', syncAuthState);
+    window.addEventListener('horizon-auth-change', syncAuthState);
+    return () => {
+      window.removeEventListener('storage', syncAuthState);
+      window.removeEventListener('horizon-auth-change', syncAuthState);
+    };
+  }, [syncAuthState]);
+
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [pathname]);
 
-  const handleLogout = async () => {
-    if (isSigningOut) return;
-    setIsSigningOut(true);
+  const clearLocalAuth = () => {
     try {
-      const token = localStorage.getItem('token');
+      localStorage.removeItem('token');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('adminRole');
+    } catch {}
+
+    setIsAuthed(false);
+    setHasAdminAccess(false);
+    window.dispatchEvent(new Event('horizon-auth-change'));
+  };
+
+  const handleLogout = useCallback(async () => {
+    if (isSigningOut) return;
+
+    setIsSigningOut(true);
+
+    const token = localStorage.getItem('token');
+    const adminToken = localStorage.getItem('adminToken');
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
+    const postSignOut = (url, authToken) => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      return fetch(url, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        signal: controller.signal,
+      })
+        .catch(() => {})
+        .finally(() => clearTimeout(timeoutId));
+    };
+
+    try {
       if (token) {
-        await fetch('http://localhost:5000/auth/signout', {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-        });
+        await postSignOut(`${apiBase}/auth/signout`, token);
+      }
+      if (adminToken) {
+        await postSignOut(`${apiBase}/admin/signout`, adminToken);
       }
     } catch (e) {
-      // Even if server signout fails, clear local auth state.
       console.error('Signout error:', e);
     } finally {
-      try {
-        localStorage.removeItem('token');
-        localStorage.removeItem('userId');
-        localStorage.removeItem('adminToken');
-        localStorage.removeItem('adminRole');
-      } catch {}
-      setIsAuthed(false);
-      setHasAdminAccess(false);
+      clearLocalAuth();
       setIsSigningOut(false);
       router.push('/');
       router.refresh?.();
     }
+  }, [isSigningOut, router]);
+
+  const isLoggedIn = isAuthed || hasAdminAccess;
+  const accountHref = isAuthed ? '/account' : '/admin';
+
+  const renderSignInLink = (variant) => {
+    const className = variant === 'mobile'
+      ? 'navbar-mobile-icon-btn navbar-signin-link'
+      : 'navbar-icon-link navbar-signin-link';
+
+    return (
+      <Link href="/auth/signin" className={className} aria-label="Sign in">
+        <FaUser />
+        {variant === 'desktop' && <span className="navbar-auth-label">Sign in</span>}
+      </Link>
+    );
   };
 
-  const showAuthActions = isAuthed || hasAdminAccess;
-  const accountHref = isAuthed ? '/account' : '/admin';
-  const accountLabel = isAuthed ? 'My account' : 'Admin account';
+  const renderAccountLink = (variant) => {
+    const className = variant === 'mobile'
+      ? 'navbar-mobile-icon-btn navbar-account-link'
+      : 'navbar-icon-link navbar-account-link';
 
-  const renderAuthIcons = (linkClassName, logoutClassName) => {
-    if (!showAuthActions) {
+    return (
+      <Link
+        href={accountHref}
+        className={className}
+        aria-label={isAuthed ? 'My account' : 'Admin account'}
+      >
+        <FaUserCircle />
+        {variant === 'desktop' && <span className="navbar-auth-label">Account</span>}
+      </Link>
+    );
+  };
+
+  const renderLogoutButton = (variant, classNameExtra = '') => {
+    const className = [
+      variant === 'mobile' ? 'navbar-mobile-icon-btn navbar-logout-btn' : 'navbar-icon-link navbar-logout-btn',
+      classNameExtra,
+    ].filter(Boolean).join(' ');
+
+    return (
+      <button
+        type="button"
+        className={className}
+        onPointerDown={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+        }}
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          handleLogout();
+        }}
+        aria-label="Log out"
+        aria-busy={isSigningOut}
+      >
+        {isSigningOut ? <FaSpinner className="animate-spin" /> : <FaSignOutAlt />}
+        {variant === 'desktop' && (
+          <span className="navbar-auth-label">{isSigningOut ? 'Logging out...' : 'Log out'}</span>
+        )}
+      </button>
+    );
+  };
+
+  const renderAuthControls = (variant) => {
+    if (!authReady) {
+      return null;
+    }
+
+    if (isLoggedIn) {
       return (
-        <Link href="/auth/signin" className={linkClassName} aria-label="Sign in">
-          <FaUser />
-        </Link>
+        <>
+          {renderLogoutButton(variant)}
+          {renderAccountLink(variant)}
+        </>
       );
     }
 
-    return (
-      <>
-        <Link href={accountHref} className={linkClassName} aria-label={accountLabel}>
-          <FaUser />
-        </Link>
-        <button
-          type="button"
-          className={logoutClassName}
-          onClick={handleLogout}
-          aria-label="Log out"
-          disabled={isSigningOut}
-        >
-          {isSigningOut ? <FaSpinner className="animate-spin" /> : <FaSignOutAlt />}
-        </button>
-      </>
-    );
+    if (isSigningOut) {
+      return renderLogoutButton(variant, 'navbar-logout-btn--pending');
+    }
+
+    return renderSignInLink(variant);
   };
 
   return (
     <nav className="navbar">
       <div className="navbar-container">
-        {/* Mobile Top Row */}
         <div className="navbar-mobile-row">
-          <button 
+          <button
             className="navbar-burger"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Open menu"
           >
             ☰
           </button>
-          
+
           <Link href="/" className="navbar-logo">
             <h1>Horizon</h1>
           </Link>
-          
+
           <div className="navbar-mobile-icons">
             {hasAdminAccess && (
               <Link href="/admin" className="navbar-mobile-icon-btn" aria-label="Admin dashboard">
                 <FaTachometerAlt />
               </Link>
             )}
-            <Link href="/cart" className="navbar-mobile-icon-btn">
+            <Link href="/cart" className="navbar-mobile-icon-btn" aria-label="Cart">
               <div className="cart-icon-container">
-                {isLoading ? (
-                  <FaSpinner className="animate-spin" />
-                ) : (
-                  <>
-                    <FaShoppingCart />
-                    {cartCount > 0 && (
-                      <span className="cart-badge">
-                        {cartCount > 99 ? '99+' : cartCount}
-                      </span>
-                    )}
-                  </>
+                <FaShoppingCart />
+                {cartCount > 0 && (
+                  <span className="cart-badge">
+                    {cartCount > 99 ? '99+' : cartCount}
+                  </span>
                 )}
               </div>
             </Link>
-            {renderAuthIcons('navbar-mobile-icon-btn', 'navbar-mobile-icon-btn')}
+            {renderAuthControls('mobile')}
           </div>
         </div>
 
         <div className="navbar-flex">
-          {/* Logo on the left */}
           <div className="navbar-left">
             <Link href="/" className="navbar-logo">
               <h1>Horizon</h1>
             </Link>
           </div>
 
-          {/* Nav links on the right */}
           <div className="navbar-nav navbar-nav-right">
-            <Link href="/" className="navbar-link">
-              Home
-            </Link>
-            <Link href="/products" className="navbar-link">
-              Products
-            </Link>
-            <Link href="/categories" className="navbar-link">
-              Categories
-            </Link>
-            <Link href="/deals" className="navbar-link">
-              Deals
-            </Link>
+            <Link href="/" className="navbar-link">Home</Link>
+            <Link href="/products" className="navbar-link">Products</Link>
+            <Link href="/categories" className="navbar-link">Categories</Link>
+            <Link href="/deals" className="navbar-link">Deals</Link>
           </div>
 
-          {/* Right side icons */}
           <div className="navbar-icons">
             {hasAdminAccess && (
               <Link href="/admin" className="navbar-icon-link" aria-label="Admin dashboard">
                 <FaTachometerAlt />
               </Link>
             )}
-            <Link href="/cart" className="navbar-icon-link cart-link">
+            <Link href="/cart" className="navbar-icon-link cart-link" aria-label="Cart">
               <div className="cart-icon-container">
-                {isLoading ? (
-                  <FaSpinner className="animate-spin" />
-                ) : (
-                  <>
-                    <FaShoppingCart />
-                    {cartCount > 0 && (
-                      <span className="cart-badge">
-                        {cartCount > 99 ? '99+' : cartCount}
-                      </span>
-                    )}
-                  </>
+                <FaShoppingCart />
+                {cartCount > 0 && (
+                  <span className="cart-badge">
+                    {cartCount > 99 ? '99+' : cartCount}
+                  </span>
                 )}
               </div>
             </Link>
-            {renderAuthIcons('navbar-icon-link', 'navbar-icon-link navbar-logout-btn')}
+            {renderAuthControls('desktop')}
           </div>
         </div>
 
-        {/* Mobile Menu Overlay */}
         {isMobileMenuOpen && (
           <div className="navbar-mobile-menu">
-            <button 
+            <button
               className="navbar-mobile-menu-close"
               onClick={() => setIsMobileMenuOpen(false)}
+              aria-label="Close menu"
             >
               <FaTimes />
             </button>
-            <Link href="/" className="navbar-link">
-              Home
-            </Link>
-            <Link href="/products" className="navbar-link">
-              Products
-            </Link>
-            <Link href="/categories" className="navbar-link">
-              Categories
-            </Link>
-            <Link href="/deals" className="navbar-link">
-              Deals
-            </Link>
+            <Link href="/" className="navbar-link">Home</Link>
+            <Link href="/products" className="navbar-link">Products</Link>
+            <Link href="/categories" className="navbar-link">Categories</Link>
+            <Link href="/deals" className="navbar-link">Deals</Link>
+            {isLoggedIn && (
+              <>
+                <Link href={accountHref} className="navbar-link navbar-mobile-menu-account">
+                  Account
+                </Link>
+                <button
+                  type="button"
+                  className="navbar-link navbar-mobile-menu-logout"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    handleLogout();
+                  }}
+                >
+                  {isSigningOut ? 'Logging out...' : 'Log out'}
+                </button>
+              </>
+            )}
           </div>
         )}
       </div>
