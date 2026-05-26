@@ -93,6 +93,27 @@ export default function UserAccount() {
         useEffect(() => {
             loadProfile();
         }, [loadProfile]);
+
+        const handleSaveProfile = async (event) => {
+            event.preventDefault();
+            setError('');
+            setSuccess('');
+            setProfileSaving(true);
+
+            try {
+                const user = await updateProfile({
+                    username: username.trim(),
+                    personalInfo:
+                    buildPersonalInfoPayload(personalInfo),
+                });
+                applyProfile(user);
+                setSucces('Profile updated successfully.');
+            } catch (err) {
+                setError(err.message || 'Failed to update profile.');
+            } finally {
+                setProfileSaving(false);
+            }
+        };
         })
     })
 }
