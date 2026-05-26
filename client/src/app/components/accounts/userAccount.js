@@ -42,5 +42,26 @@ export default function UserAccount() {
             next: false,
             confirm: false,
         });
+
+        const [profileSaving, setProfileSaving] = useState(false);
+        const [passwordSaving, setPasswordSaving] = useState(false);
+        const [prefSaving, setPrefsSaving] = useState(false);
+        const [avatarUploading, setAvatarUploading] = useState(false);
+        const [galleryUploading, setGalleryUploading] = useState(false);
+
+        const [error, setError] = useState('');
+        const [success, setSuccess] = useState('');
+
+        const applyProfile = useCallback((user) => {
+            setProfile(user);
+            setUsername(user.username || '');
+            setPersonallInfo({
+                ...EMPTY_PERSONAL,
+                ...user.personalInfo,
+                dateOfBirth:
+                formatDateForInput(user.personalInfo? .dateOfBirth),
+            });
+
+        })
     })
 }
