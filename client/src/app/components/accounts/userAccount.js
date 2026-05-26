@@ -61,7 +61,38 @@ export default function UserAccount() {
                 dateOfBirth:
                 formatDateForInput(user.personalInfo? .dateOfBirth),
             });
+            setPreferences({ ...EMPTY_PREPS,
+                ...user.preferences });
+        },[]);
 
+        const loadProfile = useCallback(async () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                router.replace('/auth/signin?redirect=/account');
+                return;
+            }
+
+            setLoading(true);
+            setError('');
+            setSuccess('');
+
+            try {
+                const result = await fetchProfile();
+                if (result.unauthorized) {
+                    router.replace('/auth/signin?redirect=/account');
+                    return;
+                }
+                applyProdile(result.user);
+            } catch (err) {
+                setError(err.message || 'Failed to load your profile.');
+            } finally {
+                setLoading(false);
+            }
+        }, [applyProfile, router]);
+
+        useEffect(() => {
+            loadProfile();
+        }, [loadProfile]);
         })
     })
 }
