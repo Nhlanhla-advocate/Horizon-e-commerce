@@ -168,6 +168,26 @@ export default function UserAccount() {
                 setAvatarUploading(false);
             }
         };
+
+        const handleGalleryUpload = async (event) => {
+            const files = Array.from(event.target.files || []);
+            event.target.value = '';
+            if (files.length === 0) return;
+
+            setError('');
+            setSuccess('');
+            setGalleryUploading(true);
+
+            try {
+                const data = await uploadGalleryImages(files);
+                applyProfile(data.user);
+                setSuccess( `${files.length} photo${files.length > 1 ? 's' : ''} added tp ypur gallery.`);
+            } catch (err) {
+                setError(err.message || 'Failed to upload photos');
+            } finally {
+                setGalleryUploading(false);
+            }
+        };
         })
     })
 }
