@@ -204,6 +204,20 @@ export default function UserAccount() {
                 setError(err.message || 'Failed to remove photo.');
             }
         };
-        })
-    })
+
+        if (loading) {
+            return (
+                <div className="user-account-pages">
+                    <div className="user-account-loading">
+                    Loading your account...</div>
+                </div>
+            );
+        }
+
+        return (
+            <div className="user-account-page">
+            <h1 className="user-account-header">Your Account</h1>
+            </div>
+        );
+    }
 }
