@@ -148,6 +148,26 @@ export default function UserAccount() {
                 setPasswordSaving(false);
             }
         };
+
+        const handleAvatarUpload = async (event) => {
+            const file = event.target.files?.[0];
+            event.target.value = '';
+            if(!file) return;
+
+            setError('');
+            setSuccess('');
+            setAvatarUploading(true);
+
+            try {
+                const data = await uploadAvatar(file);
+                applyProfile(data.user);
+                setSuccess('Profile photo updated.');
+            } catch (err) {
+                setError(err.message || 'Failed to upload profile photo.');
+            } finally {
+                setAvatarUploading(false);
+            }
+        };
         })
     })
 }
