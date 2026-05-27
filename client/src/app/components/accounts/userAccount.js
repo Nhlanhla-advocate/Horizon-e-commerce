@@ -181,11 +181,27 @@ export default function UserAccount() {
             try {
                 const data = await uploadGalleryImages(files);
                 applyProfile(data.user);
-                setSuccess( `${files.length} photo${files.length > 1 ? 's' : ''} added tp ypur gallery.`);
+                setSuccess( `${files.length} photo${files.length > 1 ? 's' : ''} added to your gallery.`);
             } catch (err) {
                 setError(err.message || 'Failed to upload photos');
             } finally {
                 setGalleryUploading(false);
+            }
+        };
+
+        const handleRemoveGalleryImage = async (imageUrl) => {
+            if (!profile?.profileImage?.length) return;
+
+            setError('');
+            setSuccess('');
+
+            try {
+                const nextImages = profile.profileImage.filter((url) => url !== imageUrl);
+                const user = awaitremoveGalleryImages(nextImages);
+                applyProfile(user);
+                setSuccess('Photo removed from gallery.');
+            } catch (err) {
+                setError(err.message || 'Failed to remove photo.');
             }
         };
         })
