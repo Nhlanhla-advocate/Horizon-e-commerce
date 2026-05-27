@@ -266,6 +266,90 @@ export default function UserAccount() {
                   </div>
                 </div>
               </section>
+
+              <form className="user-account-card" onSubmit={handleSaveProfile}>
+        <h2>Personal details</h2>
+        <div className="user-account-grid">
+          <div className="user-account-field">
+            <label htmlFor="email">Email</label>
+            <input id="email" type="email" value={profile.email || ''} disabled />
+            <span className="user-account-field-hint">Email cannot be changed here.</span>
+          </div>
+          <div className="user-account-field">
+            <label htmlFor="username">Username</label>
+            <input
+              id="username"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              minLength={3}
+              required
+            />
+          </div>
+          <div className="user-account-field">
+            <label htmlFor="firstName">First name</label>
+            <input
+              id="firstName"
+              type="text"
+              value={personalInfo.firstName}
+              onChange={(e) => setPersonalInfo((p) => ({ ...p, firstName: e.target.value }))}
+            />
+          </div>
+          <div className="user-account-field">
+            <label htmlFor="lastName">Last name</label>
+            <input
+              id="lastName"
+              type="text"
+              value={personalInfo.lastName}
+              onChange={(e) => setPersonalInfo((p) => ({ ...p, lastName: e.target.value }))}
+            />
+          </div>
+          <div className="user-account-field">
+            <label htmlFor="displayName">Display name</label>
+            <input
+              id="displayName"
+              type="text"
+              value={personalInfo.displayName}
+              onChange={(e) => setPersonalInfo((p) => ({ ...p, displayName: e.target.value }))}
+            />
+          </div>
+          <div className="user-account-field">
+            <label htmlFor="phone">Phone</label>
+            <input
+              id="phone"
+              type="tel"
+              value={personalInfo.phone}
+              onChange={(e) => setPersonalInfo((p) => ({ ...p, phone: e.target.value }))}
+            />
+          </div>
+          <div className="user-account-field">
+            <label htmlFor="dateOfBirth">Date of birth</label>
+            <input
+              id="dateOfBirth"
+              type="date"
+              value={personalInfo.dateOfBirth}
+              onChange={(e) => setPersonalInfo((p) => ({ ...p, dateOfBirth: e.target.value }))}
+            />
+          </div>
+        </div>
+        <div className="user-account-field user-account-field--full">
+          <label htmlFor="bio">Bio</label>
+          <textarea
+            id="bio"
+            value={personalInfo.bio}
+            onChange={(e) => setPersonalInfo((p) => ({ ...p, bio: e.target.value }))}
+            maxLength={500}
+            placeholder="Tell us a little about yourself"
+          />
+          <span className="user-account-field-hint">{(personalInfo.bio || '').length}/500 characters</span>
+        </div>
+        <div className="user-account-actions">
+          <button type="submit" className="user-account-btn user-account-btn--primary" disabled={profileSaving}>
+            {profileSaving ? 'Saving...' : 'Save profile'}
+          </button>
+        </div>
+      </form>
+
         );
     }
 }
