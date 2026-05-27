@@ -214,10 +214,58 @@ export default function UserAccount() {
             );
         }
 
+        
+        if(!profile) {
+            return (
+                <div className="user-account-page">
+                {error && <div className="user-account-alert user-account-alert--error">{error}</div>}
+                <button type="button" className="user-account-btn user-account-btn--primary" onClick={loadProfile}>
+                Try again
+                </button>
+            </div>
+            );
+        }
+
         return (
             <div className="user-account-page">
-            <h1 className="user-account-header">Your Account</h1>
-            </div>
+              <header className="user-account-header">
+                <h1>My Account</h1>
+                <p>Manage your profile, security settings, addresses, and photos.</p>
+              </header>
+        
+              {error && <div className="user-account-alert user-account-alert--error">{error}</div>}
+              {success && <div className="user-account-alert user-account-alert--success">{success}</div>}
+        
+              <section className="user-account-card">
+                <h2>Profile photo</h2>
+                <div className="user-account-avatar-row">
+                  {profile.avatar ? (
+                    <img src={profile.avatar} alt="Your profile" className="user-account-avatar-preview" />
+                  ) : (
+                    <div className="user-account-avatar-placeholder" aria-hidden="true">
+                      {getInitials(profile)}
+                    </div>
+                  )}
+                  <div className="user-account-avatar-controls">
+                    <input
+                      ref={avatarInputRef}
+                      type="file"
+                      accept={IMAGE_ACCEPT}
+                      className="user-account-file-input"
+                      onChange={handleAvatarUpload}
+                    />
+                    <button
+                      type="button"
+                      className="user-account-btn user-account-btn--secondary"
+                      disabled={avatarUploading}
+                      onClick={() => avatarInputRef.current?.click()}
+                    >
+                      {avatarUploading ? 'Uploading...' : 'Upload photo'}
+                    </button>
+                    <span className="user-account-field-hint">JPG, PNG, WEBP or GIF. Max 5MB.</span>
+                  </div>
+                </div>
+              </section>
         );
     }
 }
