@@ -115,7 +115,7 @@ export default function UserAccount() {
             }
         };
 
-        const handleSavePreference = async (event) => {
+        const handleSavePreferences = async (event) => {
             event.preventDefault();
             setError('');
             setSuccess('');
@@ -129,6 +129,23 @@ export default function UserAccount() {
                 setError(err.message || 'Failed to save preferences.');
             } finally {
                 setPrefsSaving(false);
+            }
+        };
+
+        const handleChangePassword = async (event) => {
+            event.preventDefault();
+            setError('');
+            setSuccess('');
+            setPasswordSaving(true);
+
+            try {
+                await changePassword(passwordForm);
+                setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                setSuccess('Password updated successfully.');
+            } catch (err) {
+                setError(err.message || 'Failed to change password.');
+            } finally {
+                setPasswordSaving(false);
             }
         };
         })
