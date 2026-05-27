@@ -350,6 +350,87 @@ export default function UserAccount() {
         </div>
       </form>
 
+      <AddressSection
+        addresses={profile.addresses || []}
+        onUpdated={applyProfile}
+        onError={setError}
+        onSuccess={setSuccess}
+      />
+
+      <form className="user-account-card" onSubmit={handleChangePassword}>
+        <h2>Change password</h2>
+        <div className="user-account-grid user-account-grid--single">
+          <div className="user-account-field user-account-password-toggle">
+            <label htmlFor="currentPassword">Current password</label>
+            <div className="user-account-password-input-wrap">
+              <input
+                id="currentPassword"
+                type={showPasswords.current ? 'text' : 'password'}
+                value={passwordForm.currentPassword}
+                onChange={(e) => setPasswordForm((p) => ({ ...p, currentPassword: e.target.value }))}
+                autoComplete="current-password"
+                required
+              />
+              <button
+                type="button"
+                className="user-account-password-toggle-btn"
+                onClick={() => setShowPasswords((p) => ({ ...p, current: !p.current }))}
+              >
+                {showPasswords.current ? 'Hide' : 'Show'}
+              </button>
+            </div>
+          </div>
+          <div className="user-account-field user-account-password-toggle">
+            <label htmlFor="newPassword">New password</label>
+            <div className="user-account-password-input-wrap">
+              <input
+                id="newPassword"
+                type={showPasswords.next ? 'text' : 'password'}
+                value={passwordForm.newPassword}
+                onChange={(e) => setPasswordForm((p) => ({ ...p, newPassword: e.target.value }))}
+                autoComplete="new-password"
+                required
+                minLength={6}
+              />
+              <button
+                type="button"
+                className="user-account-password-toggle-btn"
+                onClick={() => setShowPasswords((p) => ({ ...p, next: !p.next }))}
+              >
+                {showPasswords.next ? 'Hide' : 'Show'}
+              </button>
+            </div>
+            <span className="user-account-field-hint">
+              At least 6 characters with uppercase, lowercase, number, and special character.
+            </span>
+          </div>
+          <div className="user-account-field user-account-password-toggle">
+            <label htmlFor="confirmPassword">Confirm new password</label>
+            <div className="user-account-password-input-wrap">
+              <input
+                id="confirmPassword"
+                type={showPasswords.confirm ? 'text' : 'password'}
+                value={passwordForm.confirmPassword}
+                onChange={(e) => setPasswordForm((p) => ({ ...p, confirmPassword: e.target.value }))}
+                autoComplete="new-password"
+                required
+              />
+              <button
+                type="button"
+                className="user-account-password-toggle-btn"
+                onClick={() => setShowPasswords((p) => ({ ...p, confirm: !p.confirm }))}
+              >
+                {showPasswords.confirm ? 'Hide' : 'Show'}
+              </button>
+            </div>
+          </div>
+        </div>
+        <div className="user-account-actions">
+          <button type="submit" className="user-account-btn user-account-btn--primary" disabled={passwordSaving}>
+            {passwordSaving ? 'Updating...' : 'Update password'}
+          </button>
+        </div>
+      </form>
         );
     }
 }
