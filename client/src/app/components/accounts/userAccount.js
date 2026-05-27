@@ -114,6 +114,23 @@ export default function UserAccount() {
                 setProfileSaving(false);
             }
         };
+
+        const handleSavePreference = async (event) => {
+            event.preventDefault();
+            setError('');
+            setSuccess('');
+            setPrefsSaving(true);
+
+            try {
+                const user = await updateProdile({ preferences });
+                applyProfile(user);
+                setSuccess('Preferences saved.');
+            } catch (err) {
+                setError(err.message || 'Failed to save preferences.');
+            } finally {
+                setPrefsSaving(false);
+            }
+        };
         })
     })
 }
