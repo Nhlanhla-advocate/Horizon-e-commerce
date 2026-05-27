@@ -1,6 +1,7 @@
 .env.local
 .env
 node_modules/
+server/uploads/
 server\.env.production
 
 .env.production
