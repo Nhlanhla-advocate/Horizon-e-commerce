@@ -3,271 +3,240 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-    changePassword,
-    fetchProfile,
-    removeGalleryImages,
-    updateProfile,
-    uploadAvatar,
-    uploadGalleryImages,
+  changePassword,
+  fetchProfile,
+  updateProfile,
+  uploadAvatar,
 } from './accountApi';
-
 import {
-    buildPersonalInfoPayload,
-    formatDateForInput,
-    getInitials,
-} from '/accountUtils';
-
+  buildPersonalInfoPayload,
+  formatDateForInput,
+  getInitials,
+} from './accountUtils';
 import { EMPTY_PERSONAL, EMPTY_PREFS, IMAGE_ACCEPT } from './constants';
 import AddressSection from './AddressSection';
 import '../../assets/css/userAccount.css';
 
 export default function UserAccount() {
-    const router = useRouter();
-    const avatar = useRouter();
-    const galleryInputRef = useRef(null);
+  const router = useRouter();
+  const avatarInputRef = useRef(null);
 
-    const [loading, setLoading] = useState(true);
-    const [profile, setProfile] = useState(null);
-    const [username, setUsername] = useState('');
-    const [personalInfo, setPersonallInfo] = useState(EMPTY_PERSONAL);
-    const [preferences, setPreferences] = useState(EMPTY_PREFS);
-    const [passwordForm, setPasswordForm] = useState({
-        const [showPasswords, setPasswordForm] = useState({
-            currentPassword: '',
-            newPassword: '',
-            confirmPassword: '',
-        });
-        const [showPassword, setShowPasswords] = useState({
-            current: false,
-            next: false,
-            confirm: false,
-        });
+  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState(null);
+  const [username, setUsername] = useState('');
+  const [personalInfo, setPersonalInfo] = useState(EMPTY_PERSONAL);
+  const [preferences, setPreferences] = useState(EMPTY_PREFS);
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    next: false,
+    confirm: false,
+  });
 
-        const [profileSaving, setProfileSaving] = useState(false);
-        const [passwordSaving, setPasswordSaving] = useState(false);
-        const [prefSaving, setPrefsSaving] = useState(false);
-        const [avatarUploading, setAvatarUploading] = useState(false);
-        const [galleryUploading, setGalleryUploading] = useState(false);
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [prefsSaving, setPrefsSaving] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
 
-        const [error, setError] = useState('');
-        const [success, setSuccess] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [viewerImage, setViewerImage] = useState(null);
 
-        const applyProfile = useCallback((user) => {
-            setProfile(user);
-            setUsername(user.username || '');
-            setPersonallInfo({
-                ...EMPTY_PERSONAL,
-                ...user.personalInfo,
-                dateOfBirth:
-                formatDateForInput(user.personalInfo? .dateOfBirth),
-            });
-            setPreferences({ ...EMPTY_PREPS,
-                ...user.preferences });
-        },[]);
+  useEffect(() => {
+    if (!viewerImage) return undefined;
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setViewerImage(null);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [viewerImage]);
 
-        const loadProfile = useCallback(async () => {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                router.replace('/auth/signin?redirect=/account');
-                return;
-            }
+  const applyProfile = useCallback((user) => {
+    setProfile(user);
+    setUsername(user.username || '');
+    setPersonalInfo({
+      ...EMPTY_PERSONAL,
+      ...user.personalInfo,
+      dateOfBirth: formatDateForInput(user.personalInfo?.dateOfBirth),
+    });
+    setPreferences({ ...EMPTY_PREFS, ...user.preferences });
+  }, []);
 
-            setLoading(true);
-            setError('');
-            setSuccess('');
+  const loadProfile = useCallback(async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      router.replace('/auth/signin?redirect=/account');
+      return;
+    }
 
-            try {
-                const result = await fetchProfile();
-                if (result.unauthorized) {
-                    router.replace('/auth/signin?redirect=/account');
-                    return;
-                }
-                applyProdile(result.user);
-            } catch (err) {
-                setError(err.message || 'Failed to load your profile.');
-            } finally {
-                setLoading(false);
-            }
-        }, [applyProfile, router]);
+    setLoading(true);
+    setError('');
+    setSuccess('');
 
-        useEffect(() => {
-            loadProfile();
-        }, [loadProfile]);
+    try {
+      const result = await fetchProfile();
+      if (result.unauthorized) {
+        router.replace('/auth/signin?redirect=/account');
+        return;
+      }
+      applyProfile(result.user);
+    } catch (err) {
+      setError(err.message || 'Failed to load your profile.');
+    } finally {
+      setLoading(false);
+    }
+  }, [applyProfile, router]);
 
-        const handleSaveProfile = async (event) => {
-            event.preventDefault();
-            setError('');
-            setSuccess('');
-            setProfileSaving(true);
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
 
-            try {
-                const user = await updateProfile({
-                    username: username.trim(),
-                    personalInfo:
-                    buildPersonalInfoPayload(personalInfo),
-                });
-                applyProfile(user);
-                setSucces('Profile updated successfully.');
-            } catch (err) {
-                setError(err.message || 'Failed to update profile.');
-            } finally {
-                setProfileSaving(false);
-            }
-        };
+  const handleSaveProfile = async (event) => {
+    event.preventDefault();
+    setError('');
+    setSuccess('');
+    setProfileSaving(true);
 
-        const handleSavePreferences = async (event) => {
-            event.preventDefault();
-            setError('');
-            setSuccess('');
-            setPrefsSaving(true);
+    try {
+      const user = await updateProfile({
+        username: username.trim(),
+        personalInfo: buildPersonalInfoPayload(personalInfo),
+      });
+      applyProfile(user);
+      setSuccess('Profile updated successfully.');
+    } catch (err) {
+      setError(err.message || 'Failed to update profile.');
+    } finally {
+      setProfileSaving(false);
+    }
+  };
 
-            try {
-                const user = await updateProdile({ preferences });
-                applyProfile(user);
-                setSuccess('Preferences saved.');
-            } catch (err) {
-                setError(err.message || 'Failed to save preferences.');
-            } finally {
-                setPrefsSaving(false);
-            }
-        };
+  const handleSavePreferences = async (event) => {
+    event.preventDefault();
+    setError('');
+    setSuccess('');
+    setPrefsSaving(true);
 
-        const handleChangePassword = async (event) => {
-            event.preventDefault();
-            setError('');
-            setSuccess('');
-            setPasswordSaving(true);
+    try {
+      const user = await updateProfile({ preferences });
+      applyProfile(user);
+      setSuccess('Preferences saved.');
+    } catch (err) {
+      setError(err.message || 'Failed to save preferences.');
+    } finally {
+      setPrefsSaving(false);
+    }
+  };
 
-            try {
-                await changePassword(passwordForm);
-                setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-                setSuccess('Password updated successfully.');
-            } catch (err) {
-                setError(err.message || 'Failed to change password.');
-            } finally {
-                setPasswordSaving(false);
-            }
-        };
+  const handleChangePassword = async (event) => {
+    event.preventDefault();
+    setError('');
+    setSuccess('');
+    setPasswordSaving(true);
 
-        const handleAvatarUpload = async (event) => {
-            const file = event.target.files?.[0];
-            event.target.value = '';
-            if(!file) return;
+    try {
+      await changePassword(passwordForm);
+      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      setSuccess('Password updated successfully.');
+    } catch (err) {
+      setError(err.message || 'Failed to change password.');
+    } finally {
+      setPasswordSaving(false);
+    }
+  };
 
-            setError('');
-            setSuccess('');
-            setAvatarUploading(true);
+  const handleAvatarUpload = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
 
-            try {
-                const data = await uploadAvatar(file);
-                applyProfile(data.user);
-                setSuccess('Profile photo updated.');
-            } catch (err) {
-                setError(err.message || 'Failed to upload profile photo.');
-            } finally {
-                setAvatarUploading(false);
-            }
-        };
+    setError('');
+    setSuccess('');
+    setAvatarUploading(true);
 
-        const handleGalleryUpload = async (event) => {
-            const files = Array.from(event.target.files || []);
-            event.target.value = '';
-            if (files.length === 0) return;
+    try {
+      const data = await uploadAvatar(file);
+      applyProfile(data.user);
+      setSuccess('Profile photo updated.');
+    } catch (err) {
+      setError(err.message || 'Failed to upload profile photo.');
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
 
-            setError('');
-            setSuccess('');
-            setGalleryUploading(true);
+  if (loading) {
+    return (
+      <div className="user-account-page">
+        <div className="user-account-loading">Loading your account...</div>
+      </div>
+    );
+  }
 
-            try {
-                const data = await uploadGalleryImages(files);
-                applyProfile(data.user);
-                setSuccess( `${files.length} photo${files.length > 1 ? 's' : ''} added to your gallery.`);
-            } catch (err) {
-                setError(err.message || 'Failed to upload photos');
-            } finally {
-                setGalleryUploading(false);
-            }
-        };
+  if (!profile) {
+    return (
+      <div className="user-account-page">
+        {error && <div className="user-account-alert user-account-alert--error">{error}</div>}
+        <button type="button" className="user-account-btn user-account-btn--primary" onClick={loadProfile}>
+          Try again
+        </button>
+      </div>
+    );
+  }
 
-        const handleRemoveGalleryImage = async (imageUrl) => {
-            if (!profile?.profileImage?.length) return;
+  return (
+    <div className="user-account-page">
+      <header className="user-account-header">
+        <h1>My Account</h1>
+        <p>Manage your profile, security settings, addresses, and photos.</p>
+      </header>
 
-            setError('');
-            setSuccess('');
+      {error && <div className="user-account-alert user-account-alert--error">{error}</div>}
+      {success && <div className="user-account-alert user-account-alert--success">{success}</div>}
 
-            try {
-                const nextImages = profile.profileImage.filter((url) => url !== imageUrl);
-                const user = awaitremoveGalleryImages(nextImages);
-                applyProfile(user);
-                setSuccess('Photo removed from gallery.');
-            } catch (err) {
-                setError(err.message || 'Failed to remove photo.');
-            }
-        };
-
-        if (loading) {
-            return (
-                <div className="user-account-pages">
-                    <div className="user-account-loading">
-                    Loading your account...</div>
-                </div>
-            );
-        }
-
-        
-        if(!profile) {
-            return (
-                <div className="user-account-page">
-                {error && <div className="user-account-alert user-account-alert--error">{error}</div>}
-                <button type="button" className="user-account-btn user-account-btn--primary" onClick={loadProfile}>
-                Try again
-                </button>
+      <section className="user-account-card">
+        <h2>Profile photo</h2>
+        <div className="user-account-avatar-row">
+          {profile.avatar ? (
+            <button
+              type="button"
+              className="user-account-avatar-button"
+              onClick={() => setViewerImage(profile.avatar)}
+              aria-label="View profile photo"
+            >
+              <img src={profile.avatar} alt="Your profile" className="user-account-avatar-preview" />
+            </button>
+          ) : (
+            <div className="user-account-avatar-placeholder" aria-hidden="true">
+              {getInitials(profile)}
             </div>
-            );
-        }
+          )}
+          <div className="user-account-avatar-controls">
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept={IMAGE_ACCEPT}
+              className="user-account-file-input"
+              onChange={handleAvatarUpload}
+            />
+            <button
+              type="button"
+              className="user-account-btn user-account-btn--secondary"
+              disabled={avatarUploading}
+              onClick={() => avatarInputRef.current?.click()}
+            >
+              {avatarUploading ? 'Uploading...' : 'Upload photo'}
+            </button>
+            <span className="user-account-field-hint">JPG, PNG, WEBP or GIF. Max 5MB.</span>
+          </div>
+        </div>
+      </section>
 
-        return (
-            <div className="user-account-page">
-              <header className="user-account-header">
-                <h1>My Account</h1>
-                <p>Manage your profile, security settings, addresses, and photos.</p>
-              </header>
-        
-              {error && <div className="user-account-alert user-account-alert--error">{error}</div>}
-              {success && <div className="user-account-alert user-account-alert--success">{success}</div>}
-        
-              <section className="user-account-card">
-                <h2>Profile photo</h2>
-                <div className="user-account-avatar-row">
-                  {profile.avatar ? (
-                    <img src={profile.avatar} alt="Your profile" className="user-account-avatar-preview" />
-                  ) : (
-                    <div className="user-account-avatar-placeholder" aria-hidden="true">
-                      {getInitials(profile)}
-                    </div>
-                  )}
-                  <div className="user-account-avatar-controls">
-                    <input
-                      ref={avatarInputRef}
-                      type="file"
-                      accept={IMAGE_ACCEPT}
-                      className="user-account-file-input"
-                      onChange={handleAvatarUpload}
-                    />
-                    <button
-                      type="button"
-                      className="user-account-btn user-account-btn--secondary"
-                      disabled={avatarUploading}
-                      onClick={() => avatarInputRef.current?.click()}
-                    >
-                      {avatarUploading ? 'Uploading...' : 'Upload photo'}
-                    </button>
-                    <span className="user-account-field-hint">JPG, PNG, WEBP or GIF. Max 5MB.</span>
-                  </div>
-                </div>
-              </section>
-
-              <form className="user-account-card" onSubmit={handleSaveProfile}>
+      <form className="user-account-card" onSubmit={handleSaveProfile}>
         <h2>Personal details</h2>
         <div className="user-account-grid">
           <div className="user-account-field">
@@ -431,6 +400,115 @@ export default function UserAccount() {
           </button>
         </div>
       </form>
-        );
-    }
+
+      <form className="user-account-card" onSubmit={handleSavePreferences}>
+        <h2>Preferences</h2>
+        <div className="user-account-prefs">
+          <div className="user-account-pref-row">
+            <label htmlFor="newsletter">Newsletter</label>
+            <input
+              id="newsletter"
+              type="checkbox"
+              checked={preferences.newsletter}
+              onChange={() => setPreferences((p) => ({ ...p, newsletter: !p.newsletter }))}
+            />
+          </div>
+          <div className="user-account-pref-row">
+            <label htmlFor="marketingEmails">Marketing emails</label>
+            <input
+              id="marketingEmails"
+              type="checkbox"
+              checked={preferences.marketingEmails}
+              onChange={() => setPreferences((p) => ({ ...p, marketingEmails: !p.marketingEmails }))}
+            />
+          </div>
+          <div className="user-account-pref-row">
+            <label htmlFor="orderUpdates">Order updates</label>
+            <input
+              id="orderUpdates"
+              type="checkbox"
+              checked={preferences.orderUpdates}
+              onChange={() => setPreferences((p) => ({ ...p, orderUpdates: !p.orderUpdates }))}
+            />
+          </div>
+          <div className="user-account-pref-row">
+            <label htmlFor="smsNotifications">SMS notifications</label>
+            <input
+              id="smsNotifications"
+              type="checkbox"
+              checked={preferences.smsNotifications}
+              onChange={() => setPreferences((p) => ({ ...p, smsNotifications: !p.smsNotifications }))}
+            />
+          </div>
+          <div className="user-account-field">
+            <label htmlFor="language">Language</label>
+            <select
+              id="language"
+              value={preferences.language}
+              onChange={(e) => setPreferences((p) => ({ ...p, language: e.target.value }))}
+            >
+              <option value="en">English</option>
+              <option value="fr">French</option>
+              <option value="es">Spanish</option>
+            </select>
+          </div>
+          <div className="user-account-field">
+            <label htmlFor="currency">Currency</label>
+            <select
+              id="currency"
+              value={preferences.currency}
+              onChange={(e) => setPreferences((p) => ({ ...p, currency: e.target.value }))}
+            >
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+              <option value="GBP">GBP</option>
+              <option value="ZAR">ZAR</option>
+            </select>
+          </div>
+          <div className="user-account-field">
+            <label htmlFor="theme">Theme</label>
+            <select
+              id="theme"
+              value={preferences.theme}
+              onChange={(e) => setPreferences((p) => ({ ...p, theme: e.target.value }))}
+            >
+              <option value="system">System</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
+          </div>
+        </div>
+        <div className="user-account-actions">
+          <button type="submit" className="user-account-btn user-account-btn--primary" disabled={prefsSaving}>
+            {prefsSaving ? 'Saving...' : 'Save preferences'}
+          </button>
+        </div>
+      </form>
+
+      {viewerImage && (
+        <div
+          className="user-account-image-viewer"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Image viewer"
+          onClick={() => setViewerImage(null)}
+        >
+          <button
+            type="button"
+            className="user-account-image-viewer-close"
+            aria-label="Close image viewer"
+            onClick={() => setViewerImage(null)}
+          >
+            ×
+          </button>
+          <img
+            src={viewerImage}
+            alt="Profile"
+            className="user-account-image-viewer-img"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
+    </div>
+  );
 }
