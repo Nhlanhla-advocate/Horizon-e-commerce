@@ -116,7 +116,7 @@ const Navbar = () => {
   }, [isSigningOut, router]);
 
   const isLoggedIn = isAuthed || hasAdminAccess;
-  const accountHref = isAuthed ? '/account' : '/admin';
+  const accountHref = hasAdminAccess ? '/admin' : '/account';
 
   const renderSignInLink = (variant) => {
     const className = variant === 'mobile'
@@ -140,7 +140,7 @@ const Navbar = () => {
       <Link
         href={accountHref}
         className={className}
-        aria-label={isAuthed ? 'My account' : 'Admin account'}
+        aria-label={hasAdminAccess ? 'Admin dashboard' : 'My account'}
       >
         <FaUserCircle />
         {variant === 'desktop' && <span className="navbar-auth-label">Account</span>}
