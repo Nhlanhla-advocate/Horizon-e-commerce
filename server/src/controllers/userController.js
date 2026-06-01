@@ -1,6 +1,5 @@
 const User = require('../models/user');
 const {
-    MAX_PROFILE_IMAGES,
     deleteLocalUploadIfOwned
 } = require('../utilities/profileImageStorage');
 
@@ -250,40 +249,6 @@ const uploadAvatar = async (req, res, next) => {
     }
 };
 
-// Upload one or more profile gallery images
-const uploadProfileImages = async (req, res, next) => {
-    try {
-        const uploadedFiles = req.uploadedFiles || [];
-        if (uploadedFiles.length === 0) {
-            return res.status(400).json({ message: 'At least one image is required' });
-        }
-
-        const user = await User.findById(req.user._id);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        const currentImages = user.profileImage || [];
-        if (currentImages.length + uploadedFiles.length > MAX_PROFILE_IMAGES) {
-            return res.status(400).json({
-                message: `You can only store up to ${MAX_PROFILE_IMAGES} profile images`
-            });
-        }
-
-        user.profileImage = [...currentImages, ...uploadedFiles.map((file) => file.url)];
-        await user.save();
-
-        const updatedUser = await fetchProfile(req.user._id);
-        res.status(201).json({
-            message: 'Profile images uploaded successfully',
-            urls: uploadedFiles.map((file) => file.url),
-            user: updatedUser
-        });
-    } catch (error) {
-        next(error);
-    }
-};
-
 // New function to get user details
 exports.getUserDetails = async (userId) => {
     try {
@@ -301,6 +266,5 @@ module.exports = {
     addAddress,
     updateAddress,
     deleteAddress,
-    uploadAvatar,
-    uploadProfileImages
+    uploadAvatar
 };
