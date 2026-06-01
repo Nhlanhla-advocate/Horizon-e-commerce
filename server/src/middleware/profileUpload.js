@@ -8,10 +8,10 @@ const {
     cleanupUploadedFiles
 } = require('../utilities/profileImageStorage');
 
-const normalizeUploadedFiles = (files) => {
-    if (!files) return [];
+const normalizeUploadedFiles = (entry) => {
+    if (!entry) return [];
 
-    return Object.values(files).flatMap((entry) => (Array.isArray(entry) ? entry : [entry]));
+    return Array.isArray(entry) ? entry : [entry];
 };
 
 const createProfileUploadMiddleware = ({ fieldName, maxFiles = 1, multiples = false }) => {
@@ -69,13 +69,6 @@ const parseAvatarUpload = createProfileUploadMiddleware({
     multiples: false
 });
 
-const parseProfileImagesUpload = createProfileUploadMiddleware({
-    fieldName: 'images',
-    maxFiles: 5,
-    multiples: true
-});
-
 module.exports = {
-    parseAvatarUpload,
-    parseProfileImagesUpload
+    parseAvatarUpload
 };
