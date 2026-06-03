@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { EMPTY_ADDRESS } from './constants';
+import { COUNTRIES, EMPTY_ADDRESS } from './constants';
 import { addAddress, deleteAddress, updateAddress } from './accountApi';
 
 const labelOptions = [
@@ -202,12 +202,21 @@ export default function AddressSection({ addresses = [], onUpdated, onError, onS
             </div>
             <div className="user-account-field">
               <label htmlFor="addressCountry">Country *</label>
-              <input
+              <select
                 id="addressCountry"
                 value={form.country}
                 onChange={(e) => handleChange('country', e.target.value)}
                 required
-              />
+              >
+                <option value="" disabled>
+                  Select a country
+                </option>
+                {COUNTRIES.map((country) => (
+                  <option key={country} value={country}>
+                    {country}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
           <label className="user-account-pref-row user-account-default-row">
