@@ -448,7 +448,6 @@ export default function UserAccount() {
               onChange={(e) => setPreferences((p) => ({ ...p, language: e.target.value }))}
             >
               <option value="en">English</option>
-              <option value="fr">French</option>
               <option value="es">Spanish</option>
             </select>
           </div>
@@ -459,10 +458,8 @@ export default function UserAccount() {
               value={preferences.currency}
               onChange={(e) => setPreferences((p) => ({ ...p, currency: e.target.value }))}
             >
-              <option value="USD">USD</option>
-              <option value="EUR">EUR</option>
-              <option value="GBP">GBP</option>
               <option value="ZAR">ZAR</option>
+              <option value="USD">USD</option>
             </select>
           </div>
           <div className="user-account-field">
