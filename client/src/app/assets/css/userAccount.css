@@ -405,6 +405,53 @@
   font-weight: 600;
 }
 
+.user-account-locale-detector {
+  border: 1px dashed #d1d5db;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+  background: #f9fafb;
+}
+
+.user-account-locale-detector-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.user-account-locale-detector-head strong {
+  font-size: 0.9375rem;
+  color: #111827;
+}
+
+.user-account-locale-detector-head .user-account-field-hint {
+  margin: 0.25rem 0 0;
+}
+
+.user-account-locale-detector-error {
+  margin: 0.875rem 0 0;
+  color: #b91c1c;
+  font-size: 0.875rem;
+}
+
+.user-account-locale-suggestion {
+  margin-top: 0.875rem;
+  padding-top: 0.875rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.user-account-locale-suggestion p {
+  margin: 0;
+  color: #374151;
+  font-size: 0.9375rem;
+}
+
+.user-account-locale-suggestion .user-account-actions {
+  margin-top: 0.875rem;
+}
+
 .user-account-image-viewer {
   position: fixed;
   inset: 0;

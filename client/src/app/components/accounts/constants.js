@@ -13,7 +13,7 @@ export const EMPTY_PREFS = {
   orderUpdates: true,
   smsNotifications: false,
   language: 'en',
-  currency: 'USD',
+  currency: 'ZAR',
   theme: 'system',
 };
 
