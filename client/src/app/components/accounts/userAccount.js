@@ -14,7 +14,9 @@ import {
   getInitials,
 } from './accountUtils';
 import { EMPTY_PERSONAL, EMPTY_PREFS, IMAGE_ACCEPT } from './constants';
+import { CURRENCIES, LANGUAGES } from './localeData';
 import AddressSection from './AddressSection';
+import LocationDetector from './LocationDetector';
 import '../../assets/css/userAccount.css';
 
 export default function UserAccount() {
@@ -127,6 +129,25 @@ export default function UserAccount() {
       setSuccess('Preferences saved.');
     } catch (err) {
       setError(err.message || 'Failed to save preferences.');
+    } finally {
+      setPrefsSaving(false);
+    }
+  };
+
+  const handleApplyDetectedLocale = async ({ language, currency }) => {
+    setError('');
+    setSuccess('');
+    setPrefsSaving(true);
+
+    const nextPreferences = { ...preferences, language, currency };
+
+    try {
+      const user = await updateProfile({ preferences: nextPreferences });
+      applyProfile(user);
+      setSuccess('Language and currency updated for your region.');
+    } catch (err) {
+      setPreferences(nextPreferences);
+      setError(err.message || 'Failed to apply your regional settings.');
     } finally {
       setPrefsSaving(false);
     }
@@ -403,6 +424,12 @@ export default function UserAccount() {
 
       <form className="user-account-card" onSubmit={handleSavePreferences}>
         <h2>Preferences</h2>
+        <LocationDetector
+          language={preferences.language}
+          currency={preferences.currency}
+          applying={prefsSaving}
+          onApply={handleApplyDetectedLocale}
+        />
         <div className="user-account-prefs">
           <div className="user-account-pref-row">
             <label htmlFor="newsletter">Newsletter</label>
@@ -447,8 +474,11 @@ export default function UserAccount() {
               value={preferences.language}
               onChange={(e) => setPreferences((p) => ({ ...p, language: e.target.value }))}
             >
-              <option value="en">English</option>
-              <option value="es">Spanish</option>
+              {LANGUAGES.map((lang) => (
+                <option key={lang.code} value={lang.code}>
+                  {lang.label}
+                </option>
+              ))}
             </select>
           </div>
           <div className="user-account-field">
@@ -458,8 +488,11 @@ export default function UserAccount() {
               value={preferences.currency}
               onChange={(e) => setPreferences((p) => ({ ...p, currency: e.target.value }))}
             >
-              <option value="ZAR">ZAR</option>
-              <option value="USD">USD</option>
+              {CURRENCIES.map((cur) => (
+                <option key={cur.code} value={cur.code}>
+                  {cur.label}
+                </option>
+              ))}
             </select>
           </div>
           <div className="user-account-field">
