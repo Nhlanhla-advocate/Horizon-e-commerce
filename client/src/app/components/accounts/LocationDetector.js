@@ -75,5 +75,27 @@ const getCurrentPosition = () => {
                 setStatus('error');
             }
         };
+
+        const alreadyApplied = result && result.language === language && result.currency === currency;
+
+        return (
+            <div className="user-account-locale-detector">
+                <div className="user-account-locale-detector-head">
+                    <div>
+                        <strong>Detect my location</strong>
+                        <p className="user-account-field-hint">
+                            Use your location to suggest the popular language and local currency for your region.
+                        </p>
+                    </div>
+                    <button type="button"
+                    className="user-account-btn user-account-btn-secondary"
+                    onClick={detect}
+                    disabled={status === 'detecting' || applying}
+                    >
+                        {status === 'detecting' ? 'Detecting...' : 'Detect my location'}
+                    </button>
+                </div>
+            </div>
+        )
     }
 }
