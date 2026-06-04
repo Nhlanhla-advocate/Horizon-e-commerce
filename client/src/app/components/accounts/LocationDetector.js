@@ -23,4 +23,13 @@ const getCurrentPosition = () => {
             maximumAge: 5*60*1000, //5 minutes
         });
     });
+
+    const describeGeoError = (error) => {
+        if (error && typeof error.code === 'number') {
+            if (error.code === 1) return 'Location permission was denied. Enable it to detect your country.';
+            if (error.code === 2) return 'Your location is currently unavailable. Please try again.';
+            if (error.code === 3) return 'Detecting your location timed out. Please try again.';
+        }
+        return error?.message || 'Could not detect your location.';  
+    };
 }
