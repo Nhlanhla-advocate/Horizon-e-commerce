@@ -95,7 +95,36 @@ const getCurrentPosition = () => {
                         {status === 'detecting' ? 'Detecting...' : 'Detect my location'}
                     </button>
                 </div>
+                {status === 'error' && (
+        <p className="user-account-locale-detector-error">{errorMsg}</p>
+      )}
+
+      {status === 'detected' && result && (
+        <div className="user-account-locale-suggestion">
+          <p>
+            You appear to be in <strong>{result.countryName}</strong>. We can set your
+            language to <strong>{getLanguageLabel(result.language)}</strong> and your
+            currency to <strong>{getCurrencyLabel(result.currency)}</strong>.
+          </p>
+          {alreadyApplied ? (
+            <p className="user-account-field-hint">These preferences are already applied.</p>
+          ) : (
+            <div className="user-account-actions">
+              <button
+                type="button"
+                className="user-account-btn user-account-btn--primary"
+                disabled={applying}
+                onClick={() =>
+                  onApply({ language: result.language, currency: result.currency })
+                }
+              >
+                {applying ? 'Applying...' : 'Apply these settings'}
+              </button>
             </div>
+          )}
+        </div>
+      )}
+    </div>
         )
-    }
+    };
 }
