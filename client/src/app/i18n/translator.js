@@ -23,3 +23,16 @@ const notify = () => {
     }
   });
 };
+
+const persist = () => {
+  if (typeof window === 'undefined') return;
+  try {
+    const obj = {};
+    memoryCache.forEach((value, key) => {
+      obj[key] = value;
+    });
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+  } catch {
+    // Ignore storage failures (quota / private mode).
+  }
+};
