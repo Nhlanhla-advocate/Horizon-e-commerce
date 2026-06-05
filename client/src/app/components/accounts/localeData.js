@@ -18,5 +18,12 @@ export const LANGUAGES = [
     { code: 'ro', label: 'Romanian'},
     { code: 'hu', label: 'Hungarian'},
     { code: 'el', label: 'Greek'},
+    { code: 'sv', label: 'Swedish'},
+    { code: 'no', label: 'Norwegian'},
+    { code: 'da', label: 'Danish'},
+    { code: 'fi', label: 'Finnish'},
+    { code: 'tr', label: 'Turkish'},
+    { code: 'ar', label: 'Arabic'},
+    { code: 'he', label: 'Hebrew'},
 
 ]
