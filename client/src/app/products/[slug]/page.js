@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import '../../assets/css/product.css';
 import ImageModal from '../../components/imagemodal/ImageModal';
 import { useCart } from '@/app/components/cart/Cart';
+import { useLocale } from '@/app/i18n/LocaleProvider';
 import { fetchWithUserAuth, getUserApiBaseUrl } from '@/app/utils/userAuthFetch';
 import {
   buildCategoryGalleryItems,
@@ -40,6 +41,7 @@ export default function ProductDetail() {
   const [submitReviewError, setSubmitReviewError] = useState('');
   const [submitReviewSuccess, setSubmitReviewSuccess] = useState('');
   const { addToCart } = useCart();
+  const { t, formatPrice } = useLocale();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -177,10 +179,10 @@ export default function ProductDetail() {
     }
   }, [galleryModalImages, selected]);
 
-  const displayPrice = useMemo(() => {
-    const price = Number(product?.price ?? 0);
-    return `R ${price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
-  }, [product?.price]);
+  const displayPrice = useMemo(
+    () => formatPrice(Number(product?.price ?? 0)),
+    [formatPrice, product?.price]
+  );
 
   const stockQuantity = useMemo(() => {
     if (!product) return 0;
@@ -195,11 +197,6 @@ export default function ProductDetail() {
       .filter((item) => item?._id && item._id !== currentProductId)
       .slice(0, 6);
   }, [product?._id, relatedProducts]);
-
-  const formatPrice = (price) => {
-    const amount = Number(price ?? 0);
-    return `R ${amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
-  };
 
   const reviewCounts = useMemo(() => {
     const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
@@ -372,7 +369,7 @@ export default function ProductDetail() {
             </div>
             <div style={{ fontSize: 28, color: '#2563eb', fontWeight: 700, margin: '18px 0 10px 0' }}>{displayPrice}</div>
             <div style={{ color: stockQuantity > 0 ? '#16a34a' : '#dc2626', fontWeight: 500, marginBottom: 8 }}>
-              {stockQuantity > 0 ? `${stockQuantity} in stock` : 'Out of stock'}
+              {stockQuantity > 0 ? t('product.inStock', { count: stockQuantity }) : t('product.outOfStock')}
             </div>
             <div style={{ background: '#f3f4f6', borderRadius: 6, padding: '0.75rem 1rem', marginBottom: 16, fontSize: 15 }}>
               <div>Free Delivery Available.</div>
@@ -397,7 +394,7 @@ export default function ProductDetail() {
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 20 20" style={{ marginRight: 6 }}>
                 <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
               </svg>
-              Add to Cart
+              {t('product.addToCart')}
             </button>
             <div style={{ fontSize: 15, color: '#666', marginBottom: 18 }}>
               <b>Seller:</b> Horizon Store <span style={{ color: '#16a34a', fontWeight: 500, marginLeft: 8 }}>4.8 ★</span>
@@ -527,7 +524,7 @@ export default function ProductDetail() {
                     href={buildProductDetailHref(item)}
                     style={{ background: '#2563eb', color: '#fff', padding: '0.5rem 1.2rem', border: 'none', borderRadius: 4, fontSize: '0.95rem', cursor: 'pointer', textDecoration: 'none', display: 'inline-block' }}
                   >
-                    View
+                    {t('product.view')}
                   </Link>
                 </div>
               );

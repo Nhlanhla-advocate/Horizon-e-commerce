@@ -6,6 +6,7 @@ import './assets/css/footer.css';
 import './assets/css/authlayout.css';
 
 import { CartProvider } from '@/app/components/cart/Cart';
+import { LocaleProvider } from '@/app/i18n/LocaleProvider';
 import AuthLayoutWrapper from './components/AuthLayoutWrapper.js';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -19,11 +20,13 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning>
-        <CartProvider>
-          <AuthLayoutWrapper>
-            {children}
-          </AuthLayoutWrapper>
-        </CartProvider>
+        <LocaleProvider>
+          <CartProvider>
+            <AuthLayoutWrapper>
+              {children}
+            </AuthLayoutWrapper>
+          </CartProvider>
+        </LocaleProvider>
       </body>
     </html>
   );

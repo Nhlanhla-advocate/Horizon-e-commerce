@@ -15,6 +15,7 @@ import {
 } from './accountUtils';
 import { EMPTY_PERSONAL, EMPTY_PREFS, IMAGE_ACCEPT } from './constants';
 import { CURRENCIES, LANGUAGES } from './localeData';
+import { useLocale } from '@/app/i18n/LocaleProvider';
 import AddressSection from './AddressSection';
 import LocationDetector from './LocationDetector';
 import '../../assets/css/userAccount.css';
@@ -22,6 +23,7 @@ import '../../assets/css/userAccount.css';
 export default function UserAccount() {
   const router = useRouter();
   const avatarInputRef = useRef(null);
+  const { setLocale } = useLocale();
 
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
@@ -126,6 +128,10 @@ export default function UserAccount() {
     try {
       const user = await updateProfile({ preferences });
       applyProfile(user);
+      setLocale({
+        language: user.preferences?.language,
+        currency: user.preferences?.currency,
+      });
       setSuccess('Preferences saved.');
     } catch (err) {
       setError(err.message || 'Failed to save preferences.');
@@ -144,6 +150,7 @@ export default function UserAccount() {
     try {
       const user = await updateProfile({ preferences: nextPreferences });
       applyProfile(user);
+      setLocale({ language, currency });
       setSuccess('Language and currency updated for your region.');
     } catch (err) {
       setPreferences(nextPreferences);

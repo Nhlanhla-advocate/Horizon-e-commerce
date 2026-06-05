@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import { useCart, normalizeProductId } from './Cart';
+import { useLocale } from '@/app/i18n/LocaleProvider';
 import '../../assets/css/cart.css';
 
 const PLACEHOLDER_IMAGE = '/file.svg';
@@ -127,20 +128,21 @@ export default function CartPage() {
         isLoading, 
         updateQuantity
     } = useCart();
+    const { t, formatPrice } = useLocale();
     const cartItems = Array.isArray(cart?.items) ? cart.items : [];
     const cartTotal = Number(cart?.totalPrice ?? 0);
 
     if (isLoading) {
-        return <div className="cart-container">Loading cart...</div>;
+        return <div className="cart-container">{t('cart.loading')}</div>;
     }
 
     return (
         <div className="cart-container">
-            <h2 className="cart-title">Your Cart</h2>
+            <h2 className="cart-title">{t('cart.title')}</h2>
             {cartItems.length === 0 ? (
                 <div className="cart-empty">
-                    <p>Your cart is empty.</p>
-                    <a href="/products" className="cart-continue-shopping">Continue Shopping</a>
+                    <p>{t('cart.empty')}</p>
+                    <a href="/products" className="cart-continue-shopping">{t('cart.continueShopping')}</a>
                 </div>
             ) : (
                 <div className="cart-content">
@@ -162,6 +164,8 @@ export default function CartPage() {
                                             quantity={item.quantity} 
                                             price={item.price} 
                                             totalPrice={item.price * item.quantity}
+                                            formatPrice={formatPrice}
+                                            t={t}
                                             onDecrease={() => updateQuantity(productKey, Math.max(0, item.quantity - 1))} 
                                             onIncrease={() => updateQuantity(productKey, item.quantity + 1)} 
                                             onRemove={() => removeFromCart(productKey)} 
@@ -173,14 +177,14 @@ export default function CartPage() {
                     </ul>
                             <div className="cart-summary">
             <div className="cart-total">
-                <strong>Total:</strong>
-                <strong>R {cartTotal.toFixed(2)}</strong>
+                <strong>{t('cart.total')}</strong>
+                <strong>{formatPrice(cartTotal)}</strong>
             </div>
             
 
             
             <button className="cart-checkout-button" onClick={checkout}>
-                Checkout
+                {t('cart.checkout')}
             </button>
         </div>
                 </div>
@@ -189,7 +193,7 @@ export default function CartPage() {
     );
 }
 
-function CartItemControls({ productKey, quantity, price, totalPrice, onDecrease, onIncrease, onRemove }) {
+function CartItemControls({ productKey, quantity, price, totalPrice, formatPrice, t, onDecrease, onIncrease, onRemove }) {
     const safeUnitPrice = Number(price ?? 0);
     const safeTotalPrice = Number(totalPrice ?? safeUnitPrice * Number(quantity ?? 0));
 
@@ -221,8 +225,8 @@ function CartItemControls({ productKey, quantity, price, totalPrice, onDecrease,
                 </button>
             </div>
             <div className="cart-item-price-info">
-                <span className="cart-item-unit-price">R {safeUnitPrice.toFixed(2)} each</span>
-                <span className="cart-item-total-price">R {safeTotalPrice.toFixed(2)}</span>
+                <span className="cart-item-unit-price">{formatPrice(safeUnitPrice)} {t('cart.each')}</span>
+                <span className="cart-item-total-price">{formatPrice(safeTotalPrice)}</span>
             </div>
             <button className="cart-remove-button" onClick={onRemove}>Remove</button>
         </div>

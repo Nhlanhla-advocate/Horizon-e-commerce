@@ -2,6 +2,7 @@
 import React, { createContext, useState, useContext, useEffect, useCallback, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
+import { useLocale } from '@/app/i18n/LocaleProvider';
 
 const CartContext = createContext();
 export const useCart = () => useContext(CartContext);
@@ -93,6 +94,7 @@ const safeReadResponseBody = async (res) => {
 };
 
 export const CartProvider = ({ children }) => {
+  const { t, formatPrice } = useLocale();
   const [cart, setCart] = useState({ items: [], totalPrice: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [showAddedToast, setShowAddedToast] = useState(false);
@@ -613,7 +615,7 @@ export const CartProvider = ({ children }) => {
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="#0a0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 <div style={{ fontWeight: 800, letterSpacing: 0.5, textTransform: 'uppercase' }}>
-                  {addedItem.quantity} {addedItem.quantity === 1 ? 'item' : 'items'} added to your cart
+                  {addedItem.quantity} {addedItem.quantity === 1 ? t('cart.itemAdded') : t('cart.itemsAdded')}
                 </div>
               </div>
               <button onClick={() => setShowAddedToast(false)} aria-label="Close notification" style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', lineHeight: 1 }}>×</button>
@@ -631,11 +633,11 @@ export const CartProvider = ({ children }) => {
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 700, marginBottom: 6, lineHeight: 1.2 }}>{addedItem.name}</div>
-                <div style={{ color: '#444', fontSize: 14 }}>R {Number(addedItem.price || 0).toFixed(2)}</div>
+                <div style={{ color: '#444', fontSize: 14 }}>{formatPrice(Number(addedItem.price || 0))}</div>
               </div>
             </div>
             <div style={{ padding: 16, paddingTop: 0 }}>
-              <Link href="/cart" className="button" style={{ display: 'inline-block', width: '100%', textAlign: 'center', textDecoration: 'none', padding: '14px 16px', borderRadius: 4 }}>GO TO CART</Link>
+              <Link href="/cart" className="button" style={{ display: 'inline-block', width: '100%', textAlign: 'center', textDecoration: 'none', padding: '14px 16px', borderRadius: 4 }}>{t('cart.goToCart')}</Link>
             </div>
           </div>
         </div>

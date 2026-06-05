@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/app/components/cart/Cart';
+import { useLocale } from '@/app/i18n/LocaleProvider';
 import { FaSearch, FaTimes } from 'react-icons/fa';
 import '@/app/assets/css/product.css';
 import '@/app/assets/css/categoryPage.css';
@@ -142,55 +143,58 @@ const CategoryProductCard = ({
   className = '',
   onClick,
   onMouseEnter,
-}) => (
-  <article
-    className={`product-card ${className}`.trim()}
-    onClick={onClick}
-    onMouseEnter={onMouseEnter}
-  >
-    <div className="product-image-container">
-      <Link href={`/products/${product.slug}`}>
-        <div className="image-wrapper">
-          <ProductImage product={product} />
-          {product.stockQuantity === 0 && (
-            <div className="out-of-stock-badge">Out of Stock</div>
+}) => {
+  const { t } = useLocale();
+  return (
+    <article
+      className={`product-card ${className}`.trim()}
+      onClick={onClick}
+      onMouseEnter={onMouseEnter}
+    >
+      <div className="product-image-container">
+        <Link href={`/products/${product.slug}`}>
+          <div className="image-wrapper">
+            <ProductImage product={product} />
+            {product.stockQuantity === 0 && (
+              <div className="out-of-stock-badge">{t('product.outOfStockBadge')}</div>
+            )}
+          </div>
+        </Link>
+      </div>
+
+      <div className="product-info">
+        <Link href={`/products/${product.slug}`}>
+          <h3 className="product-name">{product.name}</h3>
+        </Link>
+        <div className="product-category">{toTitleCase(product.category)}</div>
+        <div className="product-price">{formatPrice(product.price)}</div>
+        <div className="product-stock">
+          {product.stockQuantity > 0 ? (
+            <span className="in-stock">{t('product.inStock', { count: product.stockQuantity })}</span>
+          ) : (
+            <span className="out-of-stock">{t('product.outOfStock')}</span>
           )}
         </div>
-      </Link>
-    </div>
-
-    <div className="product-info">
-      <Link href={`/products/${product.slug}`}>
-        <h3 className="product-name">{product.name}</h3>
-      </Link>
-      <div className="product-category">{toTitleCase(product.category)}</div>
-      <div className="product-price">{formatPrice(product.price)}</div>
-      <div className="product-stock">
-        {product.stockQuantity > 0 ? (
-          <span className="in-stock">{product.stockQuantity} in stock</span>
-        ) : (
-          <span className="out-of-stock">Out of stock</span>
-        )}
+        <button
+          type="button"
+          className="add-to-cart-button"
+          onClick={() =>
+            addToCart(product._id, 1, {
+              name: product.name,
+              price: product.price,
+              image: product.image,
+              description: product.description,
+              category: product.category,
+            })
+          }
+          disabled={product.stockQuantity === 0}
+        >
+          {t('product.addToCart')}
+        </button>
       </div>
-      <button
-        type="button"
-        className="add-to-cart-button"
-        onClick={() =>
-          addToCart(product._id, 1, {
-            name: product.name,
-            price: product.price,
-            image: product.image,
-            description: product.description,
-            category: product.category,
-          })
-        }
-        disabled={product.stockQuantity === 0}
-      >
-        Add to Cart
-      </button>
-    </div>
-  </article>
-);
+    </article>
+  );
+};
 
 const CategoryProductsGrid = ({ products, addToCart, formatPrice }) => (
   <div className="products-grid category-products-grid">
@@ -269,6 +273,7 @@ const CategoryProductCarousel = ({
 
 const CategoryPage = () => {
   const { addToCart } = useCart();
+  const { t, formatPrice } = useLocale();
   const [searchQuery, setSearchQuery] = useState('');
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -393,16 +398,11 @@ const CategoryPage = () => {
     [sortedCategoryNames, groupedProducts]
   );
 
-  const formatPrice = (price) =>
-    `R ${Number(price || 0)
-      .toFixed(2)
-      .replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
-
   return (
     <div className="products-page-container category-page-container">
       <div className="page-header">
-        <h1 className="page-title">Shop by Category</h1>
-        <p className="page-description">Look for your favorite products in our amazing categories.</p>
+        <h1 className="page-title">{t('category.title')}</h1>
+        <p className="page-description">{t('category.desc')}</p>
       </div>
 
       {!isLoading && !fetchError && (
