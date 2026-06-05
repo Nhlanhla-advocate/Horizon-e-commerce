@@ -25,5 +25,15 @@ export const LANGUAGES = [
     { code: 'tr', label: 'Turkish'},
     { code: 'ar', label: 'Arabic'},
     { code: 'he', label: 'Hebrew'},
-
-]
+    { code: 'fa', label: 'Persian' },
+    { code: 'hi', label: 'Hindi' },
+    { code: 'bn', label: 'Bengali' },
+    { code: 'ur', label: 'Urdu' },
+    { code: 'zh', label: 'Chinese' },
+    { code: 'ja', label: 'Japanese' },
+    { code: 'ko', label: 'Korean' },
+    { code: 'th', label: 'Thai' },
+    { code: 'vi', label: 'Vietnamese' },
+    { code: 'id', label: 'Indonesian' },
+    { code: 'ms', label: 'Malay' },
+];
