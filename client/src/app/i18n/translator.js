@@ -9,3 +9,17 @@ const memoryCache = new Map();  // ${lang}|${text} -> translated string
 const inFlight = new Set();// keys currently being fetched
 const failedAt = new Map(); //key -> timestamp of last failure
 const subscribers = new Set();
+
+let loaded = false;
+
+const cacheKey = (lang, text) => `${lang}|${text}`;
+
+const notify = () => {
+  subscribers.forEach((cb) => {
+    try {
+      cb();
+    } catch {
+      //A bad subscriber must not break the others.
+    }
+  });
+};
