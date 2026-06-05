@@ -36,3 +36,31 @@ const persist = () => {
     // Ignore storage failures (quota / private mode).
   }
 };
+
+/** Load persisted translations into memory once (browser-only, sync). */
+export function initTranslationCache() {
+  if (loaded || typeof window === 'undefined') return false;
+  loaded = true;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const obj = JSON.parse(raw);
+      Object.entries(obj).forEach(([key, value]) => {
+        if (typeof value === 'string') memoryCache.set(key, value);
+      });
+      return memoryCache.size > 0;
+    }
+  } catch {
+    // Ignore malformed cache.
+  }
+  return false;
+}
+
+export function subscribeTranslations(callback) {
+  subscribers.add(callback);
+  return () => subscribers.delete(callback);
+}
+
+export function getCachedTranslation(lang, text) {
+  return memoryCache.get(cacheKey(lang, text));
+}
