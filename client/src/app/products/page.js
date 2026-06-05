@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/app/components/cart/Cart';
+import { useLocale } from '@/app/i18n/LocaleProvider';
 import '../assets/css/product.css';
 import { productMatchesSearchQuery } from '@/app/utils/productSearch';
 
@@ -37,6 +38,7 @@ const normalizeProductImagePath = (value) => {
 
 const ProductsPageClient = () => { // Changed to PascalCase
     const { addToCart } = useCart();
+    const { t, formatPrice } = useLocale();
    const [allProducts, setAllProducts] = useState([]);
    const [products, setProducts] = useState([]);
    const [isLoading, setIsLoading] = useState(true);
@@ -211,16 +213,11 @@ const resetFilters = () => {
     });
 };
 
-// Format price function to fix hydration error
-const formatPrice = (price) => {
-    return `R ${price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
-};
-
 return (
     <div className="products-page-container">
         <div className="page-header">
-            <h1 className="page-title">Our Products</h1>
-            <p className="page-description">Browse our complete collection of gaming products</p>
+            <h1 className="page-title">{t('products.title')}</h1>
+            <p className="page-description">{t('products.desc')}</p>
         </div>
         
         {/* Search and Filters */}
@@ -229,7 +226,7 @@ return (
                 <form onSubmit={handleSearch}>
                     <input
                         type="text"
-                        placeholder="Search products..."
+                        placeholder={t('product.search')}
                         value={filters.search} // Changed from 'filter' to 'filters'
                         onChange={(e) => handleFilterChange('search', e.target.value)}
                         className="search-input"
@@ -346,7 +343,7 @@ return (
                                     style={{ objectFit: 'cover' }}
                                 />
                                 {product.stockQuantity === 0 && (
-                                    <div className="out-of-stock-badge">Out of Stock</div>
+                                    <div className="out-of-stock-badge">{t('product.outOfStockBadge')}</div>
                                 )}
                             </div>
                         </Link>
@@ -356,12 +353,12 @@ return (
                             <h3 className="product-name">{product.name}</h3>
                         </Link>
                         <div className="product-category">{product.category}</div>
-                        <div className="product-price">{formatPrice(product.price)}</div> {/* Fixed hydration error */}
+                        <div className="product-price">{formatPrice(product.price)}</div>
                         <div className="product-stock">
                             {product.stockQuantity > 0 ? (
-                                <span className="in-stock">{product.stockQuantity} in stock</span>
+                                <span className="in-stock">{t('product.inStock', { count: product.stockQuantity })}</span>
                             ) : (
-                                <span className="out-of-stock">Out of stock</span>
+                                <span className="out-of-stock">{t('product.outOfStock')}</span>
                             )}
                         </div>
                         <button
@@ -386,7 +383,7 @@ return (
                                 <svg xmlns="http://www.w3.org/2000/svg" className="cart-icon" width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
                                     <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
                                 </svg>
-                                <span>Add to Cart</span>
+                                <span>{t('product.addToCart')}</span>
                             </span>
                         </button>
                     </div>
