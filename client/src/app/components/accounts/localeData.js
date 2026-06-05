@@ -37,3 +37,11 @@ export const LANGUAGES = [
     { code: 'id', label: 'Indonesian' },
     { code: 'ms', label: 'Malay' },
 ];
+
+// Supported store currencies for the account preferences.
+export const CURRENCIES = [
+    { code: 'ZAR', label: 'ZAR - South African Rand' },
+    { code: 'USD', label: 'USD - US Dollar' },
+];
+
+export const DEFAULT_LOCALE = { language: 'en', currency: 'ZAR' };
