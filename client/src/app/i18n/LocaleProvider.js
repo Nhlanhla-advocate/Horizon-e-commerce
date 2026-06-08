@@ -63,3 +63,28 @@ const readCachedLocale = () => {
       Object.prototype.hasOwnProperty.call(vars, name) ? String(vars[name]) : match
     );
   };
+
+  // Resolve the template for a key in this order:
+//   1. curated translation in the active language (messages.js wins)
+//   2. cached/auto machine-translation of the English source
+//   3. the English source itself (shown while MT loads, or if it fails)
+//   4. the raw key (only if even English is missing)
+// When falling through to MT, fire a one-shot translation request in the
+// background; the provider re-renders via subscribeTranslations once it lands.
+const resolveTemplate = (language, key, { allowMachineTranslation = true } = {}) => {
+    const curated = MESSAGES[language]?.[key];
+    if (curated != null) return curated;
+  
+    const enText = MESSAGES[FALLBACK_LANGUAGE]?.[key];
+    if (enText == null) return key;
+    if (language === FALLBACK_LANGUAGE) return enText;
+  
+    const cached = getCachedTranslation(language, enText);
+    if (cached != null) return cached;
+  
+    if (allowMachineTranslation) requestTranslation(language, enText);
+    return enText;
+  };
+  
+  const translate = (language, key, vars, options) =>
+    interpolate(resolveTemplate(language, key, options), vars);
