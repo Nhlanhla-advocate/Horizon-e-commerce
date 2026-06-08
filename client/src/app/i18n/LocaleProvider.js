@@ -45,4 +45,21 @@ const sanitize = (locale) => {
         next.currency = locale.currency;
     }
     return next;
-}
+};
+
+const readCachedLocale = () => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      return raw ? sanitize(JSON.parse(raw)) : null;
+    } catch {
+      return null;
+    }
+  };
+  
+  const interpolate = (template, vars) => {
+    if (!vars || typeof template !== 'string') return template;
+    return template.replace(/\{(\w+)\}/g, (match, name) =>
+      Object.prototype.hasOwnProperty.call(vars, name) ? String(vars[name]) : match
+    );
+  };
