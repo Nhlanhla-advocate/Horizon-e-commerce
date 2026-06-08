@@ -85,4 +85,16 @@ Ensure a translation for text text into lang exists. Returns the cached value if
 export function requestTranslation(lang, text) {
   if (!lang || lang === SOURCE_LANG || !text) return undefined;
   const key = cacheKey(lang, text);
+
+  const cached = memoryCache.get(key);
+  if (cached !== undefined) return cached;
+
+  if (typeof window === 'undefined') return undefined;
+  if (inFlight.has(key)) return undefined;
+
+  const lastFailure = failedAt.get(key);
+  if (lastFailure && Date.now() - lastFailure < RETRY_AFTER_MS) return undefined;
+
+  inFlight.add(key);
+  const { protectedText, tokens } = protectPlaceholders(text);
 }
