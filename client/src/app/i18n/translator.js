@@ -97,4 +97,26 @@ export function requestTranslation(lang, text) {
 
   inFlight.add(key);
   const { protectedText, tokens } = protectPlaceholders(text);
+
+  (async () => {
+    try {
+      const url = `${ENDPOINT}? q=${encodeURIComponent(protectedText)}&langpair=${encodeURIComponent(`${SOURCE_LANG}|${lang}`)}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Translation request failed.');
+      const data = await res.json();
+      const translated = data?.responseData?.translatedText;
+      if (typeof translated !== 'string' || !translated.trim()) {
+        throw new Error('Empty translation.');
+    }
+    memoryCache.set(key, restorePlaceholders(translated, tokens));
+    failedAt.delete(key);
+    persist();
+    notify();
+    } catch {
+      failedAt.set(key, Date.now());
+    } finally {
+      inFlight.delete(key);
+    }
+  })();
+  return undefined;
 }
