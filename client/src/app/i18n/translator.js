@@ -74,3 +74,15 @@ const protectPlaceholders = (text) => {
   });
   return { protectedText, tokens };
 };
+
+const restorePlaceholders = (text, tokens) => 
+  text.replace(/\[\[\[(\d+)\]\]\]/g, (match, index) => tokens[Number(index)]) ?? match;
+
+/*
+Ensure a translation for text text into lang exists. Returns the cached value if present. Otherwise kicks off a one_shot fetch and notifies subscribers when it resolves. Safe to call repeatedly (deduped) and during render (no sync state changes)
+*/
+
+export function requestTranslation(lang, text) {
+  if (!lang || lang === SOURCE_LANG || !text) return undefined;
+  const key = cacheKey(lang, text);
+}
