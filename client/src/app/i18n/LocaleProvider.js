@@ -31,3 +31,18 @@ import {
 } from './translator';
 
 
+const STORAGE_KEY = 'localePreferences';
+export const DEFAULT_LOCALE = { language: FALLBACK_LANGUAGE, currency: BASE_CURRENCY };
+
+const LocaleContext = createContext(null);
+
+const sanitize = (locale) => {
+    const next = { ...DEFAULT_LOCALE};
+    if (locale && typeof locale.language === 'string' && locale.language.trim()) {
+        next.language = locale.language.trim();
+    }
+    if (locale && typeof locale.currency === 'string' && isSupportedCurrency(locale.currency)) {
+        next.currency = locale.currency;
+    }
+    return next;
+}
