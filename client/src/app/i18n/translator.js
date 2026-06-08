@@ -64,3 +64,13 @@ export function subscribeTranslations(callback) {
 export function getCachedTranslation(lang, text) {
   return memoryCache.get(cacheKey(lang, text));
 }
+
+//Protect {placeholders} from the translator so interpolation still works after MT.
+const protectPlaceholders = (text) => {
+  const tokens = [];
+  const protectedText = text.replace(/\{(\w+)\}/g, (match) => {
+    const index = tokens.push(match) - 1;
+    return `[[${index}]]`;
+  });
+  return { protectedText, tokens };
+};
