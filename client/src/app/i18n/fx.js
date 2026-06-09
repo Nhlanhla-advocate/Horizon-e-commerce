@@ -54,3 +54,16 @@ export function loadCachedRates() {
     }
     return false;
 }
+
+/** Fetch the latest rates, update the in-memory map, and cache them. */
+export async function refreshRates() {
+    const response = await fetch(RATES_ENDPOINT);
+    if (!response.ok) {
+        throw new Error('Failed to fetch exchange rates.');
+    }
+
+    const data = await response.json();
+    if (data?.result !== 'success' || !data?.rates || typeof data.rates !== 'object') {
+        throw new Error('Unexpected exchange-rate response.');
+    }
+}
