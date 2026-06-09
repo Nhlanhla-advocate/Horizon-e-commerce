@@ -83,3 +83,22 @@ export async function refreshRates() {
 
     return getRates();
 }
+
+/**
+ * Convert an amount between currencies. Defaults to converting from the store
+ * base currency (ZAR), which is how product prices are stored.
+ */
+export function convert(amount, toCurrency, fromCurrency = BASE_CURRENCY) {
+  const value = Number(amount);
+  if (!Number.isFinite(value)) return 0;
+
+  const fromRate = getRate(fromCurrency);
+  const toRate = getRate(toCurrency);
+
+  // Unknown currency: fall back to the original amount rather than throwing,
+  // so a missing rate never blanks out a price in the UI.
+  if (fromRate === null || toRate === null) return value;
+
+  const amountInBase = value / fromRate;
+  return amountInBase * toRate;
+}
