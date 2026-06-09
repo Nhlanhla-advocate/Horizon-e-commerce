@@ -106,3 +106,19 @@ const resolveTemplate = (language, key, { allowMachineTranslation = true } = {})
         // Ignore storage failures (private mode, quota) — in-memory locale still works.
       }
     }, []);
+
+    const setLocale = useCallback(
+      (partial) => {
+        setLocaleState((prev) => {
+          const next = sanitize({ ...prev, ...partial });
+          persist(next);
+          return next;
+        });
+      },
+      [persist]
+    );
+
+    useEffect(() => {
+      const cached = readCachedLocale();
+      if (cached) setLocaleState(cached);
+    })
