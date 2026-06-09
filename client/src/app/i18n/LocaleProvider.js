@@ -88,3 +88,21 @@ const resolveTemplate = (language, key, { allowMachineTranslation = true } = {})
   
   const translate = (language, key, vars, options) =>
     interpolate(resolveTemplate(language, key, options), vars);
+
+  export function LocaleProvider({ children }) {
+    // Start from defaults so server and first client render match (avoids hydration
+    // mismatch); real preferences are applied in the effect below.
+    const [locale, setLocaleState] = useState(DEFAULT_LOCALE);
+    // Bumped whenever live FX rates change, to re-run formatPrice for consumers.
+    const [ratesVersion, setRatesVersion] = useState(0);
+    // Bumped whenever a new auto-translation is cached, to re-run t() for consumers.
+    const [translationVersion, setTranslationVersion] = useState(0);
+  
+    const persist = useCallback((next) => {
+      if (typeof window === 'undefined') return;
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      } catch {
+        // Ignore storage failures (private mode, quota) — in-memory locale still works.
+      }
+    }, []);
