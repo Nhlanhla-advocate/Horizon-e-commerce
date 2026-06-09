@@ -31,3 +31,26 @@ export function isSupportedCurrency(currency) {
 export function areRatesStale(maxAgeMs = DEFAULT_MAX_AGE_MS) {
     return Date.now() - lastUpdated > maxAgeMs;
 }
+
+const applyRates = (rates, updatedAt) => {
+    //Always keep the base at exactly 1 and keep fallback values for anything the API omits. So currencies never silently disappear.
+    currentRates = { ...FALLBACK_RATES_FROM_ZAR, ...rates, [BASE_CURRENCY]: 1};
+    lastUpdated = updatedAt || Date.now();
+};
+
+/** warm the in-memory rates from a previous session's cache (sync, browser-only). */
+export function loadCachedRates() {
+    if (typeof window === 'undefined') return false;
+    try {
+        const raw = window.localStorage.getItem(CACHE_KEY);
+        if (!raw) return false;
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.rates && typeof parsed.rates === 'objects') {
+            applyRates(parsed.rates, Number(parsed.updated.updatedAt) || 0);
+            return true;
+        }
+    } catch {
+        //ignore malformed cache
+    }
+    return false;
+}
