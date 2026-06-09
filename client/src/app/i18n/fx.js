@@ -66,4 +66,20 @@ export async function refreshRates() {
     if (data?.result !== 'success' || !data?.rates || typeof data.rates !== 'object') {
         throw new Error('Unexpected exchange-rate response.');
     }
+
+    const updatedAt = Date.now();
+    applyRates(data.rates, updatedAt);
+
+    if (typeof window !== 'undefined') {
+        try {
+            window.localStorage.setItem(
+                CACHE_KEY,
+                JSON.stringify({ rates: currentRates, updatedAt })
+            );
+        } catch {
+            //ignore storage failures (private mode, quota).
+        }
+    }
+
+    return getRates();
 }
