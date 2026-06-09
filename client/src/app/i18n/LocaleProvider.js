@@ -146,4 +146,31 @@ const resolveTemplate = (language, key, { allowMachineTranslation = true } = {})
         active = false;
       };
     }, [persist]);
+
+      // Live exchange rates: warm from cache, refresh if stale, then poll hourly.
+  useEffect(() => {
+    if (loadCachedRates()) {
+      setRatesVersion((v) => v + 1);
+    }
+
+    let active = true;
+    const sync = async () => {
+      try {
+        await refreshRates();
+        if (active) setRatesVersion((v) => v + 1);
+      } catch {
+        // Keep cached/fallback rates if the refresh fails.
+      }
+    };
+
+    if (areRatesStale(DEFAULT_MAX_AGE_MS)) {
+      sync();
+    }
+
+    const intervalId = setInterval(sync, DEFAULT_MAX_AGE_MS);
+    return () => {
+      active = false;
+      clearInterval(intervalId);
+    };
+  }, []);
     })
