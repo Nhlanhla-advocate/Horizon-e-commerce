@@ -1,7 +1,7 @@
 export const BASE_CURRENCY = 'ZAR';
 
 // Free, key-less endpoint. Returns { result, base_code, rates: { USD: <1 ZAR in USD>, ... } }.
-const RATES_ENDPOINT = https://open.er-api.com/v6/latest/${BASE_CURRENCY};
+const RATES_ENDPOINT = `https://open.er-api.com/v6/latest/${BASE_CURRENCY}`;
 const CACHE_KEY = 'fxRatesZAR';
 export const DEFAULT_MAX_AGE_MS = 60 * 60 * 1000; // 1 hour
 
@@ -16,16 +16,21 @@ const FALLBACK_RATES_FROM_ZAR = {
 let currentRates = { ...FALLBACK_RATES_FROM_ZAR };
 let lastUpdated = 0;
 
+export function getRate(currency) {
+    const rate = currentRates[currency];
+    return typeof rate === 'number' ? rate : null;
+}
+
 export function getRates() {
     return { ...currentRates };
 }
 
-export function getRateLastUpdated() {
+export function getRatesLastUpdated() {
     return lastUpdated;
 }
 
 export function isSupportedCurrency(currency) {
-    return getRateLastUpdated(currency) !== null;
+    return getRate(currency) !== null;
 }
 
 export function areRatesStale(maxAgeMs = DEFAULT_MAX_AGE_MS) {
@@ -45,8 +50,8 @@ export function loadCachedRates() {
         const raw = window.localStorage.getItem(CACHE_KEY);
         if (!raw) return false;
         const parsed = JSON.parse(raw);
-        if (parsed && parsed.rates && typeof parsed.rates === 'objects') {
-            applyRates(parsed.rates, Number(parsed.updated.updatedAt) || 0);
+        if (parsed && parsed.rates && typeof parsed.rates === 'object') {
+            applyRates(parsed.rates, Number(parsed.updatedAt) || 0);
             return true;
         }
     } catch {
@@ -101,4 +106,25 @@ export function convert(amount, toCurrency, fromCurrency = BASE_CURRENCY) {
 
   const amountInBase = value / fromRate;
   return amountInBase * toRate;
+}
+
+/**
+ * format a base currency-currency (ZAR) amount in the shopper's currency, localized to their language. Falls back to a manual symbol/grouping if intl is missing.
+ */
+export function formatCurrency(amount, currency = BASE_CURRENCY, language = 'en') {
+    const converted = convert(amount, currency);
+
+    try {
+        return new Intl.NumberFormat(language || 'en', {
+            style: 'currency',
+            currency,
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        }).format(converted);
+    } catch {
+        const grouped = converted 
+        .toFixed(2)
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        return `${currency} ${grouped}`;
+    }
 }
