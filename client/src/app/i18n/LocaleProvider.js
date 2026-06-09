@@ -173,4 +173,46 @@ const resolveTemplate = (language, key, { allowMachineTranslation = true } = {})
       clearInterval(intervalId);
     };
   }, []);
-    })
+
+  //Auto-translation cache: warm from storage and re-render as new strings land. 
+  useEffect(() => {
+    if (initTranslationCache()) {
+      setTranslationVersion((v) => v + 1);
+    }
+    const unsubscribe = subscribeTranslations(() => setTranslationVersion((v) => v + 1));
+    return unsubscribe;
+  }, []);
+
+  const value = useMemo(() => {
+    const t = (key, vars) => translate(locale.language, key, vars);
+    const formatPrice = (amount) => formatCurrency(amount, locale.currency, locale.language);
+    return {
+      language: locale.language,
+      currency: locale.currency,
+      setLocale,
+      t,
+      formatPrice,
+    };
+    // ratesVersion / translationVersion are intentional dependencies: they force
+    // formatPrice / t to recompute when live rates or new translations arrive.
+  }, [locale, setLocale, ratesVersion, translationVersion]);
+
+  return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
+}
+
+export function useLocale() {
+  const ctx = useContext(LocaleContext);
+  if (!ctx) {
+    // Safe fallback so a component rendered outside the provider still works.
+    return {
+      language: DEFAULT_LOCALE.language,
+      currency: DEFAULT_LOCALE.currency,
+      setLocale: () => {},
+      t: (key, vars) =>
+        translate(DEFAULT_LOCALE.language, key, vars, { allowMachineTranslation: false }),
+      formatPrice: (amount) =>
+        formatCurrency(amount, DEFAULT_LOCALE.currency, DEFAULT_LOCALE.language),
+    };
+  }
+  return ctx;
+}
