@@ -121,4 +121,29 @@ const resolveTemplate = (language, key, { allowMachineTranslation = true } = {})
     useEffect(() => {
       const cached = readCachedLocale();
       if (cached) setLocaleState(cached);
+
+      const token = typeof window !== 'undefined' ? window.localStorage.getItem('token') : null;
+      if (!token) return;
+  
+      let active = true;
+      (async () => {
+        try {
+          const res = await fetchWithUserAuth('/user/profile');
+          if (!active || !res.ok) return;
+          const user = await res.json();
+          const prefs = user?.preferences;
+          if (prefs && (prefs.language || prefs.currency)) {
+            const next = sanitize({ language: prefs.language, currency: prefs.currency });
+            setLocaleState(next);
+            persist(next);
+          }
+        } catch {
+          // Keep cached/default locale if the profile lookup fails.
+        }
+      })();
+  
+      return () => {
+        active = false;
+      };
+    }, [persist]);
     })
