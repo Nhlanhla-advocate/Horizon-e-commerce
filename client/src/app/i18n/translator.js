@@ -1,6 +1,6 @@
 const ENDPOINT =  'https://api.mymemory.translated.net/get';
 const STORAGE_KEY = 'i18nMtCache';
-const SOURCE_LANG = 'eng'
+const SOURCE_LANG = 'en';
 
 //How long before a failed translation may be retrieved.
 const RETRY_AFTER_MS = 60 * 1000; // 1 minute
@@ -75,8 +75,8 @@ const protectPlaceholders = (text) => {
   return { protectedText, tokens };
 };
 
-const restorePlaceholders = (text, tokens) => 
-  text.replace(/\[\[\[(\d+)\]\]\]/g, (match, index) => tokens[Number(index)]) ?? match;
+const restorePlaceholders = (text, tokens) =>
+  text.replace(/\[\[\s*(\d+)\s*\]\]/g, (match, index) => tokens[Number(index)] ?? match);
 
 /*
 Ensure a translation for text text into lang exists. Returns the cached value if present. Otherwise kicks off a one_shot fetch and notifies subscribers when it resolves. Safe to call repeatedly (deduped) and during render (no sync state changes)
@@ -100,7 +100,7 @@ export function requestTranslation(lang, text) {
 
   (async () => {
     try {
-      const url = `${ENDPOINT}? q=${encodeURIComponent(protectedText)}&langpair=${encodeURIComponent(`${SOURCE_LANG}|${lang}`)}`;
+      const url = `${ENDPOINT}?q=${encodeURIComponent(protectedText)}&langpair=${encodeURIComponent(`${SOURCE_LANG}|${lang}`)}`;
       const res = await fetch(url);
       if (!res.ok) throw new Error('Translation request failed.');
       const data = await res.json();
