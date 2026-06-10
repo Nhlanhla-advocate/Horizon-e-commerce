@@ -45,3 +45,4 @@ export const CURRENCIES = [
 ];
 
 export const DEFAULT_LOCALE = { language: 'en', currency: 'ZAR' };
+

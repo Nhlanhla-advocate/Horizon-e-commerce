@@ -217,6 +217,7 @@ const CategoryProductCarousel = ({
   addToCart,
   formatPrice,
 }) => {
+  const { t } = useLocale();
   const [isPaused, setIsPaused] = useState(false);
   const canSlide = products.length > VISIBLE_CAROUSEL_ITEMS;
   const trackProducts = canSlide ? [...products, ...products] : products;
@@ -261,10 +262,10 @@ const CategoryProductCarousel = ({
       {canSlide && (
         <p className="category-carousel-hint">
           {isPaused
-            ? 'Paused — move away and hover the first product to browse again'
+            ? t('category.hint.paused')
             : isSliding
-              ? 'Browsing products… click any card to pause and interact'
-              : 'Hover the first product to browse more'}
+              ? t('category.hint.browsing')
+              : t('category.hint.hover')}
         </p>
       )}
     </div>
@@ -415,7 +416,7 @@ const CategoryPage = () => {
                 </div>
                 <input
                   className="navbar-search-input"
-                  placeholder="Search category..."
+                  placeholder={t('category.search')}
                   type="search"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -476,7 +477,7 @@ const CategoryPage = () => {
       )}
 
       {!isLoading && !fetchError && hasSlidableCategories && sortedCategoryNames.length > 0 && (
-        <p className="category-page-hint">Hover the first product to browse more</p>
+        <p className="category-page-hint">{t('category.hint.hover')}</p>
       )}
 
       {!isLoading &&
@@ -494,7 +495,7 @@ const CategoryPage = () => {
                 onClick={() => toggleCategoryExpanded(categoryName)}
                 aria-expanded={isExpanded}
               >
-                {isExpanded ? 'Show Less' : 'View Products'}
+                {isExpanded ? t('category.showLess') : t('category.viewProducts')}
               </button>
             </div>
             {isExpanded ? (
