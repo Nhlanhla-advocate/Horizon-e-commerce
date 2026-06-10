@@ -46,12 +46,12 @@ export default function LocationDetector({ language, currency, onApply, applying
             const position = await getCurrentPosition();
             const { latitude, longitude } = position.coords;
 
-                const response = await fetch(
-                    $`{REVERSE_GEOCODE_URL}?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
-                  );
-                  if (!response.ok) {
-                    throw new Error('Could not look up your country. Please try again.');
-                  }
+            const response = await fetch(
+                `${REVERSE_GEOCODE_URL}?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+            );
+            if (!response.ok) {
+                throw new Error('Could not look up your country. Please try again.');
+            }
 
             const data = await response.json();
             const countryCode = data.countryCode || '';
