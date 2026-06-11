@@ -112,4 +112,11 @@ export const COUNTRY_LOCALE = {
     GH: { language: 'en', currency: 'USD' },
     ZW: { language: 'en', currency: 'USD' },
     BW: { language: 'en', currency: 'USD' }
+};
+
+const normalizeCode = (code) => String(code || '').trim().toUpperCase();
+
+export const getLocaleForCountry = (countryCode) => {
+    const match = COUNTRY_LOCALE[normalizeCode(countryCode)];
+    return match || DEFAULT_LOCALE;
 }
