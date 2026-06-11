@@ -46,3 +46,13 @@ export const CURRENCIES = [
 
 export const DEFAULT_LOCALE = { language: 'en', currency: 'ZAR' };
 
+// Currencies are constrained to the store's currencies list (ZAR/USD). so the detector never suggests a currency the preferences dropdown doesn't offer.
+export const COUNTRY_LOCALE = {
+    ZA: { language: 'en', currency: 'ZAR' },
+    NA: { language: 'en', currency: 'ZAR' },
+    US: { language: 'en', currency: 'USD' },
+    GB: { language: 'en', currency: 'USD' },
+    IE: { language: 'en', currency: 'USD' },
+    CA: { language: 'en', currency: 'USD' },
+    AU: { language: 'en', currency: 'USD' },
+}
