@@ -99,4 +99,17 @@ export const COUNTRY_LOCALE = {
     HK: { language: 'zh', currency: 'USD' },
     TW: { language: 'zh', currency: 'USD' },
     JP: { language: 'ja', currency: 'USD' },
+    KR: { language: 'ko', currency: 'USD' },
+    TH: { language: 'th', currency: 'USD' },
+    VN: { language: 'vi', currency: 'USD' },
+    ID: { language: 'id', currency: 'USD' },
+    MY: { language: 'ms', currency: 'USD' },
+    SG: { language: 'en', currency: 'USD' },
+    PH: { language: 'en', currency: 'USD' },
+    NG: { language: 'en', currency: 'USD' },
+    KE: { language: 'sw', currency: 'USD' },
+    TZ: { language: 'sw', currency: 'USD' },
+    GH: { language: 'en', currency: 'USD' },
+    ZW: { language: 'en', currency: 'USD' },
+    BW: { language: 'en', currency: 'USD' }
 }
