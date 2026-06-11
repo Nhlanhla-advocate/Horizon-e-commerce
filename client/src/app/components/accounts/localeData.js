@@ -120,3 +120,9 @@ export const getLocaleForCountry = (countryCode) => {
     const match = COUNTRY_LOCALE[normalizeCode(countryCode)];
     return match || DEFAULT_LOCALE;
 }
+
+export const getLanguageLabel = (code) =>
+    LANGUAGES.find((lang) => lang.code === code)?.label || code;
+
+export const getCurrencyLabel = (code) =>
+    CURRENCIES.find((cur) => cur.code === code)?.label || code;
