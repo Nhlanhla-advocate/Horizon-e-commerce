@@ -341,3 +341,18 @@ exports.adminSignOut = async (req, res) => {
 };
 
 // Get Admin Profile
+
+exports.getAdminProfile = async (req, res) => {
+    try {
+        const account = assertAdminAccount(req.user);
+        if (!account) return;
+
+        const doc = loadAdminDocument(account);
+        if (!doc) {
+            return res.status(404).json({
+                success: false,
+                error: 'Admin not found'
+            });
+        }
+    }
+}
