@@ -1,7 +1,18 @@
 const Admin = require('../models/admin');
 const User = require('../models/user');
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { deleteLocalUploadIfOwned } = require('../utilities/profileImageStorage');
+const { generateSecret, keyuri, verifyToken } = require('../utilities/totp');
+const {
+    assertAdminAccount,
+    loadAdminDocument,
+    buildProfileUpdates,
+    buildNotificationUpdates,
+    ensureNestedDefaults,
+    serializeAdminProfile,
+    recordAdminLogin,
+    checkUsernameAvailable
+} = require('../utilities/adminProfileHelpers');
 
 // Admin Sign Up
 exports.adminSignUp = async (req, res) => {
@@ -159,6 +170,7 @@ exports.adminSignIn = async (req, res) => {
                     // Verify password
                     const passwordMatch = await userRegex.comparePassword(password);
                     if (!passwordMatch) {
+                        await recordAdminLogin(userRegex, req, { success: false });
                         return res.status(400).json({ 
                             success: false,
                             error: "Invalid credentials" 
@@ -201,6 +213,7 @@ exports.adminSignIn = async (req, res) => {
                 // Verify password
                 const passwordMatch = await user.comparePassword(password);
                 if (!passwordMatch) {
+                    await recordAdminLogin(user, req, { success: false });
                     return res.status(400).json({ 
                         success: false,
                         error: "Invalid credentials" 
@@ -254,15 +267,19 @@ exports.adminSignIn = async (req, res) => {
             // Verify password using the model's method or bcrypt directly
             const match = await admin.comparePassword(password);
             if (!match) {
+                await recordAdminLogin(admin, req, { success: false });
                 return res.status(400).json({ 
                     success: false,
                     error: "Invalid credentials" 
                 });
             }
 
-            // Update last login timestamp
-            admin.lastLogin = new Date();
-            await admin.save();
+            await recordAdminLogin(admin, req, { success: true });
+        } else {
+            const userDoc = await User.findById(admin._id);
+            if (userDoc) {
+                await recordAdminLogin(userDoc, req, { success: true });
+            }
         }
 
         console.log('[ADMIN SIGNIN] Admin authenticated successfully:', admin.email, 'Role:', admin.role, 'From collection:', isUserCollection ? 'User' : 'Admin');
@@ -324,97 +341,3 @@ exports.adminSignOut = async (req, res) => {
 };
 
 // Get Admin Profile
-exports.getAdminProfile = async (req, res) => {
-    try {
-        // Admin is already attached to req by authMiddleware
-        // It can be from either Admin or User collection
-        const admin = req.admin || req.user;
-        
-        if (!admin) {
-            return res.status(404).json({ 
-                success: false,
-                error: "Admin not found" 
-            });
-        }
-
-        // Verify this is actually an admin (check role)
-        // Log detailed admin information for debugging
-        const adminRole = admin.role;
-        console.log('[GET ADMIN PROFILE] Admin object details:', {
-            id: admin._id?.toString(),
-            email: admin.email,
-            role: adminRole,
-            roleType: typeof adminRole,
-            status: admin.status,
-            hasAdminRole: adminRole === 'admin' || adminRole === 'super_admin',
-            isAdmin: adminRole === 'admin',
-            isSuperAdmin: adminRole === 'super_admin',
-            isMongooseDoc: admin.toObject !== undefined,
-            rawRole: adminRole
-        });
-        
-        // More robust role check - handle undefined, null, and string comparison
-        // First check direct comparison (most reliable)
-        const isAdminRoleDirect = adminRole === 'admin' || adminRole === 'super_admin';
-        
-        // Also try normalized comparison as fallback
-        const userRoleNormalized = adminRole?.toString().toLowerCase().trim();
-        const isAdminRoleNormalized = userRoleNormalized === 'admin' || userRoleNormalized === 'super_admin';
-        
-        const isAdminRole = isAdminRoleDirect || isAdminRoleNormalized;
-        
-        // Explicitly block users with role "user"
-        const isUserRole = adminRole === 'user' || userRoleNormalized === 'user';
-        
-        if (isUserRole) {
-            console.log('[GET ADMIN PROFILE]  Access denied - user has "user" role and cannot access admin dashboard. Role:', adminRole);
-            return res.status(403).json({ 
-                success: false,
-                error: "Access denied. Admin privileges required." 
-            });
-        }
-        
-        if (!isAdminRole) {
-            console.log('[GET ADMIN PROFILE]  Access denied - user does not have admin role.');
-            console.log('[GET ADMIN PROFILE] Role details:', {
-                raw: adminRole,
-                normalized: userRoleNormalized,
-                directCheck: isAdminRoleDirect,
-                normalizedCheck: isAdminRoleNormalized
-            });
-            return res.status(403).json({ 
-                success: false,
-                error: "Access denied. Admin privileges required." 
-            });
-        }
-        
-        console.log('[GET ADMIN PROFILE]  Admin role verified:', adminRole);
-
-        // Create admin object without password
-        // Handle both Admin and User models (User model might not have lastLogin)
-        const adminData = {
-            _id: admin._id,
-            username: admin.username,
-            email: admin.email,
-            role: admin.role,
-            status: admin.status,
-            lastLogin: admin.lastLogin,
-            createdAt: admin.createdAt,
-            updatedAt: admin.updatedAt
-        };
-
-        console.log('[GET ADMIN PROFILE] Returning admin profile for:', admin.email, 'Role:', admin.role);
-
-        res.json({ 
-            success: true,
-            admin: adminData
-        });
-    } catch (error) {
-        console.error("Get admin profile error:", error);
-        res.status(500).json({ 
-            success: false,
-            error: "Server error", 
-            message: error.message 
-        });
-    }
-};
