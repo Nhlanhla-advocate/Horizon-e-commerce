@@ -389,5 +389,29 @@ exports.updateAdminProfile = async (req, res) => {
                 return res.status(400).json({ success: false, error: usernameCheck.message });
             }
         }
+
+        const  Model = account.constructor?.modelName === 'User' ? User : Admin;
+        const doc = await Model.findByIdAndUpdate(
+            account._id,
+            { $set: updates },
+            { new: true, runValidators: true}
+        );
+
+        if (!doc) {
+            return res.status(404).json({ success: false, error: 'Admin not found' });
+        }
+
+        res.json({ 
+            success: true,
+            message: 'Profile updated successfully',
+            admin: serializeAdminProfile(doc)
+        });
+    } catch (error) {
+        console.error('Update admin profile error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Server error',
+            message: error.message
+        });
     }
-}
+};
