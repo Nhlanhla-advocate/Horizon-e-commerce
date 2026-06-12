@@ -65,6 +65,27 @@ addresses: [AddressSchema],
 avatar: { type: String },
 profileImage: [{ type: String }],
 
+// Admin-only settings (used when role is admin / super_admin / manager / support)
+twoFactor: {
+    enabled: { type: Boolean, default: false },
+    secret: { type: String },
+    tempSecret: { type: String },
+    enabledAt: { type: Date }
+},
+loginHistory: [{
+    at: { type: Date, default: Date.now },
+    ip: { type: String },
+    userAgent: { type: String },
+    success: { type: Boolean, default: true }
+}],
+notificationPreferences: {
+    orderAlerts: { type: Boolean, default: true },
+    stockAlerts: { type: Boolean, default: true },
+    reviewAlerts: { type: Boolean, default: false },
+    securityAlerts: { type: Boolean, default: true },
+    weeklyReports: { type: Boolean, default: false }
+},
+
 // Site activity (updated by the app, not edited directly by the user)
 activity: {
     lastLoginAt: { type: Date },

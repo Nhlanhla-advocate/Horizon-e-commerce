@@ -375,6 +375,58 @@ const validateAdminSignIn = [
   check("password").not().isEmpty().withMessage("Password is required"),
 ];
 
+const validateUpdateAdminProfile = [
+  body("username")
+    .optional()
+    .trim()
+    .isLength({ min: 3 })
+    .withMessage("Username must be at least 3 characters long"),
+  body("personalInfo")
+    .optional()
+    .isObject()
+    .withMessage("Personal info must be an object"),
+  body("personalInfo.firstName").optional().trim().isLength({ max: 100 }),
+  body("personalInfo.lastName").optional().trim().isLength({ max: 100 }),
+  body("personalInfo.displayName").optional().trim().isLength({ max: 100 }),
+  body("personalInfo.phone").optional().trim().isLength({ max: 30 }),
+  body("personalInfo.bio")
+    .optional()
+    .isLength({ max: 500 })
+    .withMessage("Bio cannot exceed 500 characters"),
+];
+
+const validateAdminNotificationPreferences = [
+  body("notificationPreferences")
+    .optional()
+    .isObject()
+    .withMessage("Notification preferences must be an object"),
+  body("orderAlerts").optional().isBoolean(),
+  body("stockAlerts").optional().isBoolean(),
+  body("reviewAlerts").optional().isBoolean(),
+  body("securityAlerts").optional().isBoolean(),
+  body("weeklyReports").optional().isBoolean(),
+  body("notificationPreferences.orderAlerts").optional().isBoolean(),
+  body("notificationPreferences.stockAlerts").optional().isBoolean(),
+  body("notificationPreferences.reviewAlerts").optional().isBoolean(),
+  body("notificationPreferences.securityAlerts").optional().isBoolean(),
+  body("notificationPreferences.weeklyReports").optional().isBoolean(),
+];
+
+const validateTotpToken = [
+  body("token")
+    .trim()
+    .matches(/^\d{6}$/)
+    .withMessage("A valid 6-digit authenticator code is required"),
+];
+
+const validateDisableTwoFactor = [
+  body("currentPassword").notEmpty().withMessage("Current password is required"),
+  body("token")
+    .trim()
+    .matches(/^\d{6}$/)
+    .withMessage("A valid 6-digit authenticator code is required"),
+];
+
 // Single export statement for all validators and handlers
 module.exports = {
   handleErrors,
@@ -393,4 +445,8 @@ module.exports = {
   validateAddAddress,
   validateUpdateAddress,
   validateAddressId,
+  validateUpdateAdminProfile,
+  validateAdminNotificationPreferences,
+  validateTotpToken,
+  validateDisableTwoFactor,
 };

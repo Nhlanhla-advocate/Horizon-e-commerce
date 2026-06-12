@@ -4,18 +4,33 @@ const router = express.Router();
 const {
   validateAdminSignUp,
   validateAdminSignIn,
-  handleValidationErrors
+  validateChangePassword,
+  validateUpdateAdminProfile,
+  validateAdminNotificationPreferences,
+  validateTotpToken,
+  validateDisableTwoFactor,
+  handleValidationErrors,
+  validate
 } = require('../utilities/validation');
 
 const {
   adminSignUp,
   adminSignIn,
   adminSignOut,
-  getAdminProfile
+  getAdminProfile,
+  updateAdminProfile,
+  changeAdminPassword,
+  uploadAdminAvatar,
+  getAdminLoginHistory,
+  updateAdminNotificationPreferences,
+  setupAdminTwoFactor,
+  verifyAdminTwoFactor,
+  disableAdminTwoFactor
 } = require('../controllers/adminController');
 
 const { getAllOrders } = require('../controllers/orderController');
 const categoryRoutes = require('./category');
+const { parseAvatarUpload } = require('../middleware/profileUpload');
 
 const { authMiddleware } = require('../middleware/authMiddleware');
 
@@ -28,8 +43,16 @@ router.post('/signin', ...validateAdminSignIn, handleValidationErrors, adminSign
 // Admin logout (protected route)
 router.post('/signout', authMiddleware, adminSignOut);
 
-// Get admin profile (protected route)
+// Admin account / profile (protected)
 router.get('/profile', authMiddleware, getAdminProfile);
+router.put('/profile', authMiddleware, ...validateUpdateAdminProfile, validate, updateAdminProfile);
+router.put('/profile/password', authMiddleware, ...validateChangePassword, validate, changeAdminPassword);
+router.post('/profile/upload/avatar', authMiddleware, parseAvatarUpload, uploadAdminAvatar);
+router.get('/profile/login-history', authMiddleware, getAdminLoginHistory);
+router.put('/profile/notifications', authMiddleware, ...validateAdminNotificationPreferences, validate, updateAdminNotificationPreferences);
+router.post('/profile/2fa/setup', authMiddleware, setupAdminTwoFactor);
+router.post('/profile/2fa/verify', authMiddleware, ...validateTotpToken, validate, verifyAdminTwoFactor);
+router.delete('/profile/2fa', authMiddleware, ...validateDisableTwoFactor, validate, disableAdminTwoFactor);
 
 // Get all orders with filters (protected route - admin only)
 router.get('/orders', authMiddleware, getAllOrders);
