@@ -354,5 +354,33 @@ exports.getAdminProfile = async (req, res) => {
                 error: 'Admin not found'
             });
         }
+
+        res.json({
+            success: true,
+            admin: serializeAdminProfile(doc)
+        });
+    } catch (error) {
+        console.error('Get admin profile error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Server error',
+            message: error.message
+        });
+    }
+};
+
+//Update admin profile (username, personal info)
+exports.updateAdminProfile = async (req, res) => {
+    try {
+        const account = assertAdminAccount(req, res);
+        if (!account) return;
+
+        const updates = buildProfileUpdates(req.body);
+        if (Object.keys(updates).length === 0) {
+            return res.staus(400).json({
+                success: false,
+                error: 'No valid profile fields provided'
+            });
+        }
     }
 }
