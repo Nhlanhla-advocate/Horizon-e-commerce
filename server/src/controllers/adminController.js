@@ -382,5 +382,12 @@ exports.updateAdminProfile = async (req, res) => {
                 error: 'No valid profile fields provided'
             });
         }
+
+        if (updates.username) {
+            const usernameCheck = await checkUsernameAvailable(updates.username, account._id);
+            if (!usernameCheck.ok) {
+                return res.status(400).json({ success: false, error: usernameCheck.message });
+            }
+        }
     }
 }
