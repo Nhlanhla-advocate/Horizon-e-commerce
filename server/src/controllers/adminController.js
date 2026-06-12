@@ -415,3 +415,34 @@ exports.updateAdminProfile = async (req, res) => {
         });
     }
 };
+
+// Change admin password
+exports.changeAdminPassword = async (req, res) => {
+    try {
+        const account = assertAdminAccount(req, res);
+        if (!account) return;
+
+        const { currentPassword, newPassword } = req.body;
+        const doc = await loadAdminDocument(account);
+        if (!doc) {
+            return res.status(404).json({ success: false, error: 'Admin not found' });
+        }
+
+        const isMatch = await doc.comparePassword(currentPassword);
+        if (!isMatch) {
+            return res.status(400).json({ success: false, error: 'Current password is incorrect' });
+        }
+
+        doc.password = newPassword;
+        await doc.save();
+
+        res.json({ success: true, message: 'Password updated successfully' });
+    } catch (error) {
+        console.error('Change admin password error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Server error',
+            message: error.message
+        });
+    }
+};
