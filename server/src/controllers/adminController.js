@@ -598,5 +598,45 @@ exports.setupAdminTwoFactor = async (req, res) => {
     }
 };
 
-//Verify 2FA code
-}
+// Verify TOTP code and enable 2FA
+exports.verifyAdminTwoFactor = async (req, res) => {
+    try {
+        const account = assertAdminAccount(req, res);
+        if (!account) return;
+
+        const { token } = req.body;
+        const doc = await loadAdminDocument(account);
+        if (!doc) {
+            return res.status(404).json({ success: false, error: 'Admin not found' });
+        }
+
+        ensureNestedDefaults(doc);
+        const secret = doc.twoFactor.tempSecret || doc.twoFactor.secret;
+        if (!secret) {
+            return res.status(400).json({ success: false, error: 'Run 2FA setup first' });
+        }
+
+        if (!verifyToken(token, secret)) {
+            return res.status(400).json({ success: false, error: 'Invalid verification code' });
+        }
+
+        doc.twoFactor.enabled = true;
+        doc.twoFactor.secret = secret;
+        doc.twoFactor.tempSecret = undefined;
+        doc.twoFactor.enabledAt = new Date();
+        await doc.save();
+
+        res.json({
+            success: true,
+            message: 'Two-factor authentication enabled',
+            twoFactor: { enabled: true }
+        });
+    } catch (error) {
+        console.error('Verify admin 2FA error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Server error',
+            message: error.message
+        });
+    }
+};
