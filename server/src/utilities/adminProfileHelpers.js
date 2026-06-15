@@ -120,6 +120,25 @@ const serializeAdminProfile = (doc) => ({
     updatedAt: doc.updatedAt
 });
 
+/** Ensure the request carries a super-admin account. */
+const assertSuperAdminAccount = (req, res) => {
+    const account = req.admin || req.user;
+    if (!account) {
+        res.status(401).json({ success: false, error: 'Authentication required' });
+        return null;
+    }
+    if (account.role !== 'super_admin') {
+        res.status(403).json({ success: false, error: 'Access denied. Super admin only.' });
+        return null;
+    }
+    return account;
+};
+
+const serializeSuperAdminProfile = (doc) => ({
+    ...serializeAdminProfile(doc),
+    permissions: Array.isArray(doc.permissions) ? doc.permissions : []
+});
+
 const recordAdminLogin = async (account, req, { success = true } = {}) => {
     const doc = await loadAdminDocument(account);
     if (!doc) return;
@@ -166,11 +185,13 @@ module.exports = {
     getClientIp,
     getUserAgent,
     assertAdminAccount,
+    assertSuperAdminAccount,
     loadAdminDocument,
     buildProfileUpdates,
     buildNotificationUpdates,
     ensureNestedDefaults,
     serializeAdminProfile,
+    serializeSuperAdminProfile,
     recordAdminLogin,
     checkUsernameAvailable
 };
