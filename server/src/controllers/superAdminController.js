@@ -1,33 +1,44 @@
 const User = require('../models/user');
+const Admin = require('../models/admin');
 const Order = require('../models/order');
 const AuditLog = require('../models/auditLog');
 const Dispute = require('../models/dispute');
 const mongoose = require('mongoose');
-const user = require('../models/user');
+const { logAudit } = require('../utilities/auditLogHelpers');
+const {
+    sanitizeStaff,
+    STAFF_ROLES,
+    findStaffAccount
+} = require('./superAdminManagementController');
 
-const ROLES = ['admin', 'manager', 'support'];
+const ROLES = STAFF_ROLES;
 const VALID_ORDER_STATUSES = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
-
-async function logAudit(userId, action, resource, resourceId, details, req) {
-    await AuditLog.create({
-        userId,
-        action,
-        resource,
-        resourceId: resourceId || undefined,
-        details: details || {},
-        ip: req?.ip || req?.get?.('user-agent')
-    });
-}
+const ALL_PERMISSIONS = [
+    'manage_products',
+    'manage_orders',
+    'view_users',
+    'manage_users',
+    'manage_admins',
+    'view_audit_logs',
+    'view_system_activity',
+    'suspend_ban_users',
+    'override_orders'
+];
 
 //---1. Create, edit, delete admin account (superadmin only)---
 async function createAdmin(req, res) {
     try {
         const { email, username, password, role, permissions } = req.body;
         if (!email || !username || !password) {
-            return res.status(400).json({ success: false, message: 'Email, username and password are required.'})
-        }const assignedRole = role && ROLES.includes(role) ? role : 'admin';
-        const existing = await User.findOne({ $or: [{ email }, { username }] });
-        if (existing) {
+            return res.status(400).json({ success: false, message: 'Email, username and password are required.'});
+        }
+        const assignedRole = role && ROLES.includes(role) ? role : 'admin';
+        const resolvedPermissions = Array.isArray(permissions)
+            ? permissions.filter((p) => ALL_PERMISSIONS.includes(p))
+            : [];
+        const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+        const existingAdmin = await Admin.findOne({ $or: [{ email }, { username }] });
+        if (existingUser || existingAdmin) {
             return res.status(400).json({ success: false, message: 'User with this email or username already exists.'});
         }
         const admin = await User.create({
@@ -35,7 +46,7 @@ async function createAdmin(req, res) {
             username,
             password,
             role: assignedRole,
-            permissions: Array.isArray(permissions) ? permissions : [],
+            permissions: resolvedPermissions,
             status: 'active'
         });
         await logAudit(req.user._id,'create_admin','user',admin._id, { email, username, role: assignedRole }, req);
@@ -57,27 +68,29 @@ async function updateAdmin(req, res) {
         if (!mongoose.Types.ObjectId.isValid(adminId)) {
             return res.status(400).json({ success: false, message: 'Invalid admin ID.'});
         }
-        const admin = await User.findById(adminId);
-        if (!admin) {
+
+        const found = await findStaffAccount(adminId);
+        if (!found) {
+            return res.status(404).json({ success: false, message: 'Admin not found.'});
+        }
+        const admin = found.doc;
+        if (admin.role === 'super_admin') {
             return res.status(403).json({ success: false, message: 'Cannot edit another super admin.'});
         }
-        if (ROLES.includes(admin.role) || admin.role === 'admin') {
-            //staff admin
-        } else {
-            return res.status(400).json({ success: false, message: 'Target user is not an admin.'});
+        if (String(admin._id) === String(req.user._id)) {
+            return res.status(403).json({ success: false, message: 'Use profile settings to edit your own account.'});
         }
+
         if (username != null) admin.username = username;
         if (email != null) admin.email = email;
         if (role != null && ROLES.includes(role)) admin.role = role;
-        if (Array.isArray(permissions)) admin.permissions = permissions;
+        if (Array.isArray(permissions)) {
+            admin.permissions = permissions.filter((p) => ALL_PERMISSIONS.includes(p));
+        }
         if (status != null && ['active', 'inactive'].includes(status)) admin.status = status;
         await admin.save();
-        await logAudit(req.user._id, 'update_admin', 'user', admin._id, { email: admin.email, role: admin.role },req);
-        const out = admin.toObject();
-        delete out.password;
-        delete out.refreshToken;
-        delete out.tokenBlacklist;
-        return res.json({ success: true, data: out });
+        await logAudit(req.user._id, 'update_admin', 'admin', admin._id, { email: admin.email, role: admin.role, accountSource: found.source }, req);
+        return res.json({ success: true, data: sanitizeStaff(admin, found.source) });
     } catch (err) {
         console.error('updateAdmin error:', err);
         return res.status(500).json({ success: false, error: err.message });
@@ -88,21 +101,22 @@ async function deleteAdmin(req, res) {
     try {
         const { adminId } = req.params;
         if (!mongoose.Types.ObjectId.isValid(adminId)) {
-            return res.status(400).json({ success: false, message: 'invalid adminID.'});
+            return res.status(400).json({ success: false, message: 'Invalid admin ID.'});
         }
-        const admin = await User.findById(adminId);
-        if (!admin) {
+
+        const found = await findStaffAccount(adminId);
+        if (!found) {
             return res.status(404).json({ success: false, message: 'Admin not found.'});
         }
-        if (admin.role === 'super_admin') {
+        if (found.doc.role === 'super_admin') {
             return res.status(403).json({ success: false, message: 'Cannot delete a super admin.'});
         }
-        const staffRoles = ['admin', 'manager', 'support'];
-        if (!staffRoles.includes(admin.role)) {
-            return res.status(400).json({ success: false, message: 'Target user is not an admin.'});
+        if (String(found.doc._id) === String(req.user._id)) {
+            return res.status(403).json({ success: false, message: 'You cannot delete your own account.'});
         }
-        await User.findByIdAndDelete(adminId);
-        await logAudit(req.user._id, 'delete_admin', 'user', adminId, { email: admin.email }, req);
+
+        await found.model.findByIdAndDelete(adminId);
+        await logAudit(req.user._id, 'delete_admin', 'admin', adminId, { email: found.doc.email, accountSource: found.source }, req);
         return res.json({ success: true, message: 'Admin deleted successfully.'});
     } catch (err) {
         console.error('deleteAdmin error:', err);
@@ -116,26 +130,27 @@ async function assignRole(req, res) {
         const { adminId } = req.params;
         const { role, permissions } = req.body;
         if (!mongoose.Types.ObjectId.isValid(adminId)) {
-            return res.status(400).json({ success: false, message: 'invalid admin ID.'});
+            return res.status(400).json({ success: false, message: 'Invalid admin ID.'});
         }
-        const admin = await User.findById(adminId);
-        if(!admin) {
-            return res.status(404).json({ success: false, message: 'User not found.'});
+
+        const found = await findStaffAccount(adminId);
+        if (!found) {
+            return res.status(404).json({ success: false, message: 'Admin not found.'});
         }
-        if (admin.role ==='super_admin') {
-            return res.status(403).json({ success: false, message: 'Cannot change supoer admin role.'});
+        const admin = found.doc;
+        if (admin.role === 'super_admin') {
+            return res.status(403).json({ success: false, message: 'Cannot change super admin role.'});
         }
+
         if (role && ROLES.includes(role)) {
             admin.role = role;
         }
         if (Array.isArray(permissions)) {
-            admin.permissions = permissions;
+            admin.permissions = permissions.filter((p) => ALL_PERMISSIONS.includes(p));
         }
         await admin.save();
-        await logAudit(req.user._id, 'assign_role', 'user', admin._id, { role: admin.role, permissions: admin.permissions }, req);
-        const out = admin.toObject();
-        delete out.password;
-        return res.json({ success: true, data: out });
+        await logAudit(req.user._id, 'assign_role', 'admin', admin._id, { role: admin.role, permissions: admin.permissions, accountSource: found.source }, req);
+        return res.json({ success: true, data: sanitizeStaff(admin, found.source) });
     } catch (err) {
         console.error('assignRole error:', err);
         return res.status(500).json({ success: false, error: err.message });
@@ -145,12 +160,23 @@ async function assignRole(req, res) {
 //---3. List admins (who can access what is enforced by requireSuperAdmin on route)---
 async function listAdmins(req, res) {
     try {
-        const filter = { role: { $in: ['admin', 'manager', 'support', 'super_admin']}};
-        const admins = await User.find(filter)
-        .select('-password -refreshToken -tokenBlacklist -resetPasswordToken -resetPasswordExpires')
-        .sort({ createdAt: -1 })
-        .lean();
-        return res.json({ success: true, data: admins });
+        const [userAdmins, adminAccounts] = await Promise.all([
+            User.find({ role: { $in: ['admin', 'manager', 'support', 'super_admin'] } })
+                .select('-password -refreshToken -tokenBlacklist -resetPasswordToken -resetPasswordExpires -twoFactor.secret -twoFactor.tempSecret')
+                .sort({ createdAt: -1 })
+                .lean(),
+            Admin.find({ role: { $in: ['admin', 'super_admin'] } })
+                .select('-password -twoFactor.secret -twoFactor.tempSecret')
+                .sort({ createdAt: -1 })
+                .lean()
+        ]);
+
+        const data = [
+            ...userAdmins.map((item) => sanitizeStaff(item, 'user')),
+            ...adminAccounts.map((item) => sanitizeStaff(item, 'admin'))
+        ];
+
+        return res.json({ success: true, data });
     } catch (err) {
         console.error('listAdmins error:', err);
         return res.status(500).json({ success: false, error: err.message });
@@ -286,7 +312,7 @@ async function overrideOrder(req, res) {
     }
 }
 
-// ---6. Dispute and refunds ---
+// ---6. Disputes ---
 async function listDisputes(req, res) {
     try {
         const { status, type } = req.query;
@@ -294,7 +320,7 @@ async function listDisputes(req, res) {
         if (status) filter.status = status;
         if (type) filter.status = status;
         if (type) filter.type = type;
-        const dispute = await Dispute.find(filter)
+        const disputes = await Dispute.find(filter)
         .populate('orderId', 'totalPrice status createdAt')
         .populate('userId', 'username email')
         .populate('assignedTo', 'username email')
@@ -310,16 +336,15 @@ async function listDisputes(req, res) {
 
 async function createDispute(req, res) {
     try {
-        const { orderId, userId, type, reason, amount } = req.body;
+        const { orderId, userId, type, reason } = req.body;
         if (!orderId || !userId) {
             return res.status(400).json({ success: false, message: 'orderId and userId are required.'});
         }
         const dispute = await Dispute.create({ 
             orderId,
             userId,
-            type: type || 'refund',
+            type: type || 'general',
             reason: reason || '',
-            amount: amount || null,
             status: 'open'
         });
         await logAudit(req.user._id, 'creatte_dispute', 'dispute', dispute._id, { orderId, type: dispute.type }, req);
@@ -359,7 +384,7 @@ async function resolveDispute(req, res) {
         if (!mongoose.Types.ObjectId.isValid(disputeId)) {
             return res.status(400).json({ success: false, message: 'Invalid dispute ID.'});
         }
-        const ValidStatuses = ['resolved', 'rejected'];
+        const validStatuses = ['resolved', 'rejected'];
         if (!status || !validStatuses.includes(status)) {
             return res.status(400).json({ success: false, message: 'status must be resolved or rejected.'});
         }
@@ -372,44 +397,15 @@ async function resolveDispute(req, res) {
         dispute.resolvedBy = req.user._id;
         dispute.resolvedAt = new Date();
         await dispute.save();
-        if (status === 'resolved' && dispute.type === 'refund') {
-            await Order.findByIdAndUpdate(dispute.orderId, {
-                refundStatus: 'refunded',
-                refundedAt: new Date(),
-                refundedBy: req.user._id
-            });
-        }
         await logAudit(req.user._id, 'resolve_dispute', 'dispute', dispute._id, { status, resolution }, req);
         return res.json({ success: true, data: dispute });
-      } catch (err) {
+    } catch (err) {
         console.error('resolveDispute error:', err);
         return res.status(500).json({ success: false, error: err.message });
-      }
     }
+}
 
-    async function processRefund(req, res) {
-        try {
-            const { orderId } = req.params;
-            if (!mongoose.Types.ObjectId.isValid(orderId)) {
-                return res.status(400).json({ success: false, message: 'Invalid order ID.'});
-            }
-            const order = await Order.findById(orderId);
-            if (!order) {
-                return res.status(404).json({ success: false, message: 'Order not found.'});
-            }
-            order.refundStatus = 'refunded';
-            order.refundedAt = new Date();
-            order.refundedBy = req.user._id;
-            await order.save();
-            await logAudit(req.user._id, 'process_refund', 'order', order._id, { amount: order.totalPrice }, req);
-            return res.json({ success: true, message: 'Refund processed.', data: order });
-          } catch (err) {
-            console.error('processRefund error:', err);
-            return res.status(500).json({ success: false, error: err.message });
-        }
-    }
-
-    //---7. Audit logs---
+//---7. Audit logs---
     async function getAuditLogs(req, res) {
         try {
             const { page = 1, limit = 50, userId, action, resource, startDate, endDate } = req.query;
@@ -437,7 +433,6 @@ async function resolveDispute(req, res) {
             ]);
             return res.json({
                 success: true,
-                data: logs,
                 data: logs,
                 pagination: { total, pages: Math.ceil(total / parseInt(limit)), page: parseInt(page), limit: parseInt(limit)}
             });
@@ -474,69 +469,6 @@ async function resolveDispute(req, res) {
         }
     }
 
-    //--- 9. Failed payments and suspicious behavior---
-    async function getFailedPayments(req, res) {
-        try {
-            const { page = 1, limit = 50, userId } = req.query;
-            const filter = { status: 'failed' };
-            if (userId) filter.userId = userId;
-            const skip = (parseInt(page) - 1) * parseInt(limit);
-            const [attempts, total] = await Promise.all([
-                PaymentAttempt.find(filter)
-                .populate('orderId', 'totalPrice status')
-                .populate('userId', 'username email')
-                .sort({ createdAt: -1 })
-                .skip(skip)
-                .limit(parseInt(limit))
-                .lean(),
-                PaymentAttempt.countDocuments(filter)
-            ]);
-            return res.json({
-                success: true,
-                data: attempts,
-                pagination: { total, pages: Math.cell(total / parseInt(limit)), page: parseInt(page), limit: parseInt(limit)}
-            });
-        } catch (err) {
-            console.error('getFailedPayments error:', err);
-            return res.status(500).json({ success: false, error: err.message });
-        }
-    }
-
-    async function getSuspiciousPayments(req, res) {
-        try {
-            const filter = { flagged: true };
-            const attempts = await PaymentAttempt.find(filter)
-            .populate('orderId', 'totalPrice status')
-            .populate('userId', 'username email')
-            .sort({ createdAt: -1 })
-            .limit(100)
-            .lean();
-            return res.json({ success: true, data: attempts });
-        } catch (err) {
-            console.error('getSuspiciousPayments error:', err);
-            return res.status(500).json({ success: false, error: err.message });
-        }
-    }
-
-    //Record a payment attempt
-    async function recordPaymentAttempt(data) {
-        try {
-            await PaymentAttempt.create({
-                orderId: data.orderId,
-                userId: data.userId,
-                amount: data.amount || 0,
-                status: data.status || 'pending',
-                failureReason: data.failureReason,
-                paymentMethod: data.paymentMethod,
-                metadata: data.metadata,
-                flagged: data.flagged || false,
-                flaggedReason: data.flaggedReason
-            });
-        } catch (e) {
-            console.error('recordPaymentAttempt error:', e);
-        }
-    }
-
 
 module.exports = {
     createAdmin,
@@ -553,10 +485,6 @@ module.exports = {
     createDispute,
     assignDispute,
     resolveDispute,
-    processRefund,
     getAuditLogs,
-    getSystemActivity,
-    getFailedPayments,
-    getSuspiciousPayments,
-    recordPaymentAttempt
+    getSystemActivity
 };

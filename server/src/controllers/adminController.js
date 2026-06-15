@@ -344,10 +344,10 @@ exports.adminSignOut = async (req, res) => {
 
 exports.getAdminProfile = async (req, res) => {
     try {
-        const account = assertAdminAccount(req.user);
+        const account = assertAdminAccount(req, res);
         if (!account) return;
 
-        const doc = loadAdminDocument(account);
+        const doc = await loadAdminDocument(account);
         if (!doc) {
             return res.status(404).json({
                 success: false,
@@ -377,7 +377,7 @@ exports.updateAdminProfile = async (req, res) => {
 
         const updates = buildProfileUpdates(req.body);
         if (Object.keys(updates).length === 0) {
-            return res.staus(400).json({
+            return res.status(400).json({
                 success: false,
                 error: 'No valid profile fields provided'
             });

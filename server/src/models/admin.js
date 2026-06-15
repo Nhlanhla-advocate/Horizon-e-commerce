@@ -65,8 +65,11 @@ const adminSchema = new mongoose.Schema({
         reviewAlerts: { type: Boolean, default: false },
         securityAlerts: { type: Boolean, default: true },
         weeklyReports: { type: Boolean, default: false }
-    }
-}, { 
+    },
+
+    // Granular permissions (e.g. manage_products, view_audit_logs)
+    permissions: [{ type: String }]
+}, {
     timestamps: true 
 });
 

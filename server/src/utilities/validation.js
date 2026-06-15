@@ -427,6 +427,46 @@ const validateDisableTwoFactor = [
     .withMessage("A valid 6-digit authenticator code is required"),
 ];
 
+const validateCreateApiKey = [
+  body("name").trim().notEmpty().withMessage("API key name is required").isLength({ max: 100 }),
+  body("scopes").optional().isArray(),
+  body("expiresInDays").optional().isInt({ min: 1, max: 365 }),
+];
+
+const validateUpdateSecurityPolicy = [
+  body("passwordMinLength").optional().isInt({ min: 6, max: 128 }),
+  body("passwordRequireUppercase").optional().isBoolean(),
+  body("passwordRequireNumber").optional().isBoolean(),
+  body("passwordRequireSpecial").optional().isBoolean(),
+  body("sessionTimeoutMinutes").optional().isInt({ min: 15, max: 10080 }),
+  body("maxLoginAttempts").optional().isInt({ min: 3, max: 20 }),
+  body("lockoutDurationMinutes").optional().isInt({ min: 5, max: 1440 }),
+  body("requireTwoFactorForAdmins").optional().isBoolean(),
+  body("requireTwoFactorForSuperAdmins").optional().isBoolean(),
+  body("ipAllowlist").optional().isArray(),
+  body("apiKeyDefaultExpiryDays").optional().isInt({ min: 1, max: 365 }),
+];
+
+const STAFF_ROLES = ["admin", "manager", "support"];
+
+const validateCreateAdminAccount = [
+  body("email").trim().isEmail().withMessage("A valid email is required"),
+  body("username").trim().isLength({ min: 3 }).withMessage("Username must be at least 3 characters"),
+  body("password")
+    .isLength({ min: 6 })
+    .withMessage("Password must be at least 6 characters long"),
+  body("role").optional().isIn(STAFF_ROLES),
+  body("permissions").optional().isArray(),
+];
+
+const validateUpdateAdminAccount = [
+  body("username").optional().trim().isLength({ min: 3 }),
+  body("email").optional().trim().isEmail(),
+  body("role").optional().isIn(STAFF_ROLES),
+  body("permissions").optional().isArray(),
+  body("status").optional().isIn(["active", "inactive"]),
+];
+
 // Single export statement for all validators and handlers
 module.exports = {
   handleErrors,
@@ -449,4 +489,8 @@ module.exports = {
   validateAdminNotificationPreferences,
   validateTotpToken,
   validateDisableTwoFactor,
+  validateCreateApiKey,
+  validateUpdateSecurityPolicy,
+  validateCreateAdminAccount,
+  validateUpdateAdminAccount,
 };
