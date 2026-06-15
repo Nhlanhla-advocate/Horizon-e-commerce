@@ -515,4 +515,46 @@ exports.getAdminLoginHistory = async (req, res) => {
             message: error.message
         });
     }
+
+};
+
+// Update notification preferences
+exports.updateAdminNotificationPreferences = async (req, res) => {
+    try {
+        const account = assertAdminAccount(req, res);
+        if (!account) return;
+
+        const updates = buildNotificationUpdates(req.body);
+        if (Object.keys(updates).length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'No valid notification preferences provided'
+            });
+        }
+
+        const Model = account.constructor?.modelName === 'User' ? User : Admin;
+        const doc = await Model.findByIdAndUpdate(
+            account._id,
+            { $set: updates },
+            { new: true, runValidators: true }
+        );
+
+        if (!doc) {
+            return res.status(404).json({ success: false, error: 'Admin not found' });
+        }
+
+        res.json({
+            success: true,
+            message: 'Notification preferences updated',
+            notificationPreferences: doc.notificationPreferences,
+            admin: serializeAdminProfile(doc)
+        });
+    } catch (error) {
+        console.error('Update admin notification preferences error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Server error',
+            message: error.message
+        });
+    }
 };
