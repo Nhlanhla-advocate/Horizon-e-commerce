@@ -558,3 +558,45 @@ exports.updateAdminNotificationPreferences = async (req, res) => {
         });
     }
 };
+
+//Begin 2FA setup. returns secret + otpauth URL for authenticator apps
+exports.setupAdminTwoFactor = async (req, res) => {
+    try {
+        const account = assertAdminAccount(req, res);
+        if (!account) return;
+
+        const doc = await loadAdminDocument(account);
+        if (!doc) {
+            return res.status(404).json({ success: false, error: 'Admin not found' });
+        }
+
+        ensureNestedDefaults(doc);
+        if (doc.twoFactor.enabled) {
+            return res.status(400).json({ success: false, error: 'Two-factor authentication is already enabled' });
+        }
+
+        const secret = generateSecret(); 
+        doc.twoFactor.secret = secret;
+        await doc.save();
+
+        const issuer = process.env.horizon-ecommerce || 'horizon-ecommerce';
+        const otpauthURL = keyuri(doc.email, issuer, secret);
+
+        res.json({
+            success: true,
+            secret,
+            otpauthURL,
+            message: 'Scan the otpauth URL in your authenticator app, then verify with a 6 digit code.'
+        });
+    } catch (error) {
+        console.error('Setup admin two-factor error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Server error',
+            message: error.message
+        });
+    }
+};
+
+//Verify 2FA code
+}
