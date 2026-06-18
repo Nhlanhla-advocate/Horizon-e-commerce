@@ -24,3 +24,25 @@ const DEFAULT_SECURITY_POLICY = {
     ipAllowlist: [],
     apiKeyDefaultExpiryDays: 90
 };
+
+const sanitizeStaff = (doc, source = 'user') => {
+    const out = typeof doc.toObject === 'function' ? doc.toObject() : { ...doc };
+    delete out.password;
+    delete out.refreshToken;
+    delete out.tokenBlacklist;
+    delete out.twoFactor;
+    return { ...out, accountSource: source};
+};
+
+const findStaffAccount = async (adminId) => {
+    if (!mongoose.Types.ObjectId.isValid(adminId)) return null;
+    const user = await User.findById(adminId);
+    if (user && ALL_STAFF_ROLES.includes(user.role)) {
+        return { doc: user, model: User, source: 'user' };
+    }
+    const admin = await Admin.findById(adminId);
+    if (admin) {
+        return { doc: admin, model: Admin, source: 'admin'};
+    }
+    return null;
+};
