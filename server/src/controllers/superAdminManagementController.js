@@ -61,3 +61,31 @@ exports.listApiKeys = async (req, res) => {
         res.status(500).json({ success: false, error: err.message });
     }
 };
+
+exports.createApiKey = async (req, res) => {
+    try {
+        const { name, scopes, expiresInDays } = req.body;
+        if (!name || !String(name).trim()) {
+            return res.status(400).json({ success: false, message: 'API key name is required.'});
+        }
+        const policy = await SecurityPolicy.findOne({ singletonKey: 'global' });
+        const defaultDays = policy?.apiKeyDefaultExpiryDays || DEFAULT_SECURITY_POLICY.apiKeyDefaultExpiryDays;
+        const days = Number(expiresInDays) > 0 ? Number(expiresInDays) : defaultDays;
+        const expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+
+        const { rawKey, keyPrefix, keyHash } = generateApiKey();
+        const allowedScopes = Object.keys(ROLES_WITH_PERMISSION);
+        const resolvedScopes = Array.isArray(scopes)
+            ? scopes.filter((scope) => allowedScopes.includes(scope))
+            : [];
+
+            const apiKey = await ApiKey.create({
+                ownerId: req.user._id,
+                name: String(name).trim(),
+                keyPrefix,
+                keyHash,
+                scopes: resolvedScopes,
+                expiresAt
+            });
+    }
+}
