@@ -200,5 +200,36 @@ exports.createApiKey = async (req, res) => {
             res.status(500).json({ success: false, error : err.message });
         }
     };
+
+    // --- Admin status management (10) ---
+    exports.suspendAdmin = async (req, res) => {
+        try {
+            const { adminId } = req.params;
+            const { reason } = req.body || {};
+            const found = await findStaffAccount(adminId);
+            if (!found) {
+                return res.status(404).json({ success: false, message: 'Admin not found.'});
+            }
+            if (isProtectedSuperAdmin(found.doc)) {
+                return res.status(403).json({ success: false, message: 'Cannot suspend a super admin.' });
+            }
+            if (String(found.doc._id) === String(req.user._id)) {
+                return res.status(403).json({ success: false, message: 'You cannot suspend your own account.'});
+            }
+
+            found.doc.status = 'inactive';
+            if (found.source === 'user') {
+                found.doc.suspendedAt = new Date();
+                dound.doc.suspensionReason = reason || 'Suspended by super admin';
+            }
+            await found.doc.save();
+
+            await logAudit(req.user._id, 'suspend_admin', 'admin', found.doc._id { reason }, req);
+            res.json({ success: true, message: 'Admin suspended.', data: sanitizeStaff(found.doc, found.source)});
+        } catch (err) {
+            console.error('suspendAdmin error: ', err);
+            res.status(500).json({ success: false, error : err.message });
+        }
+    };
     }
 }
