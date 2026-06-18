@@ -158,5 +158,47 @@ exports.createApiKey = async (req, res) => {
             res.status(500).json({ success: false, error : err.message });
         }
     };
+
+    exports.updateSecurityPolicy = async (req, res) => {
+        try {
+            const allowed = [
+                'passwordMinLength',
+                'passwordRequireUppercase',
+                'passwordRequireLowercase',
+                'passwordRequireNumber',
+                'passwordRequireSpecial',
+                'sessionTimeoutMinutes',
+                'maxLoginAttempts',
+                'lockoutDurationMinutes',
+                'requireTwoFactorForAdmins',
+                'requireTwoFactorForSuperAdmins',
+                'ipAllowlist',
+                'apiKeyDefaultExpiryDays'
+            ];
+
+            const updates = {};
+            allowed.forEach((key) => {
+                if (req.body[key] !== undefined) updates[key] = req.body[key];
+            });
+
+            if (Object.keys(updates).length === 0) {
+                return res.status(400).json({ success: false, message: 'No valid security policy fields provided.'});
+            }
+
+            updates.updatedBy = req.user._id;
+
+            const policy = await SecurityPolicy.findOneAndUpdate(
+                { singletonKey: 'global' },
+                { $set: updates, $setOnInsert: DEFAULT_SECURITY_POLICY },
+                { new: true, upsert: true, runValidators: true }
+            );
+
+            await logAudit(req.user._id, 'update_security_policy', 'security_policy', policy._id, updates, req);
+            res.json({ success: true, message: 'Security policy updated.', data: policy });
+        } catch (err) {
+            console.error('updateSecurityPolicy error: ', err);
+            res.status(500).json({ success: false, error : err.message });
+        }
+    };
     }
 }
