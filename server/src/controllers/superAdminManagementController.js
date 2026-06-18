@@ -87,5 +87,20 @@ exports.createApiKey = async (req, res) => {
                 scopes: resolvedScopes,
                 expiresAt
             });
+
+            await logAudit(req.user._id, 'create_api_key', 'api_key', apiKey._id, { name: apiKey.name }, req);
+
+            res.status(201).json({
+                success: true,
+                message: 'Store this key now — it will not be shown again.',
+                apiKey: serializeApiKey(apiKey),
+                key: rawKey
+            });
+        } catch (err) {
+            console.error('createApiKey error:', err);
+            res.status(500).json({ success: false, error: err.message });
+        }
+    };
+    
     }
 }
