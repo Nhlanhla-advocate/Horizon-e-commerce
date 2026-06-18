@@ -259,5 +259,11 @@ exports.createApiKey = async (req, res) => {
             res.status(500).json({ success: false, error : err.message });
         }
     };
-    }
-}
+
+    exports.listAvailablePermissions = async (req, res) => {
+        res.json({ success: true, data: ROLES_WITH_PERMISION });
+    };
+
+    module.exports.findStaffAccount = findStaffAccount;
+    module.exports.sanitizeStaff = sanitizeStaff;
+    module.exports.STAFF_ROLES = STAFF_ROLES;
