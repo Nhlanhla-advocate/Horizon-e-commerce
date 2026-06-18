@@ -231,5 +231,33 @@ exports.createApiKey = async (req, res) => {
             res.status(500).json({ success: false, error : err.message });
         }
     };
+
+    exports.deactivateAdmin = async (req, res) => {
+        //Alias for suspend - sets status to inactive
+        return exports.suspendAdmin(req, res);
+    };
+
+    exports.unsuspendAdmin = async (req, res) => {
+        try {
+            const { adminId } = req.params;
+            const found = await findStaffAccount(adminId);
+            if (!found) {
+                return res.status(404).json({ success: false, message: 'Admin not found.'});
+            }
+
+            found.doc.status = 'active';
+            if (found.source === 'user') {
+                found.doc.suspendedAt = undefined;
+                found.doc.suspensionReason = undefined;
+            }
+            await found.doc.save();
+
+            await logAudit(req.user._id, 'activate_admin', 'admin', found.doc._id, {}, req);
+            res.json({ success: true, message: 'Admin activated.', data: sanitizeStaff(found.doc, found.source)});
+        } catch (err) {
+            console.error('activateAdmin error: ', err);
+            res.status(500).json({ success: false, error : err.message });
+        }
+    };
     }
 }
