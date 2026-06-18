@@ -144,6 +144,19 @@ exports.createApiKey = async (req, res) => {
             res.status(500).json({ success: false, error : err.message });
         }
     };
-    
+
+    // --- Security policies (13) ---
+    exports.getSecurityPolicy = async (req, res) => {
+        try {
+            let policy = await SecurityPolicy.findOne({ singletonKey: 'global' }).lean();
+            if (!policy) {
+                policy = { ...DEFAULT_SECURITY_POLICY };
+            }
+            res.json({ success: true, data: policy });
+        } catch (err) {
+            console.error('getSecurityPolicy error: ', err);
+            res.status(500).json({ success: false, error : err.message });
+        }
+    };
     }
 }
