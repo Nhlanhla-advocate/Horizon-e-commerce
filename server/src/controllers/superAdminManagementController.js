@@ -101,6 +101,49 @@ exports.createApiKey = async (req, res) => {
             res.status(500).json({ success: false, error: err.message });
         }
     };
+
+    exports.revokeApiKey = async (req, res) => {
+        try {
+            const { keyId } = req.params;
+            if (!mongoose.Types.ObjectId.isValid(keyId)) {
+                return res.status(400).json({ success: false, message: 'Invalid API key ID.' });
+            }
+
+            const apiKey = await ApiKey.findOne({ _id: keyId, ownerId: req.user._id }); 
+            if (!apiKey) {
+                return res.status(404).json({ success: false, message: 'API key not found.' });
+            }
+
+            apiKey.active = false;
+            await apiKey.save();
+            await logAudit(req.user._id, 'revoke_api_key', 'api_key', apiKey._id, {}, req);
+
+            res.jason({ success: true, message: 'API key revoked.', data: serializeApiKey(apiKey) })
+        } catch (err) {
+            console.error('revokeApiKey error:', err);
+            res.status(500).json({ success: false, error : err.message});
+        }
+    };
+
+    exports.deleteApiKey = async (req, res) => {
+        try {
+            const { keyId } = req.params;
+            if (!mongoose.Types.ObjectId.isValid(keyId)) {
+                return res.status(400).json({ success: false, message: 'Invalid API key ID.' });
+            }
+
+            const apiKey = await ApiKey.findOneAndDelete({ _id: keyId, ownerId: req.user._id });
+            if (!apiKey) {
+                return res.status(404).json({ success: false, message: 'API key not found.' });
+            }
+
+            await logAudit(req.user._id, 'delete_api_key', 'api_key', keyId, { name: apiKey.name }, req);
+            res.json({ success: true, message: 'API key deleted.' });
+        } catch (err) {
+            console.error('deleteApiKey error:', err);
+            res.status(500).json({ success: false, error : err.message });
+        }
+    };
     
     }
 }
