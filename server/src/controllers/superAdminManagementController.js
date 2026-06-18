@@ -46,3 +46,18 @@ const findStaffAccount = async (adminId) => {
     }
     return null;
 };
+
+const isProtectedSuperAdmin = (doc) => doc.role === 'super_admin';
+
+// --- API keys (7) ---
+exports.listApiKeys = async (req, res) => {
+    try {
+        const keys = await ApiKey.find({ ownerId: req.user._id })
+            .sort({ createdAt: -1 })
+            .lean();
+        res.json({ success: true, data: keys.map(serializeApiKey) });
+    } catch (err) {
+        console.error('listApiKeys error:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+};
