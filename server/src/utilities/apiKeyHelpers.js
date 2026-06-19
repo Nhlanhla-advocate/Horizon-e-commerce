@@ -1,5 +1,3 @@
-APIKeyHelpers.js under Utilities.
-
 const crypto = require('crypto');
 
 const KEY_PREFIX = 'hzn_';
@@ -8,7 +6,7 @@ const hashApiKey = (rawKey) =>
     crypto.createHash('sha256').update(String(rawKey)).digest('hex');
 
 const generateApiKey = () => {
-    const rawKey = ${KEY_PREFIX}${crypto.randomBytes(32).toString('hex')};
+    const rawKey = `${KEY_PREFIX}${crypto.randomBytes(32).toString('hex')}`;
     return {
         rawKey,
         keyPrefix: rawKey.slice(0, 12),

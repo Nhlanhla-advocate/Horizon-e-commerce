@@ -12,6 +12,7 @@ import CacheManagement from './components/CacheManagement';
 import OrderManagement from './components/OrderManagement/OrderManagement';
 import VisualAnalyticsReports from './components/Visual analytics and reports/VisualAnalyticsReports';
 import ViewAllUsers from './components/Customer management/ViewAllUsers';
+import AdminAccount from './components/Account/AdminAccount';
 import Sidebar from './components/Sidebar';
 
 const AdminDashboard = () => {
@@ -25,7 +26,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     const handleTabChange = (event) => {
       const tabId = event.detail;
-      const validTabs = ['overview', 'products', 'categories', 'analytics', 'inventory', 'reviews', 'cache', 'orders', 'visual-analytics', 'customers'];
+      const validTabs = ['overview', 'products', 'categories', 'analytics', 'inventory', 'reviews', 'cache', 'orders', 'visual-analytics', 'customers', 'account'];
       if (validTabs.includes(tabId)) {
         setActiveTab(tabId);
       }
@@ -195,6 +196,13 @@ const AdminDashboard = () => {
       icon: '',
       component: ViewAllUsers,
       description: 'View registered users'
+    },
+    {
+      id: 'account',
+      label: 'Account',
+      icon: '',
+      component: AdminAccount,
+      description: 'Profile and security'
     },
     {
       id: 'cache',
