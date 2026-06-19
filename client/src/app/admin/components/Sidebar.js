@@ -122,13 +122,25 @@ export default function Sidebar({ tabs, activeTab, setActiveTab, sidebarOpen, se
           <div className="admin-sidebar-footer">
             <div className="admin-sidebar-footer-content">
               {user && (
-                <div className="admin-sidebar-user">
+                <button
+                  type="button"
+                  className="admin-sidebar-user admin-sidebar-user--clickable"
+                  onClick={() => {
+                    setActiveTab('account');
+                    setSidebarOpen(false);
+                  }}
+                >
                   <span className="admin-sidebar-user-role">{roleLabel}</span>
                   <span className="admin-sidebar-user-name">{displayName}</span>
                   {showEmail && (
                     <span className="admin-sidebar-user-email">{user.email}</span>
                   )}
-                </div>
+                </button>
+              )}
+              {user?.role === 'super_admin' && (
+                <a href="/superAdmin/management" className="admin-sidebar-action-btn admin-sidebar-super-link">
+                  Super Admin Panel
+                </a>
               )}
               <div className="admin-sidebar-footer-status">
                 <div className="admin-sidebar-status-indicator"></div>

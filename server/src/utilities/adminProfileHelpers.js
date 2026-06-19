@@ -49,6 +49,13 @@ const loadAdminDocument = async (account) => {
     return User.findById(account._id);
 };
 
+/** Reload a super-admin account from Admin or User collections. */
+const loadSuperAdminDocument = async (account) => {
+    const doc = await loadAdminDocument(account);
+    if (!doc || doc.role !== 'super_admin') return null;
+    return doc;
+};
+
 const buildProfileUpdates = (body) => {
     const { username, personalInfo } = body;
     const updates = {};
@@ -187,6 +194,7 @@ module.exports = {
     assertAdminAccount,
     assertSuperAdminAccount,
     loadAdminDocument,
+    loadSuperAdminDocument,
     buildProfileUpdates,
     buildNotificationUpdates,
     ensureNestedDefaults,

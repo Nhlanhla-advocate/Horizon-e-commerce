@@ -141,13 +141,12 @@ exports.adminSignIn = async (req, res) => {
         
         console.log('[ADMIN SIGNIN] Attempting admin signin for email:', normalizedEmail);
 
-        // Step 1: Check Admin collection first
+        const emailRegex = { $regex: new RegExp(`^${normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') };
+
+        // Step 1: Check Admin collection
         let admin = await Admin.findOne({ email: normalizedEmail });
         if (!admin) {
-            // Try case-insensitive regex search
-            admin = await Admin.findOne({ 
-                email: { $regex: new RegExp(`^${normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } 
-            });
+            admin = await Admin.findOne({ email: emailRegex });
         }
         
         let isUserCollection = false;
