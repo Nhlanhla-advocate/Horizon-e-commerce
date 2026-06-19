@@ -36,3 +36,24 @@ exports.getSuperAdminProfile = async (req, res) => {
         res.status(500).json({ success: false, error: 'Server error', message: error.message });
     }
 }
+
+exports.updateSuperAdminProfile = async (req, res) => {
+    try {
+        const account = assertSuperAdminAccount(req, res);
+        if (!account) return;
+
+        const updates = buildProfileUpdates(req.body);
+        if (Object.keys(updates).length === 0) {
+            return res.status(400).json({ success: false, error: 'No valid profile fields provided' });
+        }
+
+        if (updates.username) {
+            const usernameCheck = await checkUsernameAvailable(updates.username, account._id);
+            if (!usernameCheck.ok) {
+                return res.status(400).json({ success: false, error: usernameCheck.messagemessage });
+            }
+        }
+
+        }
+    }
+}
