@@ -55,7 +55,7 @@ exports.updateSuperAdminProfile = async (req, res) => {
         }
 
         const model = reaolveSuperAdminModel(account);
-        const doc = await Model.findByIdAndUpdate(
+        const doc = await model.findByIdAndUpdate(
             account._id,
             { $set: updates },
             { new: true, runValidators: true }
@@ -71,6 +71,32 @@ exports.updateSuperAdminProfile = async (req, res) => {
         });
     } catch (error) {
         console.error('Update super admin profile error:', error);
+        res.status(500).json({ success: false, error: 'Server error', message: error.message });
+    }
+};
+
+exports.changeSuperAdminPassword = async (req, res) => {
+    try {
+        const account = assertSuperAdminAccount(req, res);
+        if (!account) return;
+
+        const { currentPassword, newPassword } = req.body;
+        const doc = await loadSuperAdminDocument(account);
+        if (!doc) {
+            return res.status(404).json({ success: false, error: 'Super admin not found' });
+        }
+
+        const isMatch = await doc.comparePassword(currentPassword);
+        if (!isMatch) {
+            return res.status(400).json({ success: false, error: 'Current password is incorrect' });
+        }
+
+        doc.password = newPassword;
+        await doc.save();
+
+        res.json({ success: true, message: 'Password updated successfully' });
+    } catch (error) {
+        console.error('Change super admin password error:', error);
         res.status(500).json({ success: false, error: 'Server error', message: error.message });
     }
 };
