@@ -54,6 +54,23 @@ exports.updateSuperAdminProfile = async (req, res) => {
             }
         }
 
+        const model = reaolveSuperAdminModel(account);
+        const doc = await Model.findByIdAndUpdate(
+            account._id,
+            { $set: updates },
+            { new: true, runValidators: true }
+        );
+
+        if (!doc) {
+            return res.status(404).json({ success: false, error: 'Super admin not found' });
         }
+        res.json({ 
+            success: true,
+            message: 'Profile updated successfully',
+            admin: serializeSuperAdminProfile(doc)
+        });
+    } catch (error) {
+        console.error('Update super admin profile error:', error);
+        res.status(500).json({ success: false, error: 'Server error', message: error.message });
     }
-}
+};
