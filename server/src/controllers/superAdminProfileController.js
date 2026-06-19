@@ -100,3 +100,37 @@ exports.changeSuperAdminPassword = async (req, res) => {
         res.status(500).json({ success: false, error: 'Server error', message: error.message });
     }
 };
+
+exports.uploadSuperAdminAvatar = async (req, res) => {
+    try {
+        const account = assertSuperAdminAccount(req, res);
+        if (!account) return;
+
+        const uploaded = req.uploadedFiles?.[0];
+        if (!uploaded) {
+            return res.status(400).json({ success: false, error: 'Image file is required' });
+        }
+
+        const doc = await loadSuperAdminDocument(account);
+        if (!doc) {
+            return res.status(404).json({ success: false, error: 'Super admin not found' });
+        }
+
+        if (doc.avatar) {
+            await deleteLocalUploadIfOwned(doc.avatar, doc._id);
+        }
+
+        doc.avatar = uploaded.url;
+        await doc.save();
+
+        res.status(201).json({
+            success: true,
+            message: 'Profile photo updated',
+            url: uploaded.url,
+            admin: serializeSuperAdminProfile(doc)
+        });
+    } catch (error) {
+        console.error('Upload super admin avatar error:', error);
+        res.status(500).json({ success: false, error: 'Server error', message: error.message });
+    }
+};
