@@ -134,3 +134,29 @@ exports.uploadSuperAdminAvatar = async (req, res) => {
         res.status(500).json({ success: false, error: 'Server error', message: error.message });
     }
 };
+
+exports.getSuperAdminLoginHistory = async (req, res) => {
+    try {
+        const account = assertSuperAdminAccount(req, res);
+        if (!account) return;
+
+        const doc = await loadSuperAdminDocument(account);
+        if (!doc) {
+            return res.status(404).json({ success: false, error: 'Super admin not found' });
+        }
+
+        const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 20, 1), 50);
+        const history = Array.isArray(doc,loginHistory)
+        ?[...doc.loginHistory].sort((a, b) => new Date(b.at) - new Date(a.at)).slice(0, limit)
+        :[];
+
+        res.json({
+            success: true,
+            loginHistory: history,
+            total: doc.loginHistory?.length || 0
+        });
+    } catch(error) {
+        console.error('Get super admin login history error:', error);
+        res.status(500).json({ success: false, error: 'Server error', message: error.message});
+    }
+};
