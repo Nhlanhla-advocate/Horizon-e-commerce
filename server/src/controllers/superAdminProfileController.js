@@ -146,7 +146,7 @@ exports.getSuperAdminLoginHistory = async (req, res) => {
         }
 
         const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 20, 1), 50);
-        const history = Array.isArray(doc,loginHistory)
+        const history = Array.isArray(doc.loginHistory)
         ?[...doc.loginHistory].sort((a, b) => new Date(b.at) - new Date(a.at)).slice(0, limit)
         :[];
 
@@ -158,5 +158,39 @@ exports.getSuperAdminLoginHistory = async (req, res) => {
     } catch(error) {
         console.error('Get super admin login history error:', error);
         res.status(500).json({ success: false, error: 'Server error', message: error.message});
+    }
+};
+
+exports.updateSuperAdminNotificationPreferences = async (req, res) => {
+    try {
+        const account = assertSuperAdminAccount(req, res);
+        if (!account) return;
+
+        const updates = buildNotificationUpdates(req.body);
+        if (Object.keys(updates).length === 0) {
+            return res.status(400).json({ success: false, error: 'No valid notification preferences provided' });
+        }
+        
+        const Model = resolveSuperAdminModel(account);
+        const doc = await Model.findByIdAndUpdate(
+            account._id,
+            { $set: updates },
+            { new: true, runValidators: true }
+        );
+
+        if (!doc) {
+            return res.status(404).json({ success: false, error: 'Super admin not found' });
+        }
+
+        res.json({
+            success: true,
+            message: 'Notification preferences updated',
+            notificationPreferences: doc.notificationPreferences,
+            admin: serializeSuperAdminProfile(doc)
+        });
+    } catch (error) {
+        console.error('Update super admin notification preferences error:', error);
+        res.status(500).json({ success: false, error: 'Server error', message: error.message });
+    
     }
 };
