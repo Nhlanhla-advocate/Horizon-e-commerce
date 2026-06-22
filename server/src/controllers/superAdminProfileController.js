@@ -266,3 +266,45 @@ exports.verifySuperAdminTwoFactor = async (req, res) => {
         res.status(500).json({ success: false, error: 'Server error', message: error.message });
     }
 };
+
+exports.disableSuperAdminTwoFactor = async (req, res) => {
+    try {
+        const account = assertSuperAdminAccount(req, res);
+        if (!account) return;
+
+        const { currentPassword, token } = req.body;
+        const doc = await loadSuperAdminDocument(account);
+        if (!doc) {
+            return res.status(404).json({ success: false, error: 'Super admin not found' });
+        }
+
+        ensureNestedDefaults(doc);
+        if (!doc.twoFactor?.enabled) {
+            return res.status(400).json({ success: false, error: 'Two-factor authentication is not enabled' });
+        }
+
+        const passwordOk = await doc.comparePassword(currentPassword);
+        if (!passwordOk) {
+            return res.status(400).json({ success: false, error: 'Current password is incorrect' });
+        }
+
+        if (doc.twoFactor.secret && !verifyToken(token, doc.twoFactor.secret)) {
+            return res.status(400).json({ success: false, error: 'Invalid authenticator code' });
+        }
+
+        doc.twoFactor.enabled = false;
+        doc.twoFactor.secret = undefined;
+        doc.twoFactor.tempSecret = undefined;
+        doc.twoFactor.enabledAt = undefined;
+        await doc.save();
+
+        res.json({
+            success: true,
+            message: 'Two-factor authentication disabled',
+            twoFactor: { enabled: false }
+        });
+    } catch (error) {
+        console.error('Disable super admin 2FA error:', error);
+        res.status(500).json({ success: false, error: 'Server error', message: error.message });
+    }
+};
