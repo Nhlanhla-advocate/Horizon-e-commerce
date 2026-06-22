@@ -194,3 +194,37 @@ exports.updateSuperAdminNotificationPreferences = async (req, res) => {
     
     }
 };
+
+exports.setupSuperAdminTwoFactor = async (req, res) => {
+    try {
+        const account = assertSuperAdminAccount(req, res);
+        if (!account) return;
+
+        const doc = await loadSuperAdminDocument(account);
+        if (!doc) {
+            return res.status(404).json({ success: false, error: 'Super admin not found' });
+        }
+
+        ensureNestedDefaults(doc);
+        if (doc.twoFactor.enabled) {
+            return res.status(400).json({ success: false, error: 'Two-factor authentication is already enabled' });
+        }
+
+        const secret = generateSecret();
+        doc.twoFactor.tempSecret = secret;
+        await doc.save();
+
+        const issuer = process.env.APP_NAME || 'Horizon E-commerce';
+        const otpauthURL = keyuri(doc.email, issuer, secret);
+
+        res.json({
+            success: true,
+            secret,
+            otpauthURL,
+            message: 'Scan the otpauth URL in your authenticator app, then verify with a 6 digit code.'
+        });
+    } catch (error) {
+        console.error('Setup super admin two-factor error:', error);
+        res.status(500).json({ success: false, error: 'Server error', message: error.message });
+    }
+};
