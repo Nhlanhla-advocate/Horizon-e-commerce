@@ -107,4 +107,27 @@ export default function staffAccountSettings({
             setProfileSaving(false);
         }
       };
+
+      const handleChangePassword = async (event) => {
+        event.preventDefault();
+        setError('');
+        setSuccess('');
+        if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+          setError('New passwords do not match.');
+          return;
+        }
+        setPasswordSaving(true);
+        try {
+          await api.changePassword({
+            currentPassword: passwordForm.currentPassword,
+            newPassword: passwordForm.newPassword,
+          });
+          setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+          setSuccess('Password updated successfully.');
+        } catch (err) {
+          setError(err.message || 'Failed to change password.');
+        } finally {
+          setPasswordSaving(false);
+        }
+      };
 }
