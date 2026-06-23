@@ -216,4 +216,19 @@ export default function staffAccountSettings({
           setTwoFactorLoading(false);
         }
       };
+
+      if (!profile) {
+        return (
+          <div className="staff-account">
+            {error && <div className="staff-account-alert staff-account-alert--error">{error}</div>}
+            <button type="button" className="admin-btn admin-btn-primary" onClick={loadAll}>
+              Try again
+            </button>
+          </div>
+        );
+      }
+    
+      const twoFactorEnabled = Boolean(profile.twoFactor?.enabled);
+
+      
 }
