@@ -20,3 +20,24 @@ const NOTIFICATION_KEYS = [
     { key: 'weeklyReports', label: 'Weekly Reports' },
 ];
 
+const IMAGE_ACCEPT = 'image/jpeg.image/png.image/webp.image/gif';
+
+export default function staffAccountSettings({
+    api,
+    title = 'My Account',
+    subtitle = 'Manage your profile, security, and notification settings.',
+    onUnauthorized,
+}) {
+    const avatarInputRef = useRef(null);
+
+    const [ loading, setLoading ] = useState(true);
+    const [ profile, setProfile ] = useState(null);
+    const [ username, setUsername ] = useState('');
+    const [ personalInfo, setPersonalInfo ] = useState(EMPTY_PERSONAL);
+    const [ notifications, setNotifications ] = useState([]);
+    const [ loginHistory, setLoginHistory ] = useState([]);
+    const [ passwordForm, setPasswordForm ] = useState({
+        currentPassword: '',
+        confirmPassword: '',
+    });
+}
