@@ -165,4 +165,20 @@ export default function staffAccountSettings({
           setNotifSaving(false);
         }
       };
+
+      const handleSetupTwoFactor = async () => {
+        setError('');
+        setSuccess('');
+        setTwoFactorLoading(true);
+        try {
+          const data = await api.setupTwoFactor();
+          setTwoFactorSetup(data);
+          setTwoFactorToken('');
+          setSuccess('Scan the setup URL in your authenticator app, then enter the 6-digit code.');
+        } catch (err) {
+          setError(err.message || 'Failed to start 2FA setup.');
+        } finally {
+          setTwoFactorLoading(false);
+        }
+      };
 }
