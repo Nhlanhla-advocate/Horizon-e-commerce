@@ -149,4 +149,20 @@ export default function staffAccountSettings({
           setAvatarUploading(false);
         }
       };
+
+      const handleSaveNotifications = async (event) => {
+        event.preventDefault();
+        setError('');
+        setSuccess('');
+        setNotifSaving(true);
+        try {
+          const admin = await api.updateNotifications(notifications);
+          applyProfile(admin);
+          setSuccess('Notification preferences saved.');
+        } catch (err) {
+          setError(err.message || 'Failed to save notifications.');
+        } finally {
+          setNotifSaving(false);
+        }
+      };
 }
