@@ -38,6 +38,26 @@ export default function staffAccountSettings({
     const [ loginHistory, setLoginHistory ] = useState([]);
     const [ passwordForm, setPasswordForm ] = useState({
         currentPassword: '',
+        newPassword: '',
         confirmPassword: '',
     });
+    const [twoFactor, setTwoFactor] = useState(null);
+    const [twoFactorToken, setTwoFactorToken] = useState('');
+    const [disableTwoFactor, setDisableTwoFactor] = useState({ currentPassword: '', token: '' });
+
+    const [profileSaving, setProfileSaving] = useState(false);
+    const [passwordSaving, setPasswordSaving] = useState(false);
+    const [notifSaving, setNotifSaving] = useState(false);
+    const [avatarUploading, setAvatarUploading] = useState(false);
+    const [twoFactorSaving, setTwoFactorSaving] = useState(false);
+
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
+
+    const applyProfile = useCallback((admin) => {
+        setProfile(admin);
+        setUsername(admin.username || '');
+        setPersonalInfo({ ...EMPTY_PERSONAL, ...admin.personalInfo });
+        setNotifications({ ...admin.notificationPreferences });
+    }, []);
 }
