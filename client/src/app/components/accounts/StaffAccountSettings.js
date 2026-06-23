@@ -60,4 +60,32 @@ export default function staffAccountSettings({
         setPersonalInfo({ ...EMPTY_PERSONAL, ...admin.personalInfo });
         setNotifications({ ...admin.notificationPreferences });
     }, []);
+    
+    const loadAll = useCallback(async () => {
+        setLoading(true);
+        setError('');
+        try {
+          const result = await api.fetchProfile();
+          if (result.unauthorized) {
+            onUnauthorized?.();
+            return;
+          }
+          applyProfile(result.admin);
+    
+          try {
+            const historyData = await api.fetchLoginHistory(25);
+            setLoginHistory(historyData.loginHistory || []);
+          } catch {
+            setLoginHistory([]);
+          }
+        } catch (err) {
+          setError(err.message || 'Failed to load account.');
+        } finally {
+          setLoading(false);
+        }
+      }, [api, applyProfile, onUnauthorized]);
+    
+      useEffect(() => {
+        loadAll();
+      }, [loadAll]);
 }
