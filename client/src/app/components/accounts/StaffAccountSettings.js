@@ -181,4 +181,22 @@ export default function staffAccountSettings({
           setTwoFactorLoading(false);
         }
       };
+
+      const handleVerifyTwoFactor = async (event) => {
+        event.preventDefault();
+        setError('');
+        setSuccess('');
+        setTwoFactorLoading(true);
+        try {
+          await api.verifyTwoFactor(twoFactorToken);
+          setTwoFactorSetup(null);
+          setTwoFactorToken('');
+          await loadAll();
+          setSuccess('Two-factor authentication enabled.');
+        } catch (err) {
+          setError(err.message || 'Failed to verify 2FA code.');
+        } finally {
+          setTwoFactorLoading(false);
+        }
+      };
 }
