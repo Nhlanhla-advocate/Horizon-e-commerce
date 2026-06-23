@@ -88,4 +88,23 @@ export default function staffAccountSettings({
       useEffect(() => {
         loadAll();
       }, [loadAll]);
+
+      const handleSaveProfile = async (event) => {
+        event.preventDefault();
+        setError('');
+        setSuccess('');
+        setProfileSaving(true);
+        try {
+            const admin = await api.updateProfile({
+                username: username.trim(),
+                personalInfo: buildPersonalInfoPayload(personalInfo),
+            });
+            applyProfile(admin);
+            setSuccess('Profile updated successfully.');
+        } catch (err) {
+            setError(err.message || 'Failed to update profile.');
+        } finally {
+            setProfileSaving(false);
+        }
+      };
 }
