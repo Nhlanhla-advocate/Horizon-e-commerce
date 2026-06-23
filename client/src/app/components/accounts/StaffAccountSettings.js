@@ -199,4 +199,21 @@ export default function staffAccountSettings({
           setTwoFactorLoading(false);
         }
       };
+
+      const handleDisableTwoFactor = async (event) => {
+        event.preventDefault();
+        setError('');
+        setSuccess('');
+        setTwoFactorLoading(true);
+        try {
+          await api.disableTwoFactor(disable2faForm);
+          setDisable2faForm({ currentPassword: '', token: '' });
+          await loadAll();
+          setSuccess('Two-factor authentication disabled.');
+        } catch (err) {
+          setError(err.message || 'Failed to disable 2FA.');
+        } finally {
+          setTwoFactorLoading(false);
+        }
+      };
 }
