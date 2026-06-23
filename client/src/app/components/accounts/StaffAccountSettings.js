@@ -11,3 +11,12 @@ const EMPTY_PERSONAL = {
     phone: '',
     bio: '',
 };
+
+const NOTIFICATION_KEYS = [
+    { key: 'orderAlerts', label: 'Order Alerts' },
+    { key: 'stockAlerts', label: 'Stock Alerts' },
+    { key: 'reviewAlerts', label: 'Review Alerts' },
+    { key: 'securityAlerts', label: 'Security Alerts' },
+    { key: 'weeklyReports', label: 'Weekly Reports' },
+];
+
