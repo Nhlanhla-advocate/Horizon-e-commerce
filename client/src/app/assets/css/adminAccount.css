@@ -69,3 +69,54 @@
     margin-bottom: 1rem;
     font-size: 0.875rem;
   }
+
+  .staff-account-alert--error {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+  }
+  
+  .staff-account-alert--success {
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+  }
+  
+  .staff-account-section {
+    margin-bottom: 1.25rem;
+  }
+  
+  .staff-account-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .staff-account-grid--narrow {
+    max-width: 520px;
+  }
+  
+  .staff-account-avatar-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .staff-account-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  
+  .staff-account-avatar--placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e5e7eb;
+    color: #374151;
+    font-weight: 700;
+    font-size: 1.25rem;
+  }
