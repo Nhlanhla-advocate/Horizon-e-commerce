@@ -494,6 +494,38 @@ export default function staffAccountSettings({
           </form>
         )}
       </section>
+
+      <section className="admin-card staff-account-section">
+        <h2 className="admin-card-title">Recent login activity</h2>
+        {loginHistory.length === 0 ? (
+          <p className="admin-card-subtitle">No login history recorded yet.</p>
+        ) : (
+          <div className="staff-account-table-wrap">
+            <table className="staff-account-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>IP</th>
+                  <th>Result</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loginHistory.map((entry, index) => (
+                  <tr key={`${entry.at}-${index}`}>
+                    <td>{entry.at ? new Date(entry.at).toLocaleString() : '—'}</td>
+                    <td>{entry.ip || '—'}</td>
+                    <td>
+                      <span className={entry.success ? 'staff-account-ok' : 'staff-account-fail'}>
+                        {entry.success ? 'Success' : 'Failed'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
         </div>
         
       );
