@@ -39,3 +39,109 @@
     text-decoration: underline;
 }
 
+.super-admin-shell {
+    min-height: 100vh;
+    background: #f3f4f6;
+  }
+  
+  .super-admin-shell--loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+  }
+  
+  .super-admin-shell-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    background: #111827;
+    color: #fff;
+    border-bottom: 1px solid #374151;
+  }
+  
+  .super-admin-shell-brand h1 {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+  }
+  
+  .super-admin-shell-user {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: 0.8125rem;
+    color: #9ca3af;
+  }
+  
+  .super-admin-shell-nav {
+    display: flex;
+    gap: 0.5rem;
+    flex: 1;
+  }
+  
+  .super-admin-shell-nav-link {
+    padding: 0.45rem 0.85rem;
+    border-radius: 6px;
+    color: #d1d5db;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  
+  .super-admin-shell-nav-link:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+  }
+  
+  .super-admin-shell-nav-link.active {
+    background: #2563eb;
+    color: #fff;
+  }
+  
+  .super-admin-shell-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  
+  .super-admin-shell-link {
+    color: #93c5fd;
+    text-decoration: none;
+    font-size: 0.875rem;
+  }
+  
+  .super-admin-shell-link:hover {
+    text-decoration: underline;
+  }
+  
+  .super-admin-shell-logout {
+    padding: 0.4rem 0.75rem;
+    border: 1px solid #4b5563;
+    border-radius: 6px;
+    background: transparent;
+    color: #f9fafb;
+    font-size: 0.875rem;
+    cursor: pointer;
+  }
+  
+  .super-admin-shell-logout:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+  
+  .super-admin-shell-main {
+    padding: 0;
+  }
+  
+  @media (max-width: 768px) {
+    .super-admin-shell-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .super-admin-shell-nav {
+      width: 100%;
+    }
+  }

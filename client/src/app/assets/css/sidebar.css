@@ -172,7 +172,26 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+.admin-sidebar-user--clickable {
+  width: 100%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+  transition: opacity 0.15s ease;
+}
 
+.admin-sidebar-user--clickable:hover {
+  opacity: 0.85;
+}
+
+.admin-sidebar-super-link {
+  display: block;
+  width: 100%;
+  margin-bottom: 0.5rem;
+  text-align: center;
+  text-decoration: none;
+}
 
 .admin-sidebar-user-role {
   font-size: 0.625rem;
