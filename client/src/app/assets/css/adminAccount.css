@@ -26,3 +26,46 @@
     color: #6b7280;
     font-size: 0.95rem;
   }
+
+  .staff-account-meta {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  
+  .staff-account-badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    background: #dbeafe;
+    color: #1e40af;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: capitalize;
+  }
+  
+  .staff-account-status {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: capitalize;
+  }
+  
+  .staff-account-status--active {
+    background: #dcfce7;
+    color: #166534;
+  }
+  
+  .staff-account-status--inactive {
+    background: #fef2f2;
+    color: #991b1b;
+  }
+  
+  .staff-account-alert {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+  }
