@@ -350,6 +350,48 @@ export default function staffAccountSettings({
           {profileSaving ? 'Saving...' : 'Save profile'}
         </button>
       </form>
+
+      <form className="admin-card staff-account-section" onSubmit={handleChangePassword}>
+        <h2 className="admin-card-title">Change password</h2>
+        <div className="staff-account-grid staff-account-grid--narrow">
+          <div className="admin-form-group">
+            <label className="admin-form-label" htmlFor="current-password">Current password</label>
+            <input
+              id="current-password"
+              className="admin-form-input"
+              type="password"
+              value={passwordForm.currentPassword}
+              onChange={(e) => setPasswordForm((p) => ({ ...p, currentPassword: e.target.value }))}
+              required
+            />
+          </div>
+          <div className="admin-form-group">
+            <label className="admin-form-label" htmlFor="new-password">New password</label>
+            <input
+              id="new-password"
+              className="admin-form-input"
+              type="password"
+              value={passwordForm.newPassword}
+              onChange={(e) => setPasswordForm((p) => ({ ...p, newPassword: e.target.value }))}
+              required
+            />
+          </div>
+          <div className="admin-form-group">
+            <label className="admin-form-label" htmlFor="confirm-password">Confirm new password</label>
+            <input
+              id="confirm-password"
+              className="admin-form-input"
+              type="password"
+              value={passwordForm.confirmPassword}
+              onChange={(e) => setPasswordForm((p) => ({ ...p, confirmPassword: e.target.value }))}
+              required
+            />
+          </div>
+        </div>
+        <button type="submit" className="admin-btn admin-btn-primary" disabled={passwordSaving}>
+          {passwordSaving ? 'Updating...' : 'Update password'}
+        </button>
+      </form>
         </div>
       );
 }
