@@ -120,3 +120,84 @@
     font-weight: 700;
     font-size: 1.25rem;
   }
+
+  .staff-account-file-input {
+    display: none;
+  }
+  
+  .staff-account-checkboxes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  
+  .staff-account-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+  }
+  
+  .staff-account-field-hint {
+    font-size: 0.8125rem;
+    color: #6b7280;
+    word-break: break-all;
+  }
+  
+  .staff-account-2fa-setup,
+  .staff-account-2fa-disable {
+    margin-top: 0.75rem;
+  }
+  
+  .staff-account-2fa-url a {
+    color: #2563eb;
+    font-size: 0.875rem;
+  }
+  
+  .staff-account-table-wrap {
+    overflow-x: auto;
+  }
+  
+  .staff-account-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+  
+  .staff-account-table th,
+  .staff-account-table td {
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .staff-account-table th {
+    font-weight: 600;
+    color: #374151;
+  }
+  
+  .staff-account-ok {
+    color: #15803d;
+    font-weight: 500;
+  }
+  
+  .staff-account-fail {
+    color: #b91c1c;
+    font-weight: 500;
+  }
+  
+  :root.dark-mode .staff-account-title {
+    color: #f9fafb;
+  }
+  
+  :root.dark-mode .staff-account-subtitle,
+  :root.dark-mode .staff-account-loading {
+    color: #9ca3af;
+  }
+  
+  :root.dark-mode .staff-account-table th,
+  :root.dark-mode .staff-account-table td {
+    border-color: #374151;
+  }
