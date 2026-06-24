@@ -1,0 +1,28 @@
+.staff-account {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem;
+  }
+  
+  .staff-account-loading {
+    padding: 2rem;
+    text-align: center;
+    color: #6b7280;
+  }
+  
+  .staff-account-header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .staff-account-title {
+    margin: 0 0 0.35rem;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #111827;
+  }
+  
+  .staff-account-subtitle {
+    margin: 0 0 0.75rem;
+    color: #6b7280;
+    font-size: 0.95rem;
+  }
