@@ -10,14 +10,16 @@ const Navbar = dynamic(() => import('./navbar/Navbar'), { ssr: false });
 
 export default function AuthLayoutWrapper({ children }) {
   const pathname = usePathname();
-  const isAuthPage = pathname?.startsWith('/auth');
-  const isAdminPage = pathname?.startsWith('/admin');
+  const hideStoreChrome =
+    pathname?.startsWith('/auth') ||
+    pathname?.startsWith('/admin') ||
+    pathname?.startsWith('/superAdmin');
 
   return (
     <>
-      {!isAuthPage && !isAdminPage && <Navbar />}
+      {!hideStoreChrome && <Navbar />}
       {children}
-      {!isAuthPage && !isAdminPage && <Footer />}
+      {!hideStoreChrome && <Footer />}
     </>
   );
 }
