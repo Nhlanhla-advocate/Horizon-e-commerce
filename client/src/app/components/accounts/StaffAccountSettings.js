@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { buildPersonalInfoPayload } from './accountUtils';
+import { buildPersonalInfoPayload, getInitials } from './accountUtils';
 import '../../assets/css/adminAccount.css';
 
 const EMPTY_PERSONAL = { 
@@ -20,9 +20,9 @@ const NOTIFICATION_KEYS = [
     { key: 'weeklyReports', label: 'Weekly Reports' },
 ];
 
-const IMAGE_ACCEPT = 'image/jpeg.image/png.image/webp.image/gif';
+const IMAGE_ACCEPT = 'image/jpeg,image/png,image/webp,image/gif';
 
-export default function staffAccountSettings({
+export default function StaffAccountSettings({
     api,
     title = 'My Account',
     subtitle = 'Manage your profile, security, and notification settings.',
@@ -34,22 +34,22 @@ export default function staffAccountSettings({
     const [ profile, setProfile ] = useState(null);
     const [ username, setUsername ] = useState('');
     const [ personalInfo, setPersonalInfo ] = useState(EMPTY_PERSONAL);
-    const [ notifications, setNotifications ] = useState([]);
-    const [ loginHistory, setLoginHistory ] = useState([]);
-    const [ passwordForm, setPasswordForm ] = useState({
+    const [notifications, setNotifications] = useState({});
+    const [loginHistory, setLoginHistory] = useState([]);
+    const [passwordForm, setPasswordForm] = useState({
         currentPassword: '',
         newPassword: '',
         confirmPassword: '',
     });
-    const [twoFactor, setTwoFactor] = useState(null);
+    const [twoFactorSetup, setTwoFactorSetup] = useState(null);
     const [twoFactorToken, setTwoFactorToken] = useState('');
-    const [disableTwoFactor, setDisableTwoFactor] = useState({ currentPassword: '', token: '' });
+    const [disable2faForm, setDisable2faForm] = useState({ currentPassword: '', token: '' });
 
     const [profileSaving, setProfileSaving] = useState(false);
     const [passwordSaving, setPasswordSaving] = useState(false);
     const [notifSaving, setNotifSaving] = useState(false);
     const [avatarUploading, setAvatarUploading] = useState(false);
-    const [twoFactorSaving, setTwoFactorSaving] = useState(false);
+    const [twoFactorLoading, setTwoFactorLoading] = useState(false);
 
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -216,6 +216,14 @@ export default function staffAccountSettings({
           setTwoFactorLoading(false);
         }
       };
+
+      if (loading) {
+        return (
+          <div className="staff-account">
+            <div className="staff-account-loading">Loading account...</div>
+          </div>
+        );
+      }
 
       if (!profile) {
         return (

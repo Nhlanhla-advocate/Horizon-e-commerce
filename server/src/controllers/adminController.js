@@ -578,7 +578,7 @@ exports.setupAdminTwoFactor = async (req, res) => {
         doc.twoFactor.secret = secret;
         await doc.save();
 
-        const issuer = process.env.horizon-ecommerce || 'horizon-ecommerce';
+        const issuer = process.env.APP_NAME || 'Horizon E-commerce';
         const otpauthURL = keyuri(doc.email, issuer, secret);
 
         res.json({
