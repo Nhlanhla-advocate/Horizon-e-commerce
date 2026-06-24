@@ -230,5 +230,47 @@ export default function staffAccountSettings({
     
       const twoFactorEnabled = Boolean(profile.twoFactor?.enabled);
 
-      
+      return (
+        <div className="staff-account">
+          <header className="staff-account-header">
+            <h1 className="staff-account-title">{title}</h1>
+            <p className="staff-account-subtitle">{subtitle}</p>
+            <div className="staff-account-meta">
+              <span className="staff-account-badge">{profile.role?.replace('_', ' ') || 'staff'}</span>
+              <span className={staff-account-status staff-account-status--${profile.status || 'active'}}>
+                {profile.status || 'active'}
+              </span>
+            </div>
+          </header>
+    
+          {error && <div className="staff-account-alert staff-account-alert--error">{error}</div>}
+          {success && <div className="staff-account-alert staff-account-alert--success">{success}</div>}
+    
+          <section className="admin-card staff-account-section">
+            <h2 className="admin-card-title">Profile photo</h2>
+            <div className="staff-account-avatar-row">
+              {profile.avatar ? (
+                <img src={profile.avatar} alt="Profile" className="staff-account-avatar" />
+              ) : (
+                <div className="staff-account-avatar staff-account-avatar--placeholder">{getInitials(profile)}</div>
+              )}
+              <div>
+                <input
+                  ref={avatarInputRef}
+                  type="file"
+                  accept={IMAGE_ACCEPT}
+                  className="staff-account-file-input"
+                  onChange={handleAvatarUpload}
+                />
+                <button
+                  type="button"
+                  className="admin-btn admin-btn-secondary"
+                  disabled={avatarUploading}
+                  onClick={() => avatarInputRef.current?.click()}
+                >
+                  {avatarUploading ? 'Uploading...' : 'Upload photo'}
+                </button>
+              </div>
+            </div>
+          </section>
 }
