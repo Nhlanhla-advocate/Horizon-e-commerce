@@ -237,7 +237,7 @@ export default function staffAccountSettings({
             <p className="staff-account-subtitle">{subtitle}</p>
             <div className="staff-account-meta">
               <span className="staff-account-badge">{profile.role?.replace('_', ' ') || 'staff'}</span>
-              <span className={staff-account-status staff-account-status--${profile.status || 'active'}}>
+              <span className={`staff-account-status staff-account-status--${profile.status || 'active'}`}>
                 {profile.status || 'active'}
               </span>
             </div>
@@ -273,4 +273,83 @@ export default function staffAccountSettings({
               </div>
             </div>
           </section>
+
+          
+          <form className="admin-card staff-account-section" onSubmit={handleSaveProfile}>
+        <h2 className="admin-card-title">Personal details</h2>
+        <div className="staff-account-grid">
+          <div className="admin-form-group">
+            <label className="admin-form-label" htmlFor="staff-email">Email</label>
+            <input id="staff-email" className="admin-form-input" type="email" value={profile.email || ''} disabled />
+          </div>
+          <div className="admin-form-group">
+            <label className="admin-form-label" htmlFor="staff-username">Username</label>
+            <input
+              id="staff-username"
+              className="admin-form-input"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              minLength={3}
+              required
+            />
+          </div>
+          <div className="admin-form-group">
+            <label className="admin-form-label" htmlFor="staff-firstName">First name</label>
+            <input
+              id="staff-firstName"
+              className="admin-form-input"
+              type="text"
+              value={personalInfo.firstName}
+              onChange={(e) => setPersonalInfo((p) => ({ ...p, firstName: e.target.value }))}
+            />
+          </div>
+          <div className="admin-form-group">
+            <label className="admin-form-label" htmlFor="staff-lastName">Last name</label>
+            <input
+              id="staff-lastName"
+              className="admin-form-input"
+              type="text"
+              value={personalInfo.lastName}
+              onChange={(e) => setPersonalInfo((p) => ({ ...p, lastName: e.target.value }))}
+            />
+          </div>
+          <div className="admin-form-group">
+            <label className="admin-form-label" htmlFor="staff-displayName">Display name</label>
+            <input
+              id="staff-displayName"
+              className="admin-form-input"
+              type="text"
+              value={personalInfo.displayName}
+              onChange={(e) => setPersonalInfo((p) => ({ ...p, displayName: e.target.value }))}
+            />
+          </div>
+          <div className="admin-form-group">
+            <label className="admin-form-label" htmlFor="staff-phone">Phone</label>
+            <input
+              id="staff-phone"
+              className="admin-form-input"
+              type="tel"
+              value={personalInfo.phone}
+              onChange={(e) => setPersonalInfo((p) => ({ ...p, phone: e.target.value }))}
+            />
+          </div>
+        </div>
+        <div className="admin-form-group">
+          <label className="admin-form-label" htmlFor="staff-bio">Bio</label>
+          <textarea
+            id="staff-bio"
+            className="admin-form-textarea"
+            value={personalInfo.bio}
+            onChange={(e) => setPersonalInfo((p) => ({ ...p, bio: e.target.value }))}
+            maxLength={500}
+            rows={3}
+          />
+        </div>
+        <button type="submit" className="admin-btn admin-btn-primary" disabled={profileSaving}>
+          {profileSaving ? 'Saving...' : 'Save profile'}
+        </button>
+      </form>
+        </div>
+      );
 }
