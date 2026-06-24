@@ -392,6 +392,25 @@ export default function staffAccountSettings({
           {passwordSaving ? 'Updating...' : 'Update password'}
         </button>
       </form>
+
+      <form className="admin-card staff-account-section" onSubmit={handleSaveNotifications}>
+        <h2 className="admin-card-title">Notifications</h2>
+        <div className="staff-account-checkboxes">
+          {NOTIFICATION_KEYS.map(({ key, label }) => (
+            <label key={key} className="staff-account-checkbox">
+              <input
+                type="checkbox"
+                checked={Boolean(notifications[key])}
+                onChange={(e) => setNotifications((n) => ({ ...n, [key]: e.target.checked }))}
+              />
+              <span>{label}</span>
+            </label>
+          ))}
+        </div>
+        <button type="submit" className="admin-btn admin-btn-primary" disabled={notifSaving}>
+          {notifSaving ? 'Saving...' : 'Save notifications'}
+        </button>
+      </form>
         </div>
       );
 }
