@@ -411,6 +411,90 @@ export default function staffAccountSettings({
           {notifSaving ? 'Saving...' : 'Save notifications'}
         </button>
       </form>
+
+      <section className="admin-card staff-account-section">
+        <h2 className="admin-card-title">Two-factor authentication</h2>
+        <p className="admin-card-subtitle">
+          {twoFactorEnabled ? '2FA is enabled on your account.' : 'Add an extra layer of security with an authenticator app.'}
+        </p>
+
+        {!twoFactorEnabled && !twoFactorSetup && (
+          <button
+            type="button"
+            className="admin-btn admin-btn-secondary"
+            disabled={twoFactorLoading}
+            onClick={handleSetupTwoFactor}
+          >
+            {twoFactorLoading ? 'Starting...' : 'Set up 2FA'}
+          </button>
+        )}
+
+        {twoFactorSetup && (
+          <form className="staff-account-2fa-setup" onSubmit={handleVerifyTwoFactor}>
+            {twoFactorSetup.otpauthURL && (
+              <p className="staff-account-2fa-url">
+                <a href={twoFactorSetup.otpauthURL} target="_blank" rel="noreferrer">
+                  Open in authenticator app
+                </a>
+              </p>
+            )}
+            {twoFactorSetup.secret && (
+              <p className="staff-account-field-hint">Manual key: {twoFactorSetup.secret}</p>
+            )}
+            <div className="admin-form-group">
+              <label className="admin-form-label" htmlFor="2fa-token">Verification code</label>
+              <input
+                id="2fa-token"
+                className="admin-form-input"
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                value={twoFactorToken}
+                onChange={(e) => setTwoFactorToken(e.target.value.replace(/\D/g, ''))}
+                required
+              />
+            </div>
+            <button type="submit" className="admin-btn admin-btn-primary" disabled={twoFactorLoading}>
+              {twoFactorLoading ? 'Verifying...' : 'Enable 2FA'}
+            </button>
+          </form>
+        )}
+
+        {twoFactorEnabled && (
+          <form className="staff-account-2fa-disable" onSubmit={handleDisableTwoFactor}>
+            <div className="staff-account-grid staff-account-grid--narrow">
+              <div className="admin-form-group">
+                <label className="admin-form-label" htmlFor="disable-password">Current password</label>
+                <input
+                  id="disable-password"
+                  className="admin-form-input"
+                  type="password"
+                  value={disable2faForm.currentPassword}
+                  onChange={(e) => setDisable2faForm((f) => ({ ...f, currentPassword: e.target.value }))}
+                  required
+                />
+              </div>
+              <div className="admin-form-group">
+                <label className="admin-form-label" htmlFor="disable-token">Authenticator code</label>
+                <input
+                  id="disable-token"
+                  className="admin-form-input"
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={disable2faForm.token}
+                  onChange={(e) => setDisable2faForm((f) => ({ ...f, token: e.target.value.replace(/\D/g, '') }))}
+                  required
+                />
+              </div>
+            </div>
+            <button type="submit" className="admin-btn admin-btn-danger" disabled={twoFactorLoading}>
+              {twoFactorLoading ? 'Disabling...' : 'Disable 2FA'}
+            </button>
+          </form>
+        )}
+      </section>
         </div>
+        
       );
 }
