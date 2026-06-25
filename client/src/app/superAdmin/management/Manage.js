@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { ADMIN_API_BASE, getAdminAuthHeaders } from '@/app/utils/adminAccountApi';
 import '../../assets/css/manage.css';
 
-const STAFF_BASE = ${ADMIN_API_BASE}/dashboard/super-admin;
+const STAFF_BASE = `${ADMIN_API_BASE}/dashboard/super-admin`;
 
 const ROLES = [
   { value: 'admin', label: 'Admin' },
@@ -31,3 +31,32 @@ const EMPTY_FORM = {
   role: 'admin',
   permissions: [],
 };
+
+export default function Manage() {
+    const [admins, setAdmins] = useState([]);
+    const [permissionOptions, setPermissionOptions] = useState(DEFAULT_PERMISSIONS);
+    const [loading, setLoading] = useState(true);
+    const [listError, setListError] = useState(null);
+    const [submitLoading, setSubmitLoading] = useState(false);
+    const [submitError, setSubmitError] = useState(null);
+    const [successMessage, setSuccessMessage] = useState(null);
+    const [form, setForm] = useState(EMPTY_FORM);
+  
+    const [editTarget, setEditTarget] = useState(null);
+    const [editForm, setEditForm] = useState(null);
+    const [editLoading, setEditLoading] = useState(false);
+    const [actionLoadingId, setActionLoadingId] = useState(null);
+  
+    const fetchPermissions = async () => {
+      try {
+        const res = await fetch(`${STAFF_BASE}/permissions`, { headers: getAdminAuthHeaders() });
+        if (!res.ok) return;
+        const data = await res.json();
+        const keys = data?.data ? Object.keys(data.data) : [];
+        if (keys.length) setPermissionOptions(keys);
+      } catch {
+        /* keep defaults */
+      }
+    };
+
+  
