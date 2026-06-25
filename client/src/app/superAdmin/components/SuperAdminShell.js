@@ -81,13 +81,13 @@ export default function SuperAdminShell({ children }) {
         </div>
         <nav className="super-admin-shell-nav">
           {NAV_ITEMS.map((item) => (
-            <link
+            <Link
             key={item.href}
             href={item.href}
             className={`super-admin-shell-nav-link${pathname === item.href ? ' active' : ''}`}
             >
               {item.label}
-            </link>
+            </Link>
           ))}
         </nav>
         <div className="super-admin-shell-actions">
