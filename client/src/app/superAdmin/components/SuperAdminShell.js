@@ -69,4 +69,34 @@ export default function SuperAdminShell({ children }) {
       </div>
     );
   }
+
+  return (
+    <div className="super-admin-shell">
+      <header className="super-admin-shell-header">
+        <div className="super-admin-shell-brand">
+          <h1>Super Admin</h1>
+          {profile && (
+            <span className="super-admin-shell-user">{profile.username || profile.email}</span>
+          )}
+        </div>
+        <nav className="super-admin-shell-nav">
+          {NAV_ITEMS.map((item) => (
+            <link
+            key={item.href}
+            href={item.href}
+            className={`super-admin-shell-nav-link${pathname === item.href ? ' active' : ''}`}
+            >
+              {item.label}
+            </link>
+          ))}
+        </nav>
+        <div className="super-admin-shell-actions">
+          <Link href="/admin" className="super-admin-shell-link">Admin Dashboard"</Link>
+          <Link href="/" className="super-admin-shell-link">Store</Link>
+          <button type="button" className="super-admin-shell-logout" onClick={handleLogout}>Logout</button>
+        </div>
+      </header>
+      <main className="super-admin-shell-main">{children}</main>
+    </div>
+  );
  }
