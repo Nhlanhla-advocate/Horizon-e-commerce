@@ -59,4 +59,26 @@ export default function Manage() {
       }
     };
 
+    const fetchAdmins = async () => {
+      setLoading(true);
+      setListError(null);
+      try {
+        const res = await fetch(`${STAFF_BASE}/admins`, { headers: getAdminAuthHeaders() });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.message || data.error || `Failed to load staff (${res.status})`);
+        }
+        const data = await res.json();
+        setAdmins(Array.isArray(data?.data) ? data.data : []);
+      } catch (err) {
+        setListError(err.message || 'Failed to load staff accounts');
+        setAdmins([]);
+      } finally {
+        setLoading(false);
+      }
+    };
   
+    useEffect(() => {
+      fetchPermissions();
+      fetchAdmins();
+    }, []);
