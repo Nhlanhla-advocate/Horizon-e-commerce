@@ -82,3 +82,30 @@ export default function Manage() {
       fetchPermissions();
       fetchAdmins();
     }, []);
+
+    const handleChange = (e) => {
+      const { name, value } = e.target;
+      setForm((prev) => ({ ...prev, [name]: value }));
+      setSubmitError(null);
+      setSuccessMessage(null);
+    };
+  
+    const handlePermissionToggle = (perm, target = 'create') => {
+      if (target === 'create') {
+        setForm((prev) => ({
+          ...prev,
+          permissions: prev.permissions.includes(perm)
+            ? prev.permissions.filter((p) => p !== perm)
+            : [...prev.permissions, perm],
+        }));
+      } else if (editForm) {
+        setEditForm((prev) => ({
+          ...prev,
+          permissions: prev.permissions.includes(perm)
+            ? prev.permissions.filter((p) => p !== perm)
+            : [...prev.permissions, perm],
+        }));
+      }
+      setSubmitError(null);
+      setSuccessMessage(null);
+    };
