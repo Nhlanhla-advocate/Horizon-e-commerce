@@ -157,3 +157,29 @@ export default function Manage() {
     setEditTarget(null);
     setEditForm(null);
   };
+
+   const handleEditSave = async (e) => {
+    e.preventDefault();
+    if (!editTarget || !editForm) return;
+    setEditLoading(true);
+    setSubmitError(null);
+    setSuccessMessage(null);
+    try {
+      const res = await fetch(${STAFF_BASE}/admins/${editTarget._id}, {
+        method: 'PUT',
+        headers: getAdminAuthHeaders(),
+        body: JSON.stringify(editForm),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || data.error || 'Update failed');
+      }
+      setSuccessMessage('Staff account updated.');
+      closeEdit();
+      fetchAdmins();
+    } catch (err) {
+      setSubmitError(err.message || 'Failed to update staff account');
+    } finally {
+      setEditLoading(false);
+    }
+  };
