@@ -140,3 +140,20 @@ export default function Manage() {
         setSubmitLoading(false);
       }
     };
+
+      const openEdit = (admin) => {
+    if (admin.role === 'super_admin') return;
+    setEditTarget(admin);
+    setEditForm({
+      username: admin.username || '',
+      email: admin.email || '',
+      role: admin.role || 'admin',
+      status: admin.status || 'active',
+      permissions: Array.isArray(admin.permissions) ? [...admin.permissions] : [],
+    });
+  };
+
+  const closeEdit = () => {
+    setEditTarget(null);
+    setEditForm(null);
+  };
