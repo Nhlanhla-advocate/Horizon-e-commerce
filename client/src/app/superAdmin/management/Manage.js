@@ -183,3 +183,38 @@ export default function Manage() {
       setEditLoading(false);
     }
   };
+
+  const runStaffAction = async (adminId, action) => {
+    setActionLoadingId(adminId);
+    setSubmitError(null);
+    setSuccessMessage(null);
+    const paths = {
+      suspend: `${STAFF_BASE}/admins/${adminId}/suspend`,
+      activate: `${STAFF_BASE}/admins/${adminId}/activate`,
+      delete: `${STAFF_BASE}/admins/${adminId}`,
+    };
+    try {
+      const options = {
+        headers: getAdminAuthHeaders(),
+        method: action === 'delete' ? 'DELETE' : 'POST',
+      };
+      if (action === 'suspend') {
+        options.body = JSON.stringify({ reason: 'Suspended by super admin' });
+      }
+      const res = await fetch(paths[action], options);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.success === false) {
+        throw new Error(data.message || data.error || 'Action failed');
+      }
+      setSuccessMessage(
+        action === 'delete' ? 'Staff account deleted.' :
+        action === 'suspend' ? 'Staff account suspended.' :
+        'Staff account activated.'
+      );
+      fetchAdmins();
+    } catch (err) {
+      setSubmitError(err.message || 'Action failed');
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
