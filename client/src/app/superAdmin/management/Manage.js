@@ -109,3 +109,51 @@ export default function Manage() {
       setSubmitError(null);
       setSuccessMessage(null);
     };
+
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      setSubmitError(null);
+      setSuccessMessage(null);
+      if (!form.email?.trim() || !form.username?.trim() || !form.password) {
+        setSubmitError('Email, username and password are required.');
+        return;
+      }
+      setSubmitLoading(true);
+      try {
+        const res = await fetch(`${STAFF_BASE}/admins`, {
+          method: 'POST',
+          headers: getAdminAuthHeaders(),
+          body:JSON.stringify({
+            email: form.email.trim(),
+            username: form.username.trim(),
+            password: form.password,
+            role: form.role,
+            permissions: form.permissions.length ? form.permissions : undefined,
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.success) {
+          throw new Error(data.message || data.error || `Reques failed (${res.status})` );
+        }
+        setSuccessMessage('Staff account created successfully.');
+      } finally {
+        setSubmitLoading(false);
+      }
+    };
+
+      const openEdit = (admin) => {
+    if (admin.role === 'super_admin') return;
+    setEditTarget(admin);
+    setEditForm({
+      username: admin.username || '',
+      email: admin.email || '',
+      role: admin.role || 'admin',
+      status: admin.status || 'active',
+      permissions: Array.isArray(admin.permissions) ? [...admin.permissions] : [],
+    });
+  };
+
+  const closeEdit = () => {
+    setEditTarget(null);
+    setEditForm(null);
+  };
