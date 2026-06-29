@@ -314,4 +314,92 @@ export default function Manage() {
           </form>
         </section>
 
-       
+        <section className="manage-section">
+        <h2 className="manage-section-title">Staff accounts</h2>
+        {loading ? (
+          <p className="manage-muted">Loading accounts...</p>
+        ) : admins.length === 0 ? (
+          <p className="manage-muted">No staff accounts yet.</p>
+        ) : (
+          <div className="manage-table-wrap">
+            <table className="manage-table">
+              <thead>
+                <tr>
+                  <th className="manage-th">Email</th>
+                  <th className="manage-th">Username</th>
+                  <th className="manage-th">Role</th>
+                  <th className="manage-th">Status</th>
+                  <th className="manage-th">Source</th>
+                  <th className="manage-th">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {admins.map((admin) => (
+                  <tr key={admin._id}>
+                    <td className="manage-td">{admin.email}</td>
+                    <td className="manage-td">{admin.username}</td>
+                    <td className="manage-td">
+                      <span className="manage-badge">{admin.role || '—'}</span>
+                    </td>
+                    <td className="manage-td">
+                      <span className={`manage-status manage-status--${admin.status || 'active'}`}>
+                        {admin.status || 'active'}
+                      </span>
+                    </td>
+                    <td className="manage-td">{admin.accountSource || '—'}</td>
+                    <td className="manage-td manage-td-actions">
+                      {canManage(admin) ? (
+                        <div className="manage-action-group">
+                          <button
+                            type="button"
+                            className="manage-action-btn"
+                            onClick={() => openEdit(admin)}
+                          >
+                            Edit
+                          </button>
+                          {admin.status === 'active' ? (
+                            <button
+                              type="button"
+                              className="manage-action-btn manage-action-btn--warn"
+                              disabled={actionLoadingId === admin._id}
+                              onClick={() => runStaffAction(admin._id, 'suspend')}
+                            >
+                              Suspend
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              className="manage-action-btn"
+                              disabled={actionLoadingId === admin._id}
+                              onClick={() => runStaffAction(admin._id, 'activate')}
+                            >
+                              Activate
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            className="manage-action-btn manage-action-btn--danger"
+                            disabled={actionLoadingId === admin._id}
+                            onClick={() => {
+                              if (window.confirm(`Delete ${admin.email}?`)) {
+                                runStaffAction(admin._id, 'delete');
+                              }
+                            }}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="manage-muted">Protected</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
