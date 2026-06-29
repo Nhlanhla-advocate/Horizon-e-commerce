@@ -400,6 +400,81 @@ export default function Manage() {
           </div>
         )}
       </section>
+      {editTarget && editForm && (
+        <div className="manage-modal-overlay" onClick={closeEdit}>
+          <div className="manage-modal" onClick={(e) => e.stopPropagation()}>
+            <h3 className="manage-modal-title">Edit staff account</h3>
+            <p className="manage-modal-subtitle">{editTarget.email}</p>
+            <form onSubmit={handleEditSave} className="manage-form">
+              <div className="manage-row">
+                <label className="manage-label">Username</label>
+                <input
+                  className="manage-input"
+                  value={editForm.username}
+                  onChange={(e) => setEditForm((f) => ({ ...f, username: e.target.value }))}
+                  required
+                />
+              </div>
+              <div className="manage-row">
+                <label className="manage-label">Email</label>
+                <input
+                  type="email"
+                  className="manage-input"
+                  value={editForm.email}
+                  onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))}
+                  required
+                />
+              </div>
+              <div className="manage-row">
+                <label className="manage-label">Role</label>
+                <select
+                  className="manage-select"
+                  value={editForm.role}
+                  onChange={(e) => setEditForm((f) => ({ ...f, role: e.target.value }))}
+                >
+                  {ROLES.map((r) => (
+                    <option key={r.value} value={r.value}>{r.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="manage-row">
+                <label className="manage-label">Status</label>
+                <select
+                  className="manage-select"
+                  value={editForm.status}
+                  onChange={(e) => setEditForm((f) => ({ ...f, status: e.target.value }))}
+                >
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+              <div className="manage-row">
+                <label className="manage-label">Permissions</label>
+                <div className="manage-permission-grid">
+                  {permissionOptions.map((perm) => (
+                    <label key={perm} className="manage-checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={editForm.permissions.includes(perm)}
+                        onChange={() => handlePermissionToggle(perm, 'edit')}
+                      />
+                      <span className="manage-checkbox-text">{perm}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div className="manage-modal-actions">
+                <button type="button" className="manage-button manage-button--secondary" onClick={closeEdit}>
+                  Cancel
+                </button>
+                <button type="submit" className="manage-button" disabled={editLoading}>
+                  {editLoading ? 'Saving...' : 'Save changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
