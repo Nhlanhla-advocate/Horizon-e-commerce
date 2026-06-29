@@ -165,7 +165,7 @@ export default function Manage() {
     setSubmitError(null);
     setSuccessMessage(null);
     try {
-      const res = await fetch(${STAFF_BASE}/admins/${editTarget._id}, {
+      const res = await fetch(`${STAFF_BASE}/admins/${editTarget._id}`, {
         method: 'PUT',
         headers: getAdminAuthHeaders(),
         body: JSON.stringify(editForm),
@@ -218,3 +218,100 @@ export default function Manage() {
       setActionLoadingId(null);
     }
   };
+
+  const canManage = (admin) => admin.role !== 'super_admin';
+
+  return (
+      <div className="manage-super-admin">
+        <header className="manage-header">
+          <h1 className="manage-title">Staff account management</h1>
+          <p className="manage-subtitle">Create and manage admin, manager, and support accounts</p>
+        </header>
+  
+        {(submitError || listError) && (
+          <div className="manage-message-error">{submitError || listError}</div>
+        )}
+        {successMessage && <div className="manage-message-success">{successMessage}</div>}
+  
+        <section className="manage-section">
+          <h2 className="manage-section-title">Create staff account</h2>
+          <form onSubmit={handleSubmit} className="manage-form">
+            <div className="manage-row">
+              <label className="manage-label">
+                Email <span className="manage-required">*</span>
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="admin@example.com"
+                required
+                className="manage-input"
+                autoComplete="email"
+              />
+            </div>
+            <div className="manage-row">
+              <label className="manage-label">
+                Username <span className="manage-required">*</span>
+              </label>
+              <input
+                type="text"
+                name="username"
+                value={form.username}
+                onChange={handleChange}
+                placeholder="admin_user"
+                required
+                className="manage-input"
+                autoComplete="username"
+              />
+            </div>
+            <div className="manage-row">
+              <label className="manage-label">
+                Password <span className="manage-required">*</span>
+              </label>
+              <input
+                type="password"
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                placeholder="••••••••"
+                required
+                className="manage-input"
+                autoComplete="new-password"
+              />
+            </div>
+            <div className="manage-row">
+              <label className="manage-label">Role</label>
+              <select name="role" value={form.role} onChange={handleChange} className="manage-select">
+                {ROLES.map((r) => (
+                  <option key={r.value} value={r.value}>{r.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="manage-row">
+              <label className="manage-label">Permissions (optional)</label>
+              <div className="manage-permission-grid">
+                {permissionOptions.map((perm) => (
+                  <label key={perm} className="manage-checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={form.permissions.includes(perm)}
+                      onChange={() => handlePermissionToggle(perm, 'create')}
+                    />
+                    <span className="manage-checkbox-text">{perm}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <button
+              type="submit"
+              disabled={submitLoading}
+              className={`manage-button${submitLoading ? ' manage-button--disabled' : ''}`}
+            >
+              {submitLoading ? 'Creating...' : 'Create account'}
+            </button>
+          </form>
+        </section>
+
+       
