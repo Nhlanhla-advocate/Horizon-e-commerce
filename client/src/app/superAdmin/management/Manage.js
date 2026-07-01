@@ -1,7 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ADMIN_API_BASE, getAdminAuthHeaders } from '@/app/utils/adminAccountApi';
+import '../../assets/css/admin.css';
+import '../../assets/css/productManagement.css';
 import '../../assets/css/manage.css';
 
 const STAFF_BASE = `${ADMIN_API_BASE}/dashboard/super-admin`;
@@ -32,116 +34,134 @@ const EMPTY_FORM = {
   permissions: [],
 };
 
+const btnCompact = { padding: '0.25rem 0.75rem', fontSize: '0.875rem' };
+
 export default function Manage() {
-    const [admins, setAdmins] = useState([]);
-    const [permissionOptions, setPermissionOptions] = useState(DEFAULT_PERMISSIONS);
-    const [loading, setLoading] = useState(true);
-    const [listError, setListError] = useState(null);
-    const [submitLoading, setSubmitLoading] = useState(false);
-    const [submitError, setSubmitError] = useState(null);
-    const [successMessage, setSuccessMessage] = useState(null);
-    const [form, setForm] = useState(EMPTY_FORM);
-  
-    const [editTarget, setEditTarget] = useState(null);
-    const [editForm, setEditForm] = useState(null);
-    const [editLoading, setEditLoading] = useState(false);
-    const [actionLoadingId, setActionLoadingId] = useState(null);
-  
-    const fetchPermissions = async () => {
-      try {
-        const res = await fetch(`${STAFF_BASE}/permissions`, { headers: getAdminAuthHeaders() });
-        if (!res.ok) return;
-        const data = await res.json();
-        const keys = data?.data ? Object.keys(data.data) : [];
-        if (keys.length) setPermissionOptions(keys);
-      } catch {
-        /* keep defaults */
-      }
-    };
+  const [admins, setAdmins] = useState([]);
+  const [permissionOptions, setPermissionOptions] = useState(DEFAULT_PERMISSIONS);
+  const [loading, setLoading] = useState(true);
+  const [listError, setListError] = useState(null);
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [searchInput, setSearchInput] = useState('');
 
-    const fetchAdmins = async () => {
-      setLoading(true);
-      setListError(null);
-      try {
-        const res = await fetch(`${STAFF_BASE}/admins`, { headers: getAdminAuthHeaders() });
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          throw new Error(data.message || data.error || `Failed to load staff (${res.status})`);
-        }
-        const data = await res.json();
-        setAdmins(Array.isArray(data?.data) ? data.data : []);
-      } catch (err) {
-        setListError(err.message || 'Failed to load staff accounts');
-        setAdmins([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-  
-    useEffect(() => {
-      fetchPermissions();
-      fetchAdmins();
-    }, []);
+  const [editTarget, setEditTarget] = useState(null);
+  const [editForm, setEditForm] = useState(null);
+  const [editLoading, setEditLoading] = useState(false);
+  const [actionLoadingId, setActionLoadingId] = useState(null);
 
-    const handleChange = (e) => {
-      const { name, value } = e.target;
-      setForm((prev) => ({ ...prev, [name]: value }));
-      setSubmitError(null);
-      setSuccessMessage(null);
-    };
-  
-    const handlePermissionToggle = (perm, target = 'create') => {
-      if (target === 'create') {
-        setForm((prev) => ({
-          ...prev,
-          permissions: prev.permissions.includes(perm)
-            ? prev.permissions.filter((p) => p !== perm)
-            : [...prev.permissions, perm],
-        }));
-      } else if (editForm) {
-        setEditForm((prev) => ({
-          ...prev,
-          permissions: prev.permissions.includes(perm)
-            ? prev.permissions.filter((p) => p !== perm)
-            : [...prev.permissions, perm],
-        }));
-      }
-      setSubmitError(null);
-      setSuccessMessage(null);
-    };
+  const fetchPermissions = async () => {
+    try {
+      const res = await fetch(`${STAFF_BASE}/permissions`, { headers: getAdminAuthHeaders() });
+      if (!res.ok) return;
+      const data = await res.json();
+      const keys = data?.data ? Object.keys(data.data) : [];
+      if (keys.length) setPermissionOptions(keys);
+    } catch {
+      /* keep defaults */
+    }
+  };
 
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      setSubmitError(null);
-      setSuccessMessage(null);
-      if (!form.email?.trim() || !form.username?.trim() || !form.password) {
-        setSubmitError('Email, username and password are required.');
-        return;
-      }
-      setSubmitLoading(true);
-      try {
-        const res = await fetch(`${STAFF_BASE}/admins`, {
-          method: 'POST',
-          headers: getAdminAuthHeaders(),
-          body:JSON.stringify({
-            email: form.email.trim(),
-            username: form.username.trim(),
-            password: form.password,
-            role: form.role,
-            permissions: form.permissions.length ? form.permissions : undefined,
-          }),
-        });
+  const fetchAdmins = async () => {
+    setLoading(true);
+    setListError(null);
+    try {
+      const res = await fetch(`${STAFF_BASE}/admins`, { headers: getAdminAuthHeaders() });
+      if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        if (!res.ok || !data.success) {
-          throw new Error(data.message || data.error || `Reques failed (${res.status})` );
-        }
-        setSuccessMessage('Staff account created successfully.');
-      } finally {
-        setSubmitLoading(false);
+        throw new Error(data.message || data.error || `Failed to load staff (${res.status})`);
       }
-    };
+      const data = await res.json();
+      setAdmins(Array.isArray(data?.data) ? data.data : []);
+    } catch (err) {
+      setListError(err.message || 'Failed to load staff accounts');
+      setAdmins([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      const openEdit = (admin) => {
+  useEffect(() => {
+    fetchPermissions();
+    fetchAdmins();
+  }, []);
+
+  const filteredAdmins = useMemo(() => {
+    const query = searchInput.trim().toLowerCase();
+    if (!query) return admins;
+    return admins.filter((admin) =>
+      admin.email?.toLowerCase().includes(query) ||
+      admin.username?.toLowerCase().includes(query) ||
+      admin.role?.toLowerCase().includes(query) ||
+      admin.status?.toLowerCase().includes(query)
+    );
+  }, [admins, searchInput]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    setSubmitError(null);
+    setSuccessMessage(null);
+  };
+
+  const handlePermissionToggle = (perm, target = 'create') => {
+    if (target === 'create') {
+      setForm((prev) => ({
+        ...prev,
+        permissions: prev.permissions.includes(perm)
+          ? prev.permissions.filter((p) => p !== perm)
+          : [...prev.permissions, perm],
+      }));
+    } else if (editForm) {
+      setEditForm((prev) => ({
+        ...prev,
+        permissions: prev.permissions.includes(perm)
+          ? prev.permissions.filter((p) => p !== perm)
+          : [...prev.permissions, perm],
+      }));
+    }
+    setSubmitError(null);
+    setSuccessMessage(null);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitError(null);
+    setSuccessMessage(null);
+    if (!form.email?.trim() || !form.username?.trim() || !form.password) {
+      setSubmitError('Email, username and password are required.');
+      return;
+    }
+    setSubmitLoading(true);
+    try {
+      const res = await fetch(`${STAFF_BASE}/admins`, {
+        method: 'POST',
+        headers: getAdminAuthHeaders(),
+        body: JSON.stringify({
+          email: form.email.trim(),
+          username: form.username.trim(),
+          password: form.password,
+          role: form.role,
+          permissions: form.permissions.length ? form.permissions : undefined,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || data.error || `Request failed (${res.status})`);
+      }
+      setSuccessMessage('Staff account created successfully.');
+      setForm(EMPTY_FORM);
+      fetchAdmins();
+    } catch (err) {
+      setSubmitError(err.message || 'Failed to create staff account');
+    } finally {
+      setSubmitLoading(false);
+    }
+  };
+
+  const openEdit = (admin) => {
     if (admin.role === 'super_admin') return;
     setEditTarget(admin);
     setEditForm({
@@ -158,7 +178,7 @@ export default function Manage() {
     setEditForm(null);
   };
 
-   const handleEditSave = async (e) => {
+  const handleEditSave = async (e) => {
     e.preventDefault();
     if (!editTarget || !editForm) return;
     setEditLoading(true);
@@ -222,256 +242,324 @@ export default function Manage() {
   const canManage = (admin) => admin.role !== 'super_admin';
 
   return (
-      <div className="manage-super-admin">
-        <header className="manage-header">
-          <h1 className="manage-title">Staff account management</h1>
-          <p className="manage-subtitle">Create and manage admin, manager, and support accounts</p>
-        </header>
-  
-        {(submitError || listError) && (
-          <div className="manage-message-error">{submitError || listError}</div>
-        )}
-        {successMessage && <div className="manage-message-success">{successMessage}</div>}
-  
-        <section className="manage-section">
-          <h2 className="manage-section-title">Create staff account</h2>
-          <form onSubmit={handleSubmit} className="manage-form">
-            <div className="manage-row">
-              <label className="manage-label">
-                Email <span className="manage-required">*</span>
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-                placeholder="admin@example.com"
-                required
-                className="manage-input"
-                autoComplete="email"
-              />
+    <div className="product-management-container">
+      <div className="admin-card" style={{ borderRadius: '0.75rem' }}>
+        <div className="product-management-header">
+          <div>
+            <h2 className="product-management-title">Staff account management</h2>
+            <p className="product-management-subtitle">
+              Create and manage admin, manager, and support accounts.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {(submitError || listError) && (
+        <div className="admin-alert admin-alert-error">{submitError || listError}</div>
+      )}
+      {successMessage && (
+        <div className="admin-alert admin-alert-success">{successMessage}</div>
+      )}
+
+      <div className="admin-card" style={{ borderRadius: '0.75rem' }}>
+        <h2 className="product-management-title" style={{ marginBottom: '1rem' }}>
+          Create staff account
+        </h2>
+        <form onSubmit={handleSubmit} className="product-management-form">
+          <div className="admin-form-group">
+            <label className="admin-form-label" htmlFor="staff-email">
+              Email <span style={{ color: '#dc2626' }}>*</span>
+            </label>
+            <input
+              id="staff-email"
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="admin@example.com"
+              required
+              className="admin-form-input"
+              autoComplete="email"
+            />
+          </div>
+          <div className="admin-form-group">
+            <label className="admin-form-label" htmlFor="staff-username">
+              Username <span style={{ color: '#dc2626' }}>*</span>
+            </label>
+            <input
+              id="staff-username"
+              type="text"
+              name="username"
+              value={form.username}
+              onChange={handleChange}
+              placeholder="admin_user"
+              required
+              className="admin-form-input"
+              autoComplete="username"
+            />
+          </div>
+          <div className="admin-form-group">
+            <label className="admin-form-label" htmlFor="staff-password">
+              Password <span style={{ color: '#dc2626' }}>*</span>
+            </label>
+            <input
+              id="staff-password"
+              type="password"
+              name="password"
+              value={form.password}
+              onChange={handleChange}
+              placeholder="••••••••"
+              required
+              className="admin-form-input"
+              autoComplete="new-password"
+            />
+          </div>
+          <div className="admin-form-group">
+            <label className="admin-form-label" htmlFor="staff-role">Role</label>
+            <select
+              id="staff-role"
+              name="role"
+              value={form.role}
+              onChange={handleChange}
+              className="admin-form-input"
+            >
+              {ROLES.map((r) => (
+                <option key={r.value} value={r.value}>{r.label}</option>
+              ))}
+            </select>
+          </div>
+          <div className="admin-form-group product-management-form-field-full">
+            <label className="admin-form-label">Permissions (optional)</label>
+            <div className="manage-permission-grid">
+              {permissionOptions.map((perm) => (
+                <label key={perm} className="manage-checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={form.permissions.includes(perm)}
+                    onChange={() => handlePermissionToggle(perm, 'create')}
+                  />
+                  <span className="manage-checkbox-text">{perm}</span>
+                </label>
+              ))}
             </div>
-            <div className="manage-row">
-              <label className="manage-label">
-                Username <span className="manage-required">*</span>
-              </label>
-              <input
-                type="text"
-                name="username"
-                value={form.username}
-                onChange={handleChange}
-                placeholder="admin_user"
-                required
-                className="manage-input"
-                autoComplete="username"
-              />
-            </div>
-            <div className="manage-row">
-              <label className="manage-label">
-                Password <span className="manage-required">*</span>
-              </label>
-              <input
-                type="password"
-                name="password"
-                value={form.password}
-                onChange={handleChange}
-                placeholder="••••••••"
-                required
-                className="manage-input"
-                autoComplete="new-password"
-              />
-            </div>
-            <div className="manage-row">
-              <label className="manage-label">Role</label>
-              <select name="role" value={form.role} onChange={handleChange} className="manage-select">
-                {ROLES.map((r) => (
-                  <option key={r.value} value={r.value}>{r.label}</option>
-                ))}
-              </select>
-            </div>
-            <div className="manage-row">
-              <label className="manage-label">Permissions (optional)</label>
-              <div className="manage-permission-grid">
-                {permissionOptions.map((perm) => (
-                  <label key={perm} className="manage-checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={form.permissions.includes(perm)}
-                      onChange={() => handlePermissionToggle(perm, 'create')}
-                    />
-                    <span className="manage-checkbox-text">{perm}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
+          </div>
+          <div className="product-management-form-actions">
             <button
               type="submit"
               disabled={submitLoading}
-              className={`manage-button${submitLoading ? ' manage-button--disabled' : ''}`}
+              className="admin-btn admin-btn-primary"
             >
               {submitLoading ? 'Creating...' : 'Create account'}
             </button>
-          </form>
-        </section>
-
-        <section className="manage-section">
-        <h2 className="manage-section-title">Staff accounts</h2>
-        {loading ? (
-          <p className="manage-muted">Loading accounts...</p>
-        ) : admins.length === 0 ? (
-          <p className="manage-muted">No staff accounts yet.</p>
-        ) : (
-          <div className="manage-table-wrap">
-            <table className="manage-table">
-              <thead>
-                <tr>
-                  <th className="manage-th">Email</th>
-                  <th className="manage-th">Username</th>
-                  <th className="manage-th">Role</th>
-                  <th className="manage-th">Status</th>
-                  <th className="manage-th">Source</th>
-                  <th className="manage-th">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {admins.map((admin) => (
-                  <tr key={admin._id}>
-                    <td className="manage-td">{admin.email}</td>
-                    <td className="manage-td">{admin.username}</td>
-                    <td className="manage-td">
-                      <span className="manage-badge">{admin.role || '—'}</span>
-                    </td>
-                    <td className="manage-td">
-                      <span className={`manage-status manage-status--${admin.status || 'active'}`}>
-                        {admin.status || 'active'}
-                      </span>
-                    </td>
-                    <td className="manage-td">{admin.accountSource || '—'}</td>
-                    <td className="manage-td manage-td-actions">
-                      {canManage(admin) ? (
-                        <div className="manage-action-group">
-                          <button
-                            type="button"
-                            className="manage-action-btn"
-                            onClick={() => openEdit(admin)}
-                          >
-                            Edit
-                          </button>
-                          {admin.status === 'active' ? (
-                            <button
-                              type="button"
-                              className="manage-action-btn manage-action-btn--warn"
-                              disabled={actionLoadingId === admin._id}
-                              onClick={() => runStaffAction(admin._id, 'suspend')}
-                            >
-                              Suspend
-                            </button>
-                          ) : (
-                            <button
-                              type="button"
-                              className="manage-action-btn"
-                              disabled={actionLoadingId === admin._id}
-                              onClick={() => runStaffAction(admin._id, 'activate')}
-                            >
-                              Activate
-                            </button>
-                          )}
-                          <button
-                            type="button"
-                            className="manage-action-btn manage-action-btn--danger"
-                            disabled={actionLoadingId === admin._id}
-                            onClick={() => {
-                              if (window.confirm(`Delete ${admin.email}?`)) {
-                                runStaffAction(admin._id, 'delete');
-                              }
-                            }}
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      ) : (
-                        <span className="manage-muted">Protected</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           </div>
-        )}
-      </section>
+        </form>
+      </div>
+
+      <div className="admin-card" style={{ borderRadius: '0.75rem' }}>
+        <h2 className="product-management-title">Staff accounts</h2>
+        <p className="product-management-subtitle" style={{ marginBottom: 0 }}>
+          View and manage all staff accounts.
+        </p>
+        <div className="product-management-search-container">
+          <div className="product-management-search-wrapper">
+            <svg
+              className="product-management-search-icon"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" />
+            </svg>
+            <input
+              type="text"
+              className="product-management-search-input"
+              placeholder="Search staff by email, username, or role..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
+            {searchInput && (
+              <button
+                type="button"
+                className="product-management-search-clear"
+                onClick={() => setSearchInput('')}
+                aria-label="Clear search"
+              >
+                ×
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="product-management-loading">
+          <div
+            className="admin-spinner"
+            style={{ width: '2.5rem', height: '2.5rem', borderTopColor: '#2563eb', borderWidth: '4px' }}
+          />
+        </div>
+      ) : filteredAdmins.length === 0 ? (
+        <div className="admin-card product-management-empty" style={{ borderStyle: 'dashed' }}>
+          <p className="product-management-empty-text">
+            {admins.length === 0
+              ? 'No staff accounts yet.'
+              : 'No staff accounts match your search.'}
+          </p>
+        </div>
+      ) : (
+        <div className="product-management-table-container">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Email</th>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th className="product-management-table-cell-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredAdmins.map((admin) => (
+                <tr key={admin._id}>
+                  <td className="product-management-table-cell-primary">{admin.email}</td>
+                  <td className="product-management-table-cell-primary">{admin.username}</td>
+                  <td className="product-management-table-cell-secondary">{admin.role || '—'}</td>
+                  <td className="product-management-table-cell-secondary">{admin.status || 'active'}</td>
+                  <td className="product-management-table-cell-right">
+                    {canManage(admin) ? (
+                      <div className="product-management-actions">
+                        <button
+                          type="button"
+                          onClick={() => openEdit(admin)}
+                          className="admin-btn admin-btn-secondary"
+                          style={btnCompact}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          disabled={actionLoadingId === admin._id}
+                          onClick={() => {
+                            if (window.confirm(`Delete ${admin.email}?`)) {
+                              runStaffAction(admin._id, 'delete');
+                            }
+                          }}
+                          className="admin-btn admin-btn-danger"
+                          style={btnCompact}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="product-management-table-cell-secondary">Protected</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
       {editTarget && editForm && (
-        <div className="manage-modal-overlay" onClick={closeEdit}>
-          <div className="manage-modal" onClick={(e) => e.stopPropagation()}>
-            <h3 className="manage-modal-title">Edit staff account</h3>
-            <p className="manage-modal-subtitle">{editTarget.email}</p>
-            <form onSubmit={handleEditSave} className="manage-form">
-              <div className="manage-row">
-                <label className="manage-label">Username</label>
-                <input
-                  className="manage-input"
-                  value={editForm.username}
-                  onChange={(e) => setEditForm((f) => ({ ...f, username: e.target.value }))}
-                  required
-                />
-              </div>
-              <div className="manage-row">
-                <label className="manage-label">Email</label>
-                <input
-                  type="email"
-                  className="manage-input"
-                  value={editForm.email}
-                  onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))}
-                  required
-                />
-              </div>
-              <div className="manage-row">
-                <label className="manage-label">Role</label>
-                <select
-                  className="manage-select"
-                  value={editForm.role}
-                  onChange={(e) => setEditForm((f) => ({ ...f, role: e.target.value }))}
+        <div className="admin-modal-overlay" onClick={closeEdit}>
+          <div
+            className="admin-modal"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: '42rem', width: '90%', maxHeight: '90vh', overflowY: 'auto' }}
+          >
+            <div style={{ padding: '1.5rem' }}>
+              <div className="product-management-form-header" style={{ marginBottom: '1rem' }}>
+                <h3 className="product-management-form-title">Edit staff account</h3>
+                <button
+                  type="button"
+                  onClick={closeEdit}
+                  className="product-management-form-close"
+                  style={{ fontSize: '1.25rem', fontWeight: 'bold', cursor: 'pointer' }}
+                  aria-label="Close modal"
                 >
-                  {ROLES.map((r) => (
-                    <option key={r.value} value={r.value}>{r.label}</option>
-                  ))}
-                </select>
+                  ×
+                </button>
               </div>
-              <div className="manage-row">
-                <label className="manage-label">Status</label>
-                <select
-                  className="manage-select"
-                  value={editForm.status}
-                  onChange={(e) => setEditForm((f) => ({ ...f, status: e.target.value }))}
-                >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
-              </div>
-              <div className="manage-row">
-                <label className="manage-label">Permissions</label>
-                <div className="manage-permission-grid">
-                  {permissionOptions.map((perm) => (
-                    <label key={perm} className="manage-checkbox-label">
-                      <input
-                        type="checkbox"
-                        checked={editForm.permissions.includes(perm)}
-                        onChange={() => handlePermissionToggle(perm, 'edit')}
-                      />
-                      <span className="manage-checkbox-text">{perm}</span>
-                    </label>
-                  ))}
+              <p className="product-management-subtitle" style={{ marginBottom: '1rem' }}>
+                {editTarget.email}
+              </p>
+              <form onSubmit={handleEditSave} className="product-management-form">
+                <div className="admin-form-group">
+                  <label className="admin-form-label" htmlFor="edit-username">Username</label>
+                  <input
+                    id="edit-username"
+                    className="admin-form-input"
+                    value={editForm.username}
+                    onChange={(e) => setEditForm((f) => ({ ...f, username: e.target.value }))}
+                    required
+                  />
                 </div>
-              </div>
-              <div className="manage-modal-actions">
-                <button type="button" className="manage-button manage-button--secondary" onClick={closeEdit}>
-                  Cancel
-                </button>
-                <button type="submit" className="manage-button" disabled={editLoading}>
-                  {editLoading ? 'Saving...' : 'Save changes'}
-                </button>
-              </div>
-            </form>
+                <div className="admin-form-group">
+                  <label className="admin-form-label" htmlFor="edit-email">Email</label>
+                  <input
+                    id="edit-email"
+                    type="email"
+                    className="admin-form-input"
+                    value={editForm.email}
+                    onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="admin-form-group">
+                  <label className="admin-form-label" htmlFor="edit-role">Role</label>
+                  <select
+                    id="edit-role"
+                    className="admin-form-input"
+                    value={editForm.role}
+                    onChange={(e) => setEditForm((f) => ({ ...f, role: e.target.value }))}
+                  >
+                    {ROLES.map((r) => (
+                      <option key={r.value} value={r.value}>{r.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="admin-form-group">
+                  <label className="admin-form-label" htmlFor="edit-status">Status</label>
+                  <select
+                    id="edit-status"
+                    className="admin-form-input"
+                    value={editForm.status}
+                    onChange={(e) => setEditForm((f) => ({ ...f, status: e.target.value }))}
+                  >
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                </div>
+                <div className="admin-form-group product-management-form-field-full">
+                  <label className="admin-form-label">Permissions</label>
+                  <div className="manage-permission-grid">
+                    {permissionOptions.map((perm) => (
+                      <label key={perm} className="manage-checkbox-label">
+                        <input
+                          type="checkbox"
+                          checked={editForm.permissions.includes(perm)}
+                          onChange={() => handlePermissionToggle(perm, 'edit')}
+                        />
+                        <span className="manage-checkbox-text">{perm}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div className="product-management-form-actions">
+                  <button type="button" className="admin-btn admin-btn-secondary" onClick={closeEdit}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="admin-btn admin-btn-primary" disabled={editLoading}>
+                    {editLoading ? 'Saving...' : 'Save changes'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

@@ -6,7 +6,7 @@ const {
     assertSuperAdminAccount,
     loadSuperAdminDocument,
     buildProfileUpdates,
-    buildNotificationUpdates,
+    buildMandatorySuperAdminNotificationUpdates,
     ensureNestedDefaults,
     serializeSuperAdminProfile,
     checkUsernameAvailable
@@ -166,7 +166,7 @@ exports.updateSuperAdminNotificationPreferences = async (req, res) => {
         const account = assertSuperAdminAccount(req, res);
         if (!account) return;
 
-        const updates = buildNotificationUpdates(req.body);
+        const updates = buildMandatorySuperAdminNotificationUpdates();
         if (Object.keys(updates).length === 0) {
             return res.status(400).json({ success: false, error: 'No valid notification preferences provided' });
         }

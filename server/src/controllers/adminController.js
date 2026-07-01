@@ -8,6 +8,7 @@ const {
     loadAdminDocument,
     buildProfileUpdates,
     buildNotificationUpdates,
+    buildMandatorySuperAdminNotificationUpdates,
     ensureNestedDefaults,
     serializeAdminProfile,
     recordAdminLogin,
@@ -523,7 +524,9 @@ exports.updateAdminNotificationPreferences = async (req, res) => {
         const account = assertAdminAccount(req, res);
         if (!account) return;
 
-        const updates = buildNotificationUpdates(req.body);
+        const updates = account.role === 'super_admin'
+            ? buildMandatorySuperAdminNotificationUpdates()
+            : buildNotificationUpdates(req.body);
         if (Object.keys(updates).length === 0) {
             return res.status(400).json({
                 success: false,

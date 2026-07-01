@@ -1,0 +1,82 @@
+.account-success-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background-color: rgba(0, 0, 0, 0.45);
+}
+
+.account-success-modal {
+  width: 100%;
+  max-width: 22rem;
+  padding: 1.75rem 1.5rem 1.5rem;
+  text-align: center;
+  background: #fff;
+  border-radius: 0.75rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.account-success-modal-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  margin: 0 auto 1rem;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #15803d;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.account-success-modal-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.account-success-modal-message {
+  margin: 0 0 1.25rem;
+  font-size: 0.9375rem;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+.account-success-modal-btn {
+  min-width: 6rem;
+  padding: 0.5rem 1.25rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: #2563eb;
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.account-success-modal-btn:hover {
+  background: #1d4ed8;
+}
+
+:root.dark-mode .account-success-modal {
+  background: #1f2937;
+}
+
+:root.dark-mode .account-success-modal-title {
+  color: #f9fafb;
+}
+
+:root.dark-mode .account-success-modal-message {
+  color: #d1d5db;
+}
+
+:root.dark-mode .account-success-modal-icon {
+  background: #14532d;
+  color: #86efac;
+}

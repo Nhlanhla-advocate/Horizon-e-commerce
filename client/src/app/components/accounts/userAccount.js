@@ -18,6 +18,7 @@ import { CURRENCIES, LANGUAGES } from './localeData';
 import { useLocale } from '@/app/i18n/LocaleProvider';
 import AddressSection from './AddressSection';
 import LocationDetector from './LocationDetector';
+import AccountSuccessModal from './AccountSuccessModal';
 import '../../assets/css/userAccount.css';
 
 export default function UserAccount() {
@@ -224,7 +225,8 @@ export default function UserAccount() {
       </header>
 
       {error && <div className="user-account-alert user-account-alert--error">{error}</div>}
-      {success && <div className="user-account-alert user-account-alert--success">{success}</div>}
+
+      <AccountSuccessModal message={success} onClose={() => setSuccess('')} />
 
       <section className="user-account-card">
         <h2>Profile photo</h2>

@@ -5,17 +5,81 @@ const ADMIN_ROLES = ['admin', 'super_admin', 'manager', 'support'];
 const MAX_LOGIN_HISTORY = 50;
 const PROFILE_FIELDS = '-password';
 
+const MANDATORY_SUPER_ADMIN_NOTIFICATIONS = {
+    orderAlerts: true,
+    stockAlerts: true,
+    reviewAlerts: true,
+    securityAlerts: true,
+    weeklyReports: true,
+};
+
 const isAdminRole = (role) => {
     const normalized = role?.toString().toLowerCase().trim();
     return ADMIN_ROLES.includes(role) || ADMIN_ROLES.includes(normalized);
 };
 
+const isLoopbackIp = (ip) => {
+    if (!ip) return true;
+    const normalized = String(ip).trim().toLowerCase();
+    return (
+        normalized === '::1' ||
+        normalized === '127.0.0.1' ||
+        normalized === 'localhost' ||
+        normalized.startsWith('::ffff:127.0.0.1')
+    );
+};
+
+const normalizeIp = (ip) => {
+    const trimmed = String(ip).trim();
+    if (trimmed.startsWith('::ffff:')) {
+        return trimmed.slice(7);
+    }
+    return trimmed;
+};
+
+const isValidIp = (ip) => {
+    if (!ip || typeof ip !== 'string') return false;
+    const trimmed = ip.trim();
+    const ipv4 = /^(\d{1,3}\.){3}\d{1,3}$/;
+    const ipv6 = /^([0-9a-fA-F]{0,4}:){1,7}[0-9a-fA-F]{0,4}$/;
+    return ipv4.test(trimmed) || ipv6.test(trimmed);
+};
+
 const getClientIp = (req) => {
+    const candidates = [];
+
+    const clientHeader = req.headers['x-client-public-ip'];
+    if (typeof clientHeader === 'string' && clientHeader.length > 0) {
+        candidates.push(clientHeader.trim());
+    }
+
+    if (req.body?.clientIp && typeof req.body.clientIp === 'string') {
+        candidates.push(req.body.clientIp.trim());
+    }
+
     const forwarded = req.headers['x-forwarded-for'];
     if (typeof forwarded === 'string' && forwarded.length > 0) {
-        return forwarded.split(',')[0].trim();
+        candidates.push(forwarded.split(',')[0].trim());
     }
-    return req.socket?.remoteAddress || req.ip || '';
+
+    const socketIp = req.socket?.remoteAddress || req.ip || '';
+    if (socketIp) {
+        candidates.push(String(socketIp).trim());
+    }
+
+    for (const ip of candidates) {
+        if (isValidIp(ip) && !isLoopbackIp(ip)) {
+            return normalizeIp(ip);
+        }
+    }
+
+    for (const ip of candidates) {
+        if (isValidIp(ip)) {
+            return normalizeIp(ip);
+        }
+    }
+
+    return candidates[0] ? normalizeIp(candidates[0]) : '';
 };
 
 const getUserAgent = (req) =>
@@ -84,6 +148,27 @@ const buildNotificationUpdates = (body) => {
     return updates;
 };
 
+const buildMandatorySuperAdminNotificationUpdates = () => {
+    const updates = {};
+    Object.keys(MANDATORY_SUPER_ADMIN_NOTIFICATIONS).forEach((key) => {
+        updates[`notificationPreferences.${key}`] = true;
+    });
+    return updates;
+};
+
+const resolveNotificationPreferences = (doc) => {
+    if (doc.role === 'super_admin') {
+        return { ...MANDATORY_SUPER_ADMIN_NOTIFICATIONS };
+    }
+    return doc.notificationPreferences || {
+        orderAlerts: true,
+        stockAlerts: true,
+        reviewAlerts: false,
+        securityAlerts: true,
+        weeklyReports: false,
+    };
+};
+
 const ensureNestedDefaults = (doc) => {
     if (!doc.personalInfo) doc.personalInfo = {};
     if (!doc.twoFactor) doc.twoFactor = { enabled: false };
@@ -111,13 +196,7 @@ const serializeAdminProfile = (doc) => ({
     twoFactor: {
         enabled: Boolean(doc.twoFactor?.enabled)
     },
-    notificationPreferences: doc.notificationPreferences || {
-        orderAlerts: true,
-        stockAlerts: true,
-        reviewAlerts: false,
-        securityAlerts: true,
-        weeklyReports: false
-    },
+    notificationPreferences: resolveNotificationPreferences(doc),
     loginHistory: Array.isArray(doc.loginHistory)
         ? [...doc.loginHistory]
             .sort((a, b) => new Date(b.at) - new Date(a.at))
@@ -197,6 +276,9 @@ module.exports = {
     loadSuperAdminDocument,
     buildProfileUpdates,
     buildNotificationUpdates,
+    buildMandatorySuperAdminNotificationUpdates,
+    MANDATORY_SUPER_ADMIN_NOTIFICATIONS,
+    resolveNotificationPreferences,
     ensureNestedDefaults,
     serializeAdminProfile,
     serializeSuperAdminProfile,
