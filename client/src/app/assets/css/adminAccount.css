@@ -139,6 +139,24 @@
     font-size: 0.875rem;
     cursor: pointer;
   }
+
+  .staff-account-checkbox--mandatory {
+    cursor: not-allowed;
+    color: #6b7280;
+  }
+
+  .staff-account-checkbox--mandatory input:disabled {
+    cursor: not-allowed;
+    opacity: 0.85;
+  }
+
+  .staff-account-checkboxes--mandatory {
+    opacity: 0.95;
+  }
+
+  :root.dark-mode .staff-account-checkbox--mandatory {
+    color: #9ca3af;
+  }
   
   .staff-account-field-hint {
     font-size: 0.8125rem;

@@ -5,6 +5,7 @@ require("dotenv").config({ path: path.resolve(process.cwd(), "server", ".env") }
 
 const express = require("express");
 const app = express();
+app.set('trust proxy', 1);
 const { connectToMongoDB } = require("./db/connection");
 const cookieParser = require('cookie-parser');
 const cors = require("cors");
@@ -25,12 +26,14 @@ if (!process.env.JWT_SECRET) {
 
 app.use(cors({
   origin: 'http://localhost:3000',
-  credentials: true
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Client-Public-Ip'],
 }));
 
 app.options('*', cors({
   origin: 'http://localhost:3000',
-  credentials: true
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Client-Public-Ip'],
 }));
 
 

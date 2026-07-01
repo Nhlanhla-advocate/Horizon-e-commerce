@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import styles from '../../assets/css/auth.module.css';
 import '../../assets/css/buttons.css';
 import Link from 'next/link';
+import { getLoginIpPayload } from '../../utils/clientIp';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -60,10 +61,14 @@ const SuperAdminSignin = () => {
         }
 
         try {
+            const ipPayload = await getLoginIpPayload();
             const response = await fetch(`${API_BASE}/admin/signin`, {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ email, password }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...ipPayload.headers,
+                },
+                body: JSON.stringify({ email, password, ...ipPayload.body }),
                 credentials: 'include',
             });
 

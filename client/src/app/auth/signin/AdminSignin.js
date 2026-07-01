@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import styles from '../../assets/css/auth.module.css';
 import '../../assets/css/buttons.css';
 import Link from 'next/link';
+import { getLoginIpPayload } from '../../utils/clientIp';
 
 const AdminSignin = () => {
     const [email, setEmail] = useState('');
@@ -38,14 +39,18 @@ const AdminSignin = () => {
         }
     
         const adminData = { email, password };
+        const ipPayload = await getLoginIpPayload();
     
         try {
             console.log("Attempting admin login:", "http://localhost:5000/admin/signin");
             
             const response = await fetch("http://localhost:5000/admin/signin", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(adminData),
+                headers: {
+                    "Content-Type": "application/json",
+                    ...ipPayload.headers,
+                },
+                body: JSON.stringify({ ...adminData, ...ipPayload.body }),
                 credentials: "include"
             });
         

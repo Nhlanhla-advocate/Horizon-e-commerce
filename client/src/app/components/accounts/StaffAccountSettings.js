@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { buildPersonalInfoPayload, getInitials } from './accountUtils';
+import AccountSuccessModal from './AccountSuccessModal';
 import '../../assets/css/adminAccount.css';
 
 const EMPTY_PERSONAL = { 
@@ -19,6 +20,10 @@ const NOTIFICATION_KEYS = [
     { key: 'securityAlerts', label: 'Security Alerts' },
     { key: 'weeklyReports', label: 'Weekly Reports' },
 ];
+
+const MANDATORY_NOTIFICATIONS = Object.fromEntries(
+    NOTIFICATION_KEYS.map(({ key }) => [key, true])
+);
 
 const IMAGE_ACCEPT = 'image/jpeg,image/png,image/webp,image/gif';
 
@@ -58,7 +63,11 @@ export default function StaffAccountSettings({
         setProfile(admin);
         setUsername(admin.username || '');
         setPersonalInfo({ ...EMPTY_PERSONAL, ...admin.personalInfo });
-        setNotifications({ ...admin.notificationPreferences });
+        setNotifications(
+            admin.role === 'super_admin'
+                ? { ...MANDATORY_NOTIFICATIONS }
+                : { ...admin.notificationPreferences }
+        );
     }, []);
     
     const loadAll = useCallback(async () => {
@@ -152,6 +161,7 @@ export default function StaffAccountSettings({
 
       const handleSaveNotifications = async (event) => {
         event.preventDefault();
+        if (profile?.role === 'super_admin') return;
         setError('');
         setSuccess('');
         setNotifSaving(true);
@@ -237,6 +247,8 @@ export default function StaffAccountSettings({
       }
     
       const twoFactorEnabled = Boolean(profile.twoFactor?.enabled);
+      const isSuperAdmin = profile.role === 'super_admin';
+      const notificationValues = isSuperAdmin ? MANDATORY_NOTIFICATIONS : notifications;
 
       return (
         <div className="staff-account">
@@ -252,7 +264,8 @@ export default function StaffAccountSettings({
           </header>
     
           {error && <div className="staff-account-alert staff-account-alert--error">{error}</div>}
-          {success && <div className="staff-account-alert staff-account-alert--success">{success}</div>}
+
+          <AccountSuccessModal message={success} onClose={() => setSuccess('')} />
     
           <section className="admin-card staff-account-section">
             <h2 className="admin-card-title">Profile photo</h2>
@@ -412,21 +425,33 @@ export default function StaffAccountSettings({
 
       <form className="admin-card staff-account-section" onSubmit={handleSaveNotifications}>
         <h2 className="admin-card-title">Notifications</h2>
-        <div className="staff-account-checkboxes">
+        {isSuperAdmin && (
+          <p className="staff-account-field-hint" style={{ marginBottom: '0.75rem' }}>
+            All notifications are mandatory for super admin accounts.
+          </p>
+        )}
+        <div className={`staff-account-checkboxes${isSuperAdmin ? ' staff-account-checkboxes--mandatory' : ''}`}>
           {NOTIFICATION_KEYS.map(({ key, label }) => (
-            <label key={key} className="staff-account-checkbox">
+            <label
+              key={key}
+              className={`staff-account-checkbox${isSuperAdmin ? ' staff-account-checkbox--mandatory' : ''}`}
+            >
               <input
                 type="checkbox"
-                checked={Boolean(notifications[key])}
+                checked={Boolean(notificationValues[key])}
+                disabled={isSuperAdmin}
+                readOnly={isSuperAdmin}
                 onChange={(e) => setNotifications((n) => ({ ...n, [key]: e.target.checked }))}
               />
               <span>{label}</span>
             </label>
           ))}
         </div>
-        <button type="submit" className="admin-btn admin-btn-primary" disabled={notifSaving}>
-          {notifSaving ? 'Saving...' : 'Save notifications'}
-        </button>
+        {!isSuperAdmin && (
+          <button type="submit" className="admin-btn admin-btn-primary" disabled={notifSaving}>
+            {notifSaving ? 'Saving...' : 'Save notifications'}
+          </button>
+        )}
       </form>
 
       <section className="admin-card staff-account-section">
