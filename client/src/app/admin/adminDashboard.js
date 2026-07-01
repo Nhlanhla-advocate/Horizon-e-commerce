@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import DashboardStats from './components/DashboardStats';
 import ProductManagement from './components/Product management/ProductManagement';
 import CategoryManagement from './components/Category management/CategoryManagement';
@@ -13,6 +13,7 @@ import OrderManagement from './components/OrderManagement/OrderManagement';
 import VisualAnalyticsReports from './components/Visual analytics and reports/VisualAnalyticsReports';
 import ViewAllUsers from './components/Customer management/ViewAllUsers';
 import AdminAccount from './components/Account/AdminAccount';
+import Manage from '../superAdmin/management/Manage';
 import Sidebar from './components/Sidebar';
 
 const AdminDashboard = () => {
@@ -20,21 +21,23 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [adminRole, setAdminRole] = useState(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   // Listen for tab changes from search bar
   useEffect(() => {
     const handleTabChange = (event) => {
       const tabId = event.detail;
-      const validTabs = ['overview', 'products', 'categories', 'analytics', 'inventory', 'reviews', 'cache', 'orders', 'visual-analytics', 'customers', 'account'];
-      if (validTabs.includes(tabId)) {
-        setActiveTab(tabId);
-      }
+      const validTabs = ['overview', 'products', 'categories', 'analytics', 'inventory', 'reviews', 'cache', 'orders', 'visual-analytics', 'customers', 'account', 'super-admin'];
+      if (!validTabs.includes(tabId)) return;
+      if (tabId === 'super-admin' && adminRole !== 'super_admin') return;
+      setActiveTab(tabId);
     };
 
     window.addEventListener('admin-tab-change', handleTabChange);
     return () => window.removeEventListener('admin-tab-change', handleTabChange);
-  }, []);
+  }, [adminRole]);
 
   // Check authentication on mount
   useEffect(() => {
@@ -84,6 +87,10 @@ const AdminDashboard = () => {
               return;
             }
             console.log('Admin token validated successfully');
+            setAdminRole(data.admin.role);
+            if (data.admin.role) {
+              localStorage.setItem('adminRole', data.admin.role);
+            }
             setIsAuthenticated(true);
           } else {
             console.error('Token validation failed - invalid response:', data);
@@ -116,6 +123,20 @@ const AdminDashboard = () => {
     checkAuth();
   }, [router]);
 
+  useEffect(() => {
+    if (adminRole && adminRole !== 'super_admin' && activeTab === 'super-admin') {
+      setActiveTab('overview');
+    }
+  }, [adminRole, activeTab]);
+
+  useEffect(() => {
+    if (adminRole !== 'super_admin') return;
+    const tab = searchParams.get('tab');
+    if (tab === 'super-admin') {
+      setActiveTab('super-admin');
+    }
+  }, [adminRole, searchParams]);
+
   // Show loading while checking authentication
   if (loading) {
     return (
@@ -133,7 +154,7 @@ const AdminDashboard = () => {
     return null;
   }
 
-  const tabs = [
+  const allTabs = [
     {
       id: 'overview',
       label: 'Dashboard',
@@ -205,6 +226,14 @@ const AdminDashboard = () => {
       description: 'Profile and security'
     },
     {
+      id: 'super-admin',
+      label: 'Super Admin Panel',
+      icon: '',
+      component: Manage,
+      description: 'Staff account management',
+      superAdminOnly: true
+    },
+    {
       id: 'cache',
       label: 'Performance',
       icon: '',
@@ -212,6 +241,10 @@ const AdminDashboard = () => {
       description: 'System optimization'
     }
   ];
+
+  const tabs = allTabs.filter(
+    (tab) => !tab.superAdminOnly || adminRole === 'super_admin'
+  );
 
   const ActiveComponent = tabs.find(tab => tab.id === activeTab)?.component;
   const isRenderable = typeof ActiveComponent === 'function';
