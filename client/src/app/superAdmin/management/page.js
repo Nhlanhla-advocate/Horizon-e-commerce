@@ -1,7 +1,14 @@
 'use client';
 
-import Manage from './Manage';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function SuperAdminManagementPage() {
-  return <Manage />;
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace('/admin?tab=super-admin');
+  }, [router]);
+
+  return null;
 }

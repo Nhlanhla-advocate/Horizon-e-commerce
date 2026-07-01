@@ -145,6 +145,26 @@
     color: #6b7280;
     word-break: break-all;
   }
+
+  .staff-account-input--readonly,
+  .staff-account-input--readonly:disabled {
+    background-color: #f3f4f6;
+    color: #6b7280;
+    cursor: not-allowed;
+    opacity: 1;
+    border-color: #e5e7eb;
+  }
+
+  :root.dark-mode .staff-account-input--readonly,
+  :root.dark-mode .staff-account-input--readonly:disabled {
+    background-color: #374151;
+    color: #9ca3af;
+    border-color: #4b5563;
+  }
+
+  :root.dark-mode .staff-account-field-hint {
+    color: #9ca3af;
+  }
   
   .staff-account-2fa-setup,
   .staff-account-2fa-disable {

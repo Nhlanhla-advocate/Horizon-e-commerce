@@ -33,7 +33,7 @@ const SuperAdminSignin = () => {
                     const data = await response.json();
                     const role = data.admin?.role || data.role;
                     if (data.success && role === 'super_admin') {
-                        router.push('/superAdmin/management');
+                        router.push('/admin?tab=super-admin');
                         return;
                     }
                 }
@@ -96,7 +96,7 @@ const SuperAdminSignin = () => {
             localStorage.setItem('adminRole', 'super_admin');
 
             await new Promise((r) => setTimeout(r, 300));
-            window.location.href = '/superAdmin/management';
+            window.location.href = '/admin?tab=super-admin';
         } catch (err) {
             console.error('Super admin login error:', err);
             setError(err.message || 'Server error. Please try again.');

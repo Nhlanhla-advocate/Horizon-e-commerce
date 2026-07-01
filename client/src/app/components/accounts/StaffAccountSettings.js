@@ -288,7 +288,16 @@ export default function StaffAccountSettings({
         <div className="staff-account-grid">
           <div className="admin-form-group">
             <label className="admin-form-label" htmlFor="staff-email">Email</label>
-            <input id="staff-email" className="admin-form-input" type="email" value={profile.email || ''} disabled />
+            <input
+              id="staff-email"
+              className="admin-form-input staff-account-input--readonly"
+              type="email"
+              value={profile.email || ''}
+              disabled
+              readOnly
+              aria-readonly="true"
+            />
+            <span className="staff-account-field-hint">Email cannot be changed here.</span>
           </div>
           <div className="admin-form-group">
             <label className="admin-form-label" htmlFor="staff-username">Username</label>

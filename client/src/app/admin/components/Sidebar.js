@@ -137,11 +137,6 @@ export default function Sidebar({ tabs, activeTab, setActiveTab, sidebarOpen, se
                   )}
                 </button>
               )}
-              {user?.role === 'super_admin' && (
-                <a href="/superAdmin/management" className="admin-sidebar-action-btn admin-sidebar-super-link">
-                  Super Admin Panel
-                </a>
-              )}
               <div className="admin-sidebar-footer-status">
                 <div className="admin-sidebar-status-indicator"></div>
                 <span>System Online</span>
