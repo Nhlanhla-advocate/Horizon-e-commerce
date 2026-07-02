@@ -375,6 +375,14 @@ const validateAdminSignIn = [
   check("password").not().isEmpty().withMessage("Password is required"),
 ];
 
+const validateAdminTwoFactorSignIn = [
+  body("twoFactorToken").notEmpty().withMessage("Verification session is required"),
+  body("token")
+    .trim()
+    .matches(/^\d{6}$/)
+    .withMessage("A valid 6-digit authenticator code is required"),
+];
+
 const validateUpdateAdminProfile = [
   body("username")
     .optional()
@@ -474,6 +482,7 @@ module.exports = {
   validateSignIn,
   validateAdminSignUp,
   validateAdminSignIn,
+  validateAdminTwoFactorSignIn,
   handleValidationErrors,
   validate,
   validateGuestOrder,

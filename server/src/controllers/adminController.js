@@ -15,6 +15,39 @@ const {
     checkUsernameAvailable
 } = require('../utilities/adminProfileHelpers');
 
+const buildAdminAuthPayload = (adminDoc) => ({
+    _id: adminDoc._id,
+    email: adminDoc.email,
+    role: adminDoc.role || 'admin',
+    isAdmin: true,
+});
+
+const issueAdminAccessToken = (adminDoc) =>
+    jwt.sign(buildAdminAuthPayload(adminDoc), process.env.JWT_SECRET, { expiresIn: '24h' });
+
+const issueAdminTwoFactorPendingToken = (adminDoc) =>
+    jwt.sign(
+        { ...buildAdminAuthPayload(adminDoc), purpose: 'admin_2fa' },
+        process.env.JWT_SECRET,
+        { expiresIn: '5m' }
+    );
+
+const respondAdminSignInSuccess = (res, adminDoc, token) => {
+    res.json({
+        success: true,
+        accessToken: token,
+        token,
+        role: adminDoc.role || 'admin',
+        admin: {
+            _id: adminDoc._id,
+            username: adminDoc.username,
+            email: adminDoc.email,
+            role: adminDoc.role,
+            lastLogin: adminDoc.lastLogin,
+        },
+    });
+};
+
 // Admin Sign Up
 exports.adminSignUp = async (req, res) => {
     try {
@@ -274,49 +307,120 @@ exports.adminSignIn = async (req, res) => {
                 });
             }
 
-            await recordAdminLogin(admin, req, { success: true });
-        } else {
-            const userDoc = await User.findById(admin._id);
-            if (userDoc) {
-                await recordAdminLogin(userDoc, req, { success: true });
-            }
         }
 
-        console.log('[ADMIN SIGNIN] Admin authenticated successfully:', admin.email, 'Role:', admin.role, 'From collection:', isUserCollection ? 'User' : 'Admin');
+        const adminDoc = isUserCollection ? await User.findById(admin._id) : admin;
+        if (!adminDoc) {
+            return res.status(404).json({
+                success: false,
+                error: 'Admin not found',
+            });
+        }
 
-        // Generate JWT token
-        const token = jwt.sign(
-            { 
-                _id: admin._id, 
-                email: admin.email,
-                role: admin.role || "admin",
-                isAdmin: true // Flag to distinguish admin tokens
-            },
-            process.env.JWT_SECRET,
-            { expiresIn: "24h" } // Extended to 24h for admin convenience
+        ensureNestedDefaults(adminDoc);
+        if (adminDoc.twoFactor?.enabled && adminDoc.twoFactor?.secret) {
+            const twoFactorToken = issueAdminTwoFactorPendingToken(adminDoc);
+            return res.json({
+                success: true,
+                requiresTwoFactor: true,
+                twoFactorToken,
+            });
+        }
+
+        await recordAdminLogin(adminDoc, req, { success: true });
+
+        console.log(
+            '[ADMIN SIGNIN] Admin authenticated successfully:',
+            adminDoc.email,
+            'Role:',
+            adminDoc.role,
+            'From collection:',
+            isUserCollection ? 'User' : 'Admin'
         );
 
-        // Return success response with admin info (excluding password)
-        // Return both accessToken and token for compatibility
-        res.json({ 
-            success: true,
-            accessToken: token,  // Primary field name for frontend
-            token: token,        // Keep for backward compatibility
-            role: admin.role || "admin",
-            admin: {
-                _id: admin._id,
-                username: admin.username,
-                email: admin.email,
-                role: admin.role,
-                lastLogin: admin.lastLogin
-            }
-        });
-
+        respondAdminSignInSuccess(res, adminDoc, issueAdminAccessToken(adminDoc));
     } catch (error) {
         console.error("Admin sign in error:", error);
         res.status(500).json({ 
             success: false,
             error: error.message || "Sign in failed" 
+        });
+    }
+};
+
+// Complete admin sign-in after TOTP verification
+exports.adminVerifyTwoFactorSignIn = async (req, res) => {
+    try {
+        if (!process.env.JWT_SECRET) {
+            return res.status(500).json({
+                success: false,
+                error: 'Server configuration error',
+            });
+        }
+
+        const { twoFactorToken, token } = req.body;
+        if (!twoFactorToken || !token) {
+            return res.status(400).json({
+                success: false,
+                error: 'Authenticator code is required',
+            });
+        }
+
+        let decoded;
+        try {
+            decoded = jwt.verify(twoFactorToken, process.env.JWT_SECRET);
+        } catch {
+            return res.status(401).json({
+                success: false,
+                error: 'Verification session expired. Please sign in again.',
+            });
+        }
+
+        if (decoded.purpose !== 'admin_2fa' || !decoded.isAdmin) {
+            return res.status(401).json({
+                success: false,
+                error: 'Invalid verification session',
+            });
+        }
+
+        const adminDoc = await loadAdminDocument(decoded);
+        if (!adminDoc) {
+            return res.status(404).json({
+                success: false,
+                error: 'Admin not found',
+            });
+        }
+
+        if (adminDoc.status !== 'active') {
+            return res.status(403).json({
+                success: false,
+                error: 'Admin account is inactive. Please contact administrator.',
+            });
+        }
+
+        ensureNestedDefaults(adminDoc);
+        if (!adminDoc.twoFactor?.enabled || !adminDoc.twoFactor?.secret) {
+            return res.status(400).json({
+                success: false,
+                error: 'Two-factor authentication is not enabled for this account',
+            });
+        }
+
+        if (!verifyToken(token, adminDoc.twoFactor.secret)) {
+            await recordAdminLogin(adminDoc, req, { success: false });
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid verification code',
+            });
+        }
+
+        await recordAdminLogin(adminDoc, req, { success: true });
+        respondAdminSignInSuccess(res, adminDoc, issueAdminAccessToken(adminDoc));
+    } catch (error) {
+        console.error('Admin 2FA sign in error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Verification failed',
         });
     }
 };
@@ -577,8 +681,8 @@ exports.setupAdminTwoFactor = async (req, res) => {
             return res.status(400).json({ success: false, error: 'Two-factor authentication is already enabled' });
         }
 
-        const secret = generateSecret(); 
-        doc.twoFactor.secret = secret;
+        const secret = generateSecret();
+        doc.twoFactor.tempSecret = secret;
         await doc.save();
 
         const issuer = process.env.APP_NAME || 'Horizon E-commerce';
