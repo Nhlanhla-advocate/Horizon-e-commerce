@@ -4,6 +4,7 @@ const router = express.Router();
 const {
   validateAdminSignUp,
   validateAdminSignIn,
+  validateAdminTwoFactorSignIn,
   validateChangePassword,
   validateUpdateAdminProfile,
   validateAdminNotificationPreferences,
@@ -16,6 +17,7 @@ const {
 const {
   adminSignUp,
   adminSignIn,
+  adminVerifyTwoFactorSignIn,
   adminSignOut,
   getAdminProfile,
   updateAdminProfile,
@@ -39,6 +41,7 @@ router.post('/signup', ...validateAdminSignUp, handleValidationErrors, adminSign
 
 // Admin login (public route)
 router.post('/signin', ...validateAdminSignIn, handleValidationErrors, adminSignIn);
+router.post('/signin/2fa', ...validateAdminTwoFactorSignIn, handleValidationErrors, adminVerifyTwoFactorSignIn);
 
 // Admin logout (protected route)
 router.post('/signout', authMiddleware, adminSignOut);
