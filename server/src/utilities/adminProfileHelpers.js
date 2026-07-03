@@ -13,6 +13,18 @@ const MANDATORY_SUPER_ADMIN_NOTIFICATIONS = {
     weeklyReports: true,
 };
 
+const NOTIFICATION_PREFERENCE_KEYS = [
+    'orderAlerts',
+    'stockAlerts',
+    'reviewAlerts',
+    'securityAlerts',
+    'weeklyReports',
+];
+
+const EMPTY_NOTIFICATION_PREFERENCES = Object.fromEntries(
+    NOTIFICATION_PREFERENCE_KEYS.map((key) => [key, false])
+);
+
 const isAdminRole = (role) => {
     const normalized = role?.toString().toLowerCase().trim();
     return ADMIN_ROLES.includes(role) || ADMIN_ROLES.includes(normalized);
@@ -136,7 +148,7 @@ const buildProfileUpdates = (body) => {
 
 const buildNotificationUpdates = (body) => {
     const prefs = body.notificationPreferences || body;
-    const allowed = ['orderAlerts', 'stockAlerts', 'reviewAlerts', 'securityAlerts', 'weeklyReports'];
+    const allowed = NOTIFICATION_PREFERENCE_KEYS;
     const updates = {};
 
     allowed.forEach((key) => {
@@ -146,6 +158,18 @@ const buildNotificationUpdates = (body) => {
     });
 
     return updates;
+};
+
+const normalizeNotificationPreferences = (input) => {
+    const prefs = { ...EMPTY_NOTIFICATION_PREFERENCES };
+    if (input && typeof input === 'object') {
+        NOTIFICATION_PREFERENCE_KEYS.forEach((key) => {
+            if (input[key] !== undefined) {
+                prefs[key] = Boolean(input[key]);
+            }
+        });
+    }
+    return prefs;
 };
 
 const buildMandatorySuperAdminNotificationUpdates = () => {
@@ -160,12 +184,12 @@ const resolveNotificationPreferences = (doc) => {
     if (doc.role === 'super_admin') {
         return { ...MANDATORY_SUPER_ADMIN_NOTIFICATIONS };
     }
-    return doc.notificationPreferences || {
-        orderAlerts: true,
-        stockAlerts: true,
-        reviewAlerts: false,
-        securityAlerts: true,
-        weeklyReports: false,
+    if (!doc.notificationPreferences) {
+        return { ...EMPTY_NOTIFICATION_PREFERENCES };
+    }
+    return {
+        ...EMPTY_NOTIFICATION_PREFERENCES,
+        ...doc.notificationPreferences,
     };
 };
 
@@ -173,13 +197,7 @@ const ensureNestedDefaults = (doc) => {
     if (!doc.personalInfo) doc.personalInfo = {};
     if (!doc.twoFactor) doc.twoFactor = { enabled: false };
     if (!doc.notificationPreferences) {
-        doc.notificationPreferences = {
-            orderAlerts: true,
-            stockAlerts: true,
-            reviewAlerts: false,
-            securityAlerts: true,
-            weeklyReports: false
-        };
+        doc.notificationPreferences = { ...EMPTY_NOTIFICATION_PREFERENCES };
     }
     if (!Array.isArray(doc.loginHistory)) doc.loginHistory = [];
 };
@@ -278,6 +296,9 @@ module.exports = {
     buildNotificationUpdates,
     buildMandatorySuperAdminNotificationUpdates,
     MANDATORY_SUPER_ADMIN_NOTIFICATIONS,
+    NOTIFICATION_PREFERENCE_KEYS,
+    EMPTY_NOTIFICATION_PREFERENCES,
+    normalizeNotificationPreferences,
     resolveNotificationPreferences,
     ensureNestedDefaults,
     serializeAdminProfile,

@@ -64,3 +64,4 @@ router.get('/orders', authMiddleware, getAllOrders);
 router.use('/categories', categoryRoutes);
 
 module.exports = router;
+  

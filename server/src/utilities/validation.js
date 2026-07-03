@@ -465,6 +465,12 @@ const validateCreateAdminAccount = [
     .withMessage("Password must be at least 6 characters long"),
   body("role").optional().isIn(STAFF_ROLES),
   body("permissions").optional().isArray(),
+  body("notificationPreferences").optional().isObject(),
+  body("notificationPreferences.orderAlerts").optional().isBoolean(),
+  body("notificationPreferences.stockAlerts").optional().isBoolean(),
+  body("notificationPreferences.reviewAlerts").optional().isBoolean(),
+  body("notificationPreferences.securityAlerts").optional().isBoolean(),
+  body("notificationPreferences.weeklyReports").optional().isBoolean(),
 ];
 
 const validateUpdateAdminAccount = [
@@ -473,6 +479,12 @@ const validateUpdateAdminAccount = [
   body("role").optional().isIn(STAFF_ROLES),
   body("permissions").optional().isArray(),
   body("status").optional().isIn(["active", "inactive"]),
+  body("notificationPreferences").optional().isObject(),
+  body("notificationPreferences.orderAlerts").optional().isBoolean(),
+  body("notificationPreferences.stockAlerts").optional().isBoolean(),
+  body("notificationPreferences.reviewAlerts").optional().isBoolean(),
+  body("notificationPreferences.securityAlerts").optional().isBoolean(),
+  body("notificationPreferences.weeklyReports").optional().isBoolean(),
 ];
 
 // Single export statement for all validators and handlers
