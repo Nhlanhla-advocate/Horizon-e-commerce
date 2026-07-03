@@ -622,21 +622,19 @@ exports.getAdminLoginHistory = async (req, res) => {
 
 };
 
-// Update notification preferences
+// Update notification preferences (super admin own account only)
 exports.updateAdminNotificationPreferences = async (req, res) => {
     try {
         const account = assertAdminAccount(req, res);
         if (!account) return;
 
-        const updates = account.role === 'super_admin'
-            ? buildMandatorySuperAdminNotificationUpdates()
-            : buildNotificationUpdates(req.body);
-        if (Object.keys(updates).length === 0) {
-            return res.status(400).json({
+        if (account.role !== 'super_admin') {
+            return res.status(403).json({
                 success: false,
-                error: 'No valid notification preferences provided'
+                error: 'Notification preferences are managed by your super admin.',
             });
         }
+        const updates = buildMandatorySuperAdminNotificationUpdates();
 
         const Model = account.constructor?.modelName === 'User' ? User : Admin;
         const doc = await Model.findByIdAndUpdate(

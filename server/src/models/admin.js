@@ -60,10 +60,10 @@ const adminSchema = new mongoose.Schema({
 
     // Admin notification preferences
     notificationPreferences: {
-        orderAlerts: { type: Boolean, default: true },
-        stockAlerts: { type: Boolean, default: true },
+        orderAlerts: { type: Boolean, default: false },
+        stockAlerts: { type: Boolean, default: false },
         reviewAlerts: { type: Boolean, default: false },
-        securityAlerts: { type: Boolean, default: true },
+        securityAlerts: { type: Boolean, default: false },
         weeklyReports: { type: Boolean, default: false }
     },
 

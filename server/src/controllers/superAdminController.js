@@ -10,6 +10,7 @@ const {
     STAFF_ROLES,
     findStaffAccount
 } = require('./superAdminManagementController');
+const { normalizeNotificationPreferences } = require('../utilities/adminProfileHelpers');
 
 const ROLES = STAFF_ROLES;
 const VALID_ORDER_STATUSES = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
@@ -28,7 +29,7 @@ const ALL_PERMISSIONS = [
 //---1. Create, edit, delete admin account (superadmin only)---
 async function createAdmin(req, res) {
     try {
-        const { email, username, password, role, permissions } = req.body;
+        const { email, username, password, role, permissions, notificationPreferences } = req.body;
         if (!email || !username || !password) {
             return res.status(400).json({ success: false, message: 'Email, username and password are required.'});
         }
@@ -47,7 +48,8 @@ async function createAdmin(req, res) {
             password,
             role: assignedRole,
             permissions: resolvedPermissions,
-            status: 'active'
+            status: 'active',
+            notificationPreferences: normalizeNotificationPreferences(notificationPreferences),
         });
         await logAudit(req.user._id,'create_admin','user',admin._id, { email, username, role: assignedRole }, req);
         const out = admin.toObject();
@@ -64,7 +66,7 @@ async function createAdmin(req, res) {
 async function updateAdmin(req, res) {
     try {
         const { adminId } = req.params;
-        const { username, email, role, permissions, status } = req.body;
+        const { username, email, role, permissions, status, notificationPreferences } = req.body;
         if (!mongoose.Types.ObjectId.isValid(adminId)) {
             return res.status(400).json({ success: false, message: 'Invalid admin ID.'});
         }
@@ -88,6 +90,9 @@ async function updateAdmin(req, res) {
             admin.permissions = permissions.filter((p) => ALL_PERMISSIONS.includes(p));
         }
         if (status != null && ['active', 'inactive'].includes(status)) admin.status = status;
+        if (notificationPreferences != null) {
+            admin.notificationPreferences = normalizeNotificationPreferences(notificationPreferences);
+        }
         await admin.save();
         await logAudit(req.user._id, 'update_admin', 'admin', admin._id, { email: admin.email, role: admin.role, accountSource: found.source }, req);
         return res.json({ success: true, data: sanitizeStaff(admin, found.source) });
