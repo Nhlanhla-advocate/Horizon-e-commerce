@@ -25,6 +25,10 @@ const MANDATORY_NOTIFICATIONS = Object.fromEntries(
     NOTIFICATION_KEYS.map(({ key }) => [key, true])
 );
 
+const EMPTY_NOTIFICATION_PREFERENCES = Object.fromEntries(
+    NOTIFICATION_KEYS.map(({ key }) => [key, false])
+);
+
 const IMAGE_ACCEPT = 'image/jpeg,image/png,image/webp,image/gif';
 
 export default function StaffAccountSettings({
@@ -52,7 +56,6 @@ export default function StaffAccountSettings({
 
     const [profileSaving, setProfileSaving] = useState(false);
     const [passwordSaving, setPasswordSaving] = useState(false);
-    const [notifSaving, setNotifSaving] = useState(false);
     const [avatarUploading, setAvatarUploading] = useState(false);
     const [twoFactorLoading, setTwoFactorLoading] = useState(false);
 
@@ -66,7 +69,7 @@ export default function StaffAccountSettings({
         setNotifications(
             admin.role === 'super_admin'
                 ? { ...MANDATORY_NOTIFICATIONS }
-                : { ...admin.notificationPreferences }
+                : { ...EMPTY_NOTIFICATION_PREFERENCES, ...admin.notificationPreferences }
         );
     }, []);
     
@@ -159,23 +162,6 @@ export default function StaffAccountSettings({
         }
       };
 
-      const handleSaveNotifications = async (event) => {
-        event.preventDefault();
-        if (profile?.role === 'super_admin') return;
-        setError('');
-        setSuccess('');
-        setNotifSaving(true);
-        try {
-          const admin = await api.updateNotifications(notifications);
-          applyProfile(admin);
-          setSuccess('Notification preferences saved.');
-        } catch (err) {
-          setError(err.message || 'Failed to save notifications.');
-        } finally {
-          setNotifSaving(false);
-        }
-      };
-
       const handleSetupTwoFactor = async () => {
         setError('');
         setSuccess('');
@@ -248,7 +234,9 @@ export default function StaffAccountSettings({
     
       const twoFactorEnabled = Boolean(profile.twoFactor?.enabled);
       const isSuperAdmin = profile.role === 'super_admin';
-      const notificationValues = isSuperAdmin ? MANDATORY_NOTIFICATIONS : notifications;
+      const notificationValues = isSuperAdmin
+        ? MANDATORY_NOTIFICATIONS
+        : { ...EMPTY_NOTIFICATION_PREFERENCES, ...notifications };
 
       return (
         <div className="staff-account">
@@ -423,36 +411,34 @@ export default function StaffAccountSettings({
         </button>
       </form>
 
-      <form className="admin-card staff-account-section" onSubmit={handleSaveNotifications}>
+      <section className="admin-card staff-account-section">
         <h2 className="admin-card-title">Notifications</h2>
-        {isSuperAdmin && (
+        {isSuperAdmin ? (
           <p className="staff-account-field-hint" style={{ marginBottom: '0.75rem' }}>
             All notifications are mandatory for super admin accounts.
           </p>
+        ) : (
+          <p className="staff-account-field-hint" style={{ marginBottom: '0.75rem' }}>
+            These notifications are assigned by your super admin. Contact them if you need changes.
+          </p>
         )}
-        <div className={`staff-account-checkboxes${isSuperAdmin ? ' staff-account-checkboxes--mandatory' : ''}`}>
+        <div className="staff-account-checkboxes staff-account-checkboxes--mandatory">
           {NOTIFICATION_KEYS.map(({ key, label }) => (
             <label
               key={key}
-              className={`staff-account-checkbox${isSuperAdmin ? ' staff-account-checkbox--mandatory' : ''}`}
+              className="staff-account-checkbox staff-account-checkbox--mandatory"
             >
               <input
                 type="checkbox"
                 checked={Boolean(notificationValues[key])}
-                disabled={isSuperAdmin}
-                readOnly={isSuperAdmin}
-                onChange={(e) => setNotifications((n) => ({ ...n, [key]: e.target.checked }))}
+                disabled
+                readOnly
               />
               <span>{label}</span>
             </label>
           ))}
         </div>
-        {!isSuperAdmin && (
-          <button type="submit" className="admin-btn admin-btn-primary" disabled={notifSaving}>
-            {notifSaving ? 'Saving...' : 'Save notifications'}
-          </button>
-        )}
-      </form>
+      </section>
 
       <section className="admin-card staff-account-section">
         <h2 className="admin-card-title">Two-factor authentication</h2>
