@@ -11,7 +11,7 @@ export default function AdminAccount() {
     <StaffAccountSettings
       api={adminAccountApi}
       title="Admin Account"
-      subtitle="Manage your admin profile, password, notifications, and security settings."
+      subtitle="Manage your admin profile, password, and security settings."
       onUnauthorized={() => router.push('/admin/signin')}
     />
   );

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { ADMIN_API_BASE, getAdminAuthHeaders } from '@/app/utils/adminAccountApi';
+import AccountSuccessModal from '@/app/components/accounts/AccountSuccessModal';
 import '../../assets/css/admin.css';
 import '../../assets/css/productManagement.css';
 import '../../assets/css/manage.css';
@@ -13,6 +14,23 @@ const ROLES = [
   { value: 'manager', label: 'Manager' },
   { value: 'support', label: 'Support' },
 ];
+
+const NOTIFICATION_OPTIONS = [
+  { key: 'orderAlerts', label: 'Order Alerts' },
+  { key: 'stockAlerts', label: 'Stock Alerts' },
+  { key: 'reviewAlerts', label: 'Review Alerts' },
+  { key: 'securityAlerts', label: 'Security Alerts' },
+  { key: 'weeklyReports', label: 'Weekly Reports' },
+];
+
+const EMPTY_NOTIFICATIONS = Object.fromEntries(
+  NOTIFICATION_OPTIONS.map(({ key }) => [key, false])
+);
+
+const readNotificationPreferences = (admin) => ({
+  ...EMPTY_NOTIFICATIONS,
+  ...(admin?.notificationPreferences || {}),
+});
 
 const DEFAULT_PERMISSIONS = [
   'manage_products',
@@ -32,6 +50,7 @@ const EMPTY_FORM = {
   password: '',
   role: 'admin',
   permissions: [],
+  notificationPreferences: { ...EMPTY_NOTIFICATIONS },
 };
 
 const btnCompact = { padding: '0.25rem 0.75rem', fontSize: '0.875rem' };
@@ -126,6 +145,28 @@ export default function Manage() {
     setSuccessMessage(null);
   };
 
+  const handleNotificationToggle = (key, target = 'create') => {
+    if (target === 'create') {
+      setForm((prev) => ({
+        ...prev,
+        notificationPreferences: {
+          ...prev.notificationPreferences,
+          [key]: !prev.notificationPreferences[key],
+        },
+      }));
+    } else if (editForm) {
+      setEditForm((prev) => ({
+        ...prev,
+        notificationPreferences: {
+          ...prev.notificationPreferences,
+          [key]: !prev.notificationPreferences[key],
+        },
+      }));
+    }
+    setSubmitError(null);
+    setSuccessMessage(null);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitError(null);
@@ -145,6 +186,7 @@ export default function Manage() {
           password: form.password,
           role: form.role,
           permissions: form.permissions.length ? form.permissions : undefined,
+          notificationPreferences: form.notificationPreferences,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -170,6 +212,7 @@ export default function Manage() {
       role: admin.role || 'admin',
       status: admin.status || 'active',
       permissions: Array.isArray(admin.permissions) ? [...admin.permissions] : [],
+      notificationPreferences: readNotificationPreferences(admin),
     });
   };
 
@@ -257,9 +300,11 @@ export default function Manage() {
       {(submitError || listError) && (
         <div className="admin-alert admin-alert-error">{submitError || listError}</div>
       )}
-      {successMessage && (
-        <div className="admin-alert admin-alert-success">{successMessage}</div>
-      )}
+
+      <AccountSuccessModal
+        message={successMessage || ''}
+        onClose={() => setSuccessMessage(null)}
+      />
 
       <div className="admin-card" style={{ borderRadius: '0.75rem' }}>
         <h2 className="product-management-title" style={{ marginBottom: '1rem' }}>
@@ -327,6 +372,24 @@ export default function Manage() {
                 <option key={r.value} value={r.value}>{r.label}</option>
               ))}
             </select>
+          </div>
+          <div className="admin-form-group product-management-form-field-full">
+            <label className="admin-form-label">Notifications</label>
+            <p className="product-management-subtitle" style={{ marginBottom: '0.5rem' }}>
+              Choose which alerts this staff member receives.
+            </p>
+            <div className="manage-permission-grid">
+              {NOTIFICATION_OPTIONS.map(({ key, label }) => (
+                <label key={key} className="manage-checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(form.notificationPreferences[key])}
+                    onChange={() => handleNotificationToggle(key, 'create')}
+                  />
+                  <span className="manage-checkbox-text">{label}</span>
+                </label>
+              ))}
+            </div>
           </div>
           <div className="admin-form-group product-management-form-field-full">
             <label className="admin-form-label">Permissions (optional)</label>
@@ -534,6 +597,24 @@ export default function Manage() {
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
                   </select>
+                </div>
+                <div className="admin-form-group product-management-form-field-full">
+                  <label className="admin-form-label">Notifications</label>
+                  <p className="product-management-subtitle" style={{ marginBottom: '0.5rem' }}>
+                    Choose which alerts this staff member receives.
+                  </p>
+                  <div className="manage-permission-grid">
+                    {NOTIFICATION_OPTIONS.map(({ key, label }) => (
+                      <label key={key} className="manage-checkbox-label">
+                        <input
+                          type="checkbox"
+                          checked={Boolean(editForm.notificationPreferences[key])}
+                          onChange={() => handleNotificationToggle(key, 'edit')}
+                        />
+                        <span className="manage-checkbox-text">{label}</span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
                 <div className="admin-form-group product-management-form-field-full">
                   <label className="admin-form-label">Permissions</label>
