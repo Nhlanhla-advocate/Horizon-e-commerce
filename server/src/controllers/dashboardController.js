@@ -6,6 +6,7 @@ const Order = require('../models/order');
 const Cart = require('../models/cart');
 const Dashboard = require('../models/dashboard');
 const mongoose = require('mongoose');
+const { sumLineItems, sumLineItemsWithProductFallback, resolveLinePrice } = require('../utilities/cartTotals');
 
 class DashboardController {
   canViewPrivilegedUsers(req) {
@@ -1350,7 +1351,11 @@ class DashboardController {
           quantity: item.quantity || 1,
         };
       });
-      const totalPrice = cart.totalPrice != null ? Number(cart.totalPrice) : items.reduce((sum, i) => sum + (i.price * (i.quantity || 1)), 0);
+      const totalPrice = sumLineItems(items);
+      // Heal stored total so future reads stay accurate for this customer only
+      if (cart.totalPrice !== totalPrice) {
+        await Cart.updateOne({ _id: cart._id }, { $set: { totalPrice } });
+      }
       return res.json({ success: true, data: { items, totalPrice } });
     } catch (error) {
       return res.status(500).json({
@@ -1397,9 +1402,41 @@ class DashboardController {
       }
       const orders = await Order.find({ customerId: userId, isGuestOrder: { $ne: true } })
         .populate('customerId', 'username email')
+        .populate('items.productId', 'name price')
         .sort({ createdAt: -1 })
         .lean();
-      return res.json({ success: true, data: orders });
+
+      // Always derive total from this user's order line items (never trust a stale stored total)
+      const normalizedOrders = await Promise.all(
+        orders.map(async (order) => {
+          let itemsTotal = sumLineItems(order.items);
+          if (!(itemsTotal > 0)) {
+            itemsTotal = await sumLineItemsWithProductFallback(order.items);
+          }
+
+          // Prefer recalculated line total; only fall back to stored value if lines can't be priced
+          const totalPrice = itemsTotal > 0 ? itemsTotal : Number(order.totalPrice) || 0;
+
+          // Heal wrong stored totals so later reads/admin lists stay correct
+          if (itemsTotal > 0 && Number(order.totalPrice) !== itemsTotal) {
+            await Order.updateOne({ _id: order._id }, { $set: { totalPrice: itemsTotal } });
+          }
+
+          const items = (order.items || []).map((item) => ({
+            ...item,
+            name:
+              item.name ||
+              (item.productId && item.productId.name) ||
+              'Product',
+            price: resolveLinePrice(item),
+            quantity: Number(item.quantity) || 0,
+          }));
+
+          return { ...order, items, totalPrice };
+        })
+      );
+
+      return res.json({ success: true, data: normalizedOrders });
     } catch (error) {
       return res.status(500).json({
         success: false,

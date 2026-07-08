@@ -4,6 +4,7 @@ const Order = require('../models/order');
 const { recordUserOrder } = require('../utilities/userActivity');
 const User = require('../models/user');
 const mongoose = require('mongoose');
+const { recalculateDocumentTotal, sumLineItems } = require('../utilities/cartTotals');
 
 
 
@@ -110,7 +111,7 @@ exports.addToCart = async (req, res) => {
                     image: productImage || undefined
                 });
             }
-            cart.totalPrice += product.price * quantityToAdd;
+            recalculateDocumentTotal(cart);
         } else {
             cart = new Cart({
                 customerId: userId, // Use customerId instead of userId
@@ -179,9 +180,8 @@ exports.removeFromCart = async (req, res) => {
 
         const itemIndex = findCartLineItemIndex(cart.items, productId);
         if (itemIndex > -1) {
-            const item = cart.items[itemIndex];
-            cart.totalPrice -= item.price * item.quantity;
             cart.items.splice(itemIndex, 1);
+            recalculateDocumentTotal(cart);
             await cart.save();
             res.status(200).json(cart);
         } else {
@@ -205,12 +205,11 @@ exports.removeMultipleItems = async (req, res) => {
         productIds.forEach(productId => {
             const itemIndex = findCartLineItemIndex(cart.items, productId);
             if (itemIndex > -1) {
-                const item = cart.items[itemIndex];
-                cart.totalPrice -= item.price * item.quantity;
                 cart.items.splice(itemIndex, 1);
             }
         });
-        
+
+        recalculateDocumentTotal(cart);
         await cart.save();
         res.status(200).json(cart);
     } catch (error) {
@@ -248,6 +247,12 @@ exports.removeMultipleItems = async (req, res) => {
                 return res.status(404).json({ message: 'Cart not found' });
             }
 
+            // Always derive total from this customer's line items only
+            recalculateDocumentTotal(cart);
+            if (cart.isModified('totalPrice')) {
+                await cart.save();
+            }
+
             res.status(200).json(cart);
         } catch (error) {
             res.status(500).json({ message: 'Error getting the cart', error });
@@ -262,14 +267,14 @@ exports.removeMultipleItems = async (req, res) => {
   
       if (userCart) {
         userCart.items.push(item);
-        userCart.totalPrice += item.price; 
+        recalculateDocumentTotal(userCart);
         await userCart.save();
       } else {
         // Create a new cart if it doesn't exist
         const newCart = new Cart({
           customerId: userId,
           items: [item],
-          totalPrice: item.price,
+          totalPrice: sumLineItems([item]),
           createdAt: new Date(),
         });
         await newCart.save();
@@ -299,16 +304,12 @@ exports.updateItemQuantity = async (req, res) => {
 
         const item = cart.items[itemIndex];
         if (quantity <= 0) {
-            // Remove the item if quantity goes to zero or below
-            cart.totalPrice -= item.price * item.quantity;
             cart.items.splice(itemIndex, 1);
         } else {
-            // Adjust total price by difference
-            const delta = (quantity - item.quantity) * item.price;
             item.quantity = quantity;
-            cart.totalPrice += delta;
         }
 
+        recalculateDocumentTotal(cart);
         await cart.save();
         return res.status(200).json(cart);
     } catch (error) {
@@ -330,19 +331,32 @@ exports.createOrderFromCart = async (userId) => {
             throw new Error('Cart is empty');
         }
 
-        // Create order items from cart items
-        const orderItems = cart.items.map(item => ({
-            productId: item.productId._id,
-            name: item.name,
-            quantity: item.quantity,
-            price: item.price
-        }));
+        // Create order items from this user's cart only — always resolve current product pricing
+        const orderItems = cart.items.map((item) => {
+            const product = item.productId && typeof item.productId === 'object' ? item.productId : null;
+            const productId = product?._id || item.productId;
+            const price =
+                item.price != null
+                    ? Number(item.price)
+                    : Number(product?.price) || 0;
+            return {
+                productId,
+                name: item.name || product?.name || 'Product',
+                quantity: item.quantity,
+                price,
+            };
+        });
+
+        const orderTotal = sumLineItems(orderItems);
+        if (!(orderTotal > 0)) {
+            throw new Error('Unable to calculate order total from cart items');
+        }
 
         // Create the order
         const order = new Order({
             customerId: userId,
             items: orderItems,
-            totalPrice: cart.totalPrice,
+            totalPrice: orderTotal,
             status: 'pending',
             shippingAddress: {} // You might want to get this from the user's profile
         });
