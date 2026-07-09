@@ -12,3 +12,11 @@ import {
 } from './orderUtils';
 import OrderDetailsModal from './OrderDetailsModal';
 import '../../assets/css/orderStatus.css';
+
+export default function OrderHistorySection({ onError, onSuccess }) {
+
+  const { formatPrice } = useLocale();
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
+}
