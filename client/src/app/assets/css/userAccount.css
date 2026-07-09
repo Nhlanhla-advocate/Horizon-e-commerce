@@ -494,20 +494,4 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
-@media (max-width: 640px) {
-  .user-account-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .user-account-page {
-    padding: 1.25rem 0.875rem 2rem;
-  }
-
-  .user-account-card {
-    padding: 1.125rem;
-  }
-
-  .user-account-address-item {
-    flex-direction: column;
-  }
-}
+/*

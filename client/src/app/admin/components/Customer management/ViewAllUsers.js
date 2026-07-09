@@ -146,9 +146,22 @@ export default function ViewAllUsers() {
     };
 
     const cartItems = Array.isArray(userCart?.items) ? userCart.items : [];
-    const cartTotal = userCart?.totalPrice ?? 0;
     const getItemName = (item) => item.name || item.productId?.name || item.product?.name || item.product?.title || item.productId?.title || 'Product';
     const getItemPrice = (item) => item.price != null ? Number(item.price) : (item.product?.price != null ? Number(item.product.price) : item.productId?.price != null ? Number(item.productId.price) : 0);
+    const cartTotal = cartItems.reduce(
+        (sum, item) => sum + getItemPrice(item) * (item.quantity || 1),
+        0
+    );
+    const getOrderTotal = (order) => {
+        if (Array.isArray(order?.items) && order.items.length > 0) {
+            const fromItems = order.items.reduce(
+                (sum, item) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 0),
+                0
+            );
+            if (fromItems > 0) return fromItems;
+        }
+        return Number(order?.totalPrice) || 0;
+    };
 
     const statusColors = {
         pending: '#f59e0b',
@@ -497,7 +510,7 @@ export default function ViewAllUsers() {
                                                                             })
                                                                             : '—'}
                                                                     </td>
-                                                                    <td className="orders-td">R {(order.totalPrice || 0).toFixed(2)}</td>
+                                                                    <td className="orders-td">R {getOrderTotal(order).toFixed(2)}</td>
                                                                     <td className="orders-td">
                                                                         <span
                                                                             style={{
