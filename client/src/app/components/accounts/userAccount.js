@@ -17,6 +17,7 @@ import { EMPTY_PERSONAL, EMPTY_PREFS, IMAGE_ACCEPT } from './constants';
 import { CURRENCIES, LANGUAGES } from './localeData';
 import { useLocale } from '@/app/i18n/LocaleProvider';
 import AddressSection from './AddressSection';
+import OrderHistorySection from './OrderHistorySection';
 import LocationDetector from './LocationDetector';
 import AccountSuccessModal from './AccountSuccessModal';
 import '../../assets/css/userAccount.css';
@@ -221,7 +222,7 @@ export default function UserAccount() {
     <div className="user-account-page">
       <header className="user-account-header">
         <h1>My Account</h1>
-        <p>Manage your profile, security settings, addresses, and photos.</p>
+        <p>Manage your profile, orders, security settings, addresses, and photos.</p>
       </header>
 
       {error && <div className="user-account-alert user-account-alert--error">{error}</div>}
@@ -355,6 +356,8 @@ export default function UserAccount() {
         onError={setError}
         onSuccess={setSuccess}
       />
+
+      <OrderHistorySection onError={setError} onSuccess={setSuccess} />
 
       <form className="user-account-card" onSubmit={handleChangePassword}>
         <h2>Change password</h2>
