@@ -43,5 +43,27 @@ const handleOrderUpdated = () => {
   onSuccess?.('Order updated.');
 };
 
+ return (
+    <section className="user-account-card user-account-orders">
+      <div className="user-account-orders-head">
+        <div>
+          <h2>Order history</h2>
+          <p className="user-account-field-hint">
+            Track your purchases and order status after checkout.
+          </p>
+        </div>
+        <button
+          type="button"
+          className="user-account-btn user-account-btn--secondary"
+          disabled={loading}
+          onClick={loadOrders}
+        >
+          {loading ? 'Refreshing...' : 'Refresh'}
+        </button>
+      </div>
+
+      {loading && (
+        <div className="user-account-order-loading">Loading your orders...</div>
+      )}
   
 }
