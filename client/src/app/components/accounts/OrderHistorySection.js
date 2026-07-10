@@ -10,7 +10,7 @@ import {
   getStatusBadgeClass,
   shortOrderId,
 } from './orderUtils';
-import OrderDetailsModal from './OrderDetailsModal';
+import OrderDetailModal from './OrderDetailModal';
 import '../../assets/css/orderStatus.css';
 
 export default function OrderHistorySection({ onError, onSuccess }) {
@@ -38,12 +38,12 @@ export default function OrderHistorySection({ onError, onSuccess }) {
     loadOrders();
   }, [loadOrders]);
 
-const handleOrderUpdated = () => {
-  loadOrders();
-  onSuccess?.('Order updated.');
-};
+  const handleOrderUpdated = () => {
+    loadOrders();
+    onSuccess?.('Order updated.');
+  };
 
- return (
+  return (
     <section className="user-account-card user-account-orders">
       <div className="user-account-orders-head">
         <div>
@@ -66,7 +66,7 @@ const handleOrderUpdated = () => {
         <div className="user-account-order-loading">Loading your orders...</div>
       )}
 
-            {!loading && orders.length === 0 && (
+      {!loading && orders.length === 0 && (
         <div className="user-account-order-empty">
           <p>You have not placed any orders yet.</p>
           <a href="/" className="user-account-btn user-account-btn--primary">
@@ -75,14 +75,14 @@ const handleOrderUpdated = () => {
         </div>
       )}
 
-            {!loading && orders.length > 0 && (
+      {!loading && orders.length > 0 && (
         <ul className="user-account-order-list">
           {orders.map((order) => (
             <li key={order._id} className="user-account-order-row">
               <div className="user-account-order-row-main">
                 <div className="user-account-order-row-top">
                   <strong>{shortOrderId(order._id)}</strong>
-                  <span className={status-badge ${getStatusBadgeClass(order.status)}}>
+                  <span className={`status-badge ${getStatusBadgeClass(order.status)}`}>
                     {order.status}
                   </span>
                 </div>
@@ -108,5 +108,14 @@ const handleOrderUpdated = () => {
           ))}
         </ul>
       )}
-  
+
+      {selectedOrderId && (
+        <OrderDetailModal
+          orderId={selectedOrderId}
+          onClose={() => setSelectedOrderId(null)}
+          onOrderUpdated={handleOrderUpdated}
+        />
+      )}
+    </section>
+  );
 }
