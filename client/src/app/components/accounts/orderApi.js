@@ -12,4 +12,10 @@ export async function fetchOrderHistory() {
   return response.json();
 }
 
-
+export async function fetchOrder(orderId) {
+  const response = await fetchWithUserAuth(/orders/${orderId});
+  if (!response.ok) {
+    throw new Error(await parseApiError(response));
+  }
+  return response.json();
+}
