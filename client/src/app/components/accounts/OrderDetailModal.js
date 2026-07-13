@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState  } from "react";
+import { useCallback, useEffect, useState } from 'react';
 import { useLocale } from '@/app/i18n/LocaleProvider';
 import { cancelOrder, fetchOrder } from './orderApi';
 import{
@@ -13,7 +13,8 @@ import{
     getStatusBadgeClass,
     shortOrderId,
 } from './orderUtils';
-import'../../assets/css/orderStatus.css';
+import './accountSuccessModal.css';
+import '../../assets/css/orderStatus.css';
 
 export default function OrderDetailModal({ orderId, onClose, onOrderUpdated }) {
   const { formatPrice } = useLocale();
@@ -22,7 +23,7 @@ export default function OrderDetailModal({ orderId, onClose, onOrderUpdated }) {
   const [error, setError] = useState('');
   const [canceling, setCanceling] = useState(false);
 
-    const loadOrder = useCallback(async () => {
+  const loadOrder = useCallback(async () => {
     if (!orderId) return;
     setLoading(true);
     setError('');
@@ -39,3 +40,35 @@ export default function OrderDetailModal({ orderId, onClose, onOrderUpdated }) {
   useEffect(() => {
     loadOrder();
   }, [loadOrder]);
+
+  useEffect(() => {
+    if (!orderId) return undefined;
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') onClose();
+    };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [orderId, onClose]);
+
+  const handleCancel = async () => {
+    if (!order || !window.confirm('Cancel this order? This cannot be undone.')) return;
+    setCanceling(true);
+    setError('');
+    try {
+      const result = await cancelOrder(order._id);
+      setOrder(result.order || { ...order, status: 'cancelled' });
+      onOrderUpdated?.();
+    } catch (err) {
+      setError(err.message || 'Failed to cancel order.');
+    } finally {
+      setCanceling(false);
+    }
+  };
+
+  if (!orderId) return null;
+
+ 
