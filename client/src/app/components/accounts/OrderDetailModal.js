@@ -71,4 +71,68 @@ export default function OrderDetailModal({ orderId, onClose, onOrderUpdated }) {
 
   if (!orderId) return null;
 
- 
+   return (
+    <div
+      className="user-account-order-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="order-detail-title"
+      onClick={onClose}
+    >
+      <div
+        className="user-account-order-modal-panel"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <header className="user-account-order-modal-header">
+          <div>
+            <h2 id="order-detail-title">Order details</h2>
+            <p>{shortOrderId(orderId)}</p>
+          </div>
+          <button
+            type="button"
+            className="user-account-order-modal-close"
+            aria-label="Close order details"
+            onClick={onClose}
+          >
+            ×
+          </button>
+        </header>
+
+        {loading && (
+          <div className="user-account-order-modal-loading">Loading order...</div>
+        )}
+
+        {error && (
+          <div className="user-account-alert user-account-alert--error">{error}</div>
+        )}
+
+        {!loading && order && (
+          <div className="user-account-order-modal-body">
+            <div className="user-account-order-summary">
+              <div>
+                <span className="user-account-order-label">Status</span>
+                <span className={status-badge ${getStatusBadgeClass(order.status)}}>
+                  {order.status}
+                </span>
+              </div>
+              <div>
+                <span className="user-account-order-label">Placed</span>
+                <strong>{formatOrderDate(order.createdAt)}</strong>
+              </div>
+              <div>
+                <span className="user-account-order-label">Total</span>
+                <strong className="user-account-order-total">
+                  {formatPrice(getOrderTotal(order))}
+                </strong>
+              </div>
+              <div>
+                <span className="user-account-order-label">Items</span>
+                <strong>{getOrderItemCount(order)}</strong>
+              </div>
+            </div>
+
+            {order.refundStatus && order.refundStatus !== 'none' && (
+              <div className="user-account-order-refund">
+                Refund status: <strong>{order.refundStatus}</strong>
+              </div>
+            )}
