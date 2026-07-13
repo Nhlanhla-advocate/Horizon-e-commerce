@@ -111,7 +111,7 @@ export default function OrderDetailModal({ orderId, onClose, onOrderUpdated }) {
             <div className="user-account-order-summary">
               <div>
                 <span className="user-account-order-label">Status</span>
-                <span className={status-badge ${getStatusBadgeClass(order.status)}}>
+                <span className={status-badge `${getStatusBadgeClass(order.status)}`}>
                   {order.status}
                 </span>
               </div>
@@ -136,3 +136,49 @@ export default function OrderDetailModal({ orderId, onClose, onOrderUpdated }) {
                 Refund status: <strong>{order.refundStatus}</strong>
               </div>
             )}
+
+<h3 className="user-account-order-items-title">Items</h3>
+            <ul className="user-account-order-items">
+              {(order.items || []).map((item, index) => {
+                const unitPrice = getItemPrice(item);
+                const quantity = item.quantity || 0;
+                return (
+                  <li key={item._id || index} className="user-account-order-item">
+                    <div className="user-account-order-item-info">
+                      <strong>{getItemName(item)}</strong>
+                      <span>Qty {quantity}</span>
+                    </div>
+                    <div className="user-account-order-item-prices">
+                      <span>{formatPrice(unitPrice)} each</span>
+                      <strong>{formatPrice(unitPrice * quantity)}</strong>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+
+            <div className="user-account-order-modal-footer">
+              {canCancelOrder(order.status) && (
+                <button
+                  type="button"
+                  className="user-account-btn user-account-btn--danger"
+                  disabled={canceling}
+                  onClick={handleCancel}
+                >
+                  {canceling ? 'Cancelling...' : 'Cancel order'}
+                </button>
+              )}
+              <button
+                type="button"
+                className="user-account-btn user-account-btn--secondary"
+                onClick={onClose}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
