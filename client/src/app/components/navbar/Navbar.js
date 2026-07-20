@@ -66,6 +66,10 @@ const Navbar = () => {
       localStorage.removeItem('userId');
       localStorage.removeItem('adminToken');
       localStorage.removeItem('adminRole');
+      // Drop cached cart so guest browsing does not keep the previous account's items
+      localStorage.removeItem('localCart');
+      localStorage.removeItem('lastCheckedUserId');
+      localStorage.removeItem('guestId');
     } catch {}
 
     setIsAuthed(false);

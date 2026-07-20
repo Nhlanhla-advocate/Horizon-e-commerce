@@ -274,43 +274,65 @@ export const CartProvider = ({ children }) => {
     }
   }, []);
 
+  // After logout: empty the UI cart and start a fresh guest session.
+  // Do not clear the logged-in user's server cart — that stays for their next login.
+  const resetToGuestCart = useCallback(() => {
+    const emptyCart = { items: [], totalPrice: 0 };
+    setCart(emptyCart);
+    try {
+      localStorage.removeItem('localCart');
+      localStorage.removeItem('lastCheckedUserId');
+      localStorage.removeItem('guestId');
+      getGuestId();
+    } catch (e) {
+      console.error('Error resetting guest cart after logout:', e);
+    }
+  }, []);
+
   // Monitor for user login/logout and sync cart accordingly
   useEffect(() => {
+    let previousUserId = localStorage.getItem('userId');
+
+    const handleUserIdChange = (nextUserId) => {
+      if (nextUserId === previousUserId) return;
+
+      if (nextUserId) {
+        console.log('User logged in, syncing cart...');
+        previousUserId = nextUserId;
+        localStorage.setItem('lastCheckedUserId', nextUserId);
+        syncCartOnLogin(nextUserId);
+        return;
+      }
+
+      console.log('User logged out, resetting to empty guest cart...');
+      previousUserId = null;
+      resetToGuestCart();
+    };
+
     const handleStorageChange = (e) => {
       if (e.key === 'userId') {
-        if (e.newValue) {
-          // User logged in
-          console.log('User logged in, syncing cart...');
-          syncCartOnLogin(e.newValue);
-        } else {
-          // User logged out
-          console.log('User logged out, clearing cart...');
-          setCart({ items: [], totalPrice: 0 });
-          // Keep localStorage cart for guest mode
-        }
+        handleUserIdChange(e.newValue);
       }
     };
 
-    // Listen for storage events (cross-tab)
+    // Same-tab logout/login (Navbar dispatches this after clearing auth)
+    const handleAuthChange = () => {
+      handleUserIdChange(localStorage.getItem('userId'));
+    };
+
     window.addEventListener('storage', handleStorageChange);
-    
-    // Also check for userId changes in current tab
-    const checkUserId = () => {
-      const currentUserId = localStorage.getItem('userId');
-      if (currentUserId && currentUserId !== localStorage.getItem('lastCheckedUserId')) {
-        localStorage.setItem('lastCheckedUserId', currentUserId);
-        syncCartOnLogin(currentUserId);
-      }
-    };
+    window.addEventListener('horizon-auth-change', handleAuthChange);
 
-    // Check every 2 seconds for userId changes
-    const intervalId = setInterval(checkUserId, 2000);
+    const intervalId = setInterval(() => {
+      handleUserIdChange(localStorage.getItem('userId'));
+    }, 2000);
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('horizon-auth-change', handleAuthChange);
       clearInterval(intervalId);
     };
-  }, []);
+  }, [resetToGuestCart, syncCartOnLogin]);
 
   // Helper: merge into cart when the API is unavailable (uses functional state — no stale cart.items).
   const updateLocalCart = useCallback((productId, quantity, productData) => {
