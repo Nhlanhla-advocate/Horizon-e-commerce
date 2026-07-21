@@ -46,3 +46,28 @@ const buildUpdateData = () => {
 throw new Error('Unknown bulk action.');
 };
 
+const handleApply = async () => {
+    if (disabled || selectedCount === 0) return;
+
+    let updateData;
+    try {
+      updateData = buildUpdateData();
+    } catch (err) {
+      alert(err.message);
+      return;
+    }
+
+    const summary = Object.entries(updateData)
+      .map(([key, value]) => `${key}: ${String(value)}`)
+      .join(', ');
+
+    if (
+      !window.confirm(
+        `Apply bulk update to ${selectedCount} product${selectedCount === 1 ? '' : 's'}?\n\n${summary}`
+      )
+    ) {
+      return;
+    }
+
+    await onApply?.(updateData);
+  };
