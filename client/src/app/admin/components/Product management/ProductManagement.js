@@ -5,6 +5,7 @@ import '../../../assets/css/admin.css';
 import '../../../assets/css/productManagement.css';
 import Pagination from '../Pagination';
 import ProductModal from './productModal';
+import BulkActionsBar from './BulkActionsBar';
 
 // Backend base URL
 const BASE_URL = 'http://localhost:5000';
@@ -15,6 +16,8 @@ export default function ProductManagement() {
   const [error, setError] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [bulkUpdating, setBulkUpdating] = useState(false);
   const [filters, setFilters] = useState({
     page: 1,
     limit: 20,
@@ -100,6 +103,11 @@ export default function ProductManagement() {
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
+
+  // Clear selection when page/filters change so bulk actions don't apply to stale IDs
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [filters]);
 
   useEffect(() => {
     if (showAddForm) {
@@ -304,6 +312,8 @@ export default function ProductManagement() {
     }));
   };
 
+  
+
   return (
     <div className="product-management-container">
       <div className="admin-card" style={{ borderRadius: '0.75rem' }}>
@@ -375,70 +385,99 @@ export default function ProductManagement() {
           <p className="product-management-empty-text">No products found. Try adjusting your filters or add a new product.</p>
         </div>
       ) : (
-        <div className="product-management-table-container">
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Product</th>
-                <th>Category</th>
-                <th>Price</th>
-                <th>Stock</th>
-                <th className="product-management-table-cell-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map((product) => (
-                <tr key={product._id}>
-                  <td className="product-management-table-cell-primary">{product.name}</td>
-                  <td className="product-management-table-cell-secondary">{product.category}</td>
-                  <td className="product-management-table-cell-primary">
-                    {typeof product.price === 'number' ? `R ${product.price.toFixed(2)}` : product.price}
-                  </td>
-                  <td className="product-management-table-cell-primary">{product.stock}</td>
-                  <td className="product-management-table-cell-right">
-                    <div className="product-management-actions">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditingProduct(product);
-                          setFormData({
-                            name: product.name || '',
-                            price: product.price || '',
-                            category: product.category || '',
-                            stock: product.stock || '',
-                            description: product.description || ''
-                          });
-                          setShowAddForm(true);
-                        }}
-                        className="admin-btn admin-btn-secondary"
-                        style={{ padding: '0.25rem 0.75rem', fontSize: '0.875rem' }}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          const productId = product._id || product.id;
-                          console.log('Delete button clicked for product:', productId);
-                          console.log('Full product object:', product);
-                          if (!productId) {
-                            alert('Error: Product ID is missing');
-                            return;
-                          }
-                          await handleDeleteProduct(productId);
-                        }}
-                        className="admin-btn admin-btn-danger"
-                        style={{ padding: '0.25rem 0.75rem', fontSize: '0.875rem' }}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </td>
+        <>
+          {selectedIds.length > 0 && (
+            <BulkActionsBar
+              selectedCount={selectedIds.length}
+              disabled={bulkUpdating}
+              onApply={handleBulkUpdate}
+              onClear={() => setSelectedIds([])}
+            />
+          )}
+          <div className="product-management-table-container">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th className="product-bulk-checkbox-cell">
+                    <input
+                      type="checkbox"
+                      className="product-bulk-checkbox"
+                      checked={allPageSelected}
+                      onChange={toggleSelectAll}
+                      aria-label="Select all products on this page"
+                    />
+                  </th>
+                  <th>Product</th>
+                  <th>Category</th>
+                  <th>Price</th>
+                  <th>Stock</th>
+                  <th className="product-management-table-cell-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {products.map((product) => {
+                  const productId = product._id || product.id;
+                  const isSelected = selectedIds.includes(productId);
+                  return (
+                    <tr key={productId} className={isSelected ? 'product-bulk-row-selected' : undefined}>
+                      <td className="product-bulk-checkbox-cell">
+                        <input
+                          type="checkbox"
+                          className="product-bulk-checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleSelectOne(productId)}
+                          aria-label={`Select ${product.name || 'product'}`}
+                        />
+                      </td>
+                      <td className="product-management-table-cell-primary">{product.name}</td>
+                      <td className="product-management-table-cell-secondary">{product.category}</td>
+                      <td className="product-management-table-cell-primary">
+                        {typeof product.price === 'number' ? `R ${product.price.toFixed(2)}` : product.price}
+                      </td>
+                      <td className="product-management-table-cell-primary">{product.stock}</td>
+                      <td className="product-management-table-cell-right">
+                        <div className="product-management-actions">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingProduct(product);
+                              setFormData({
+                                name: product.name || '',
+                                price: product.price || '',
+                                category: product.category || '',
+                                stock: product.stock || '',
+                                description: product.description || ''
+                              });
+                              setShowAddForm(true);
+                            }}
+                            className="admin-btn admin-btn-secondary"
+                            style={{ padding: '0.25rem 0.75rem', fontSize: '0.875rem' }}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              if (!productId) {
+                                alert('Error: Product ID is missing');
+                                return;
+                              }
+                              await handleDeleteProduct(productId);
+                            }}
+                            className="admin-btn admin-btn-danger"
+                            style={{ padding: '0.25rem 0.75rem', fontSize: '0.875rem' }}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {/* Pagination - Always show if we have pagination data */}
