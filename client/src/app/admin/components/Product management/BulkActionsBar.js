@@ -21,3 +21,28 @@ export default function BulkActionsBar({
     const [priceValue, setPriceValue] = useState('');
     const [stockValue, setStockValue] = useState('');
 }
+
+const buildUpdateData = () => {
+    if (action === 'status') {
+        return { status: statusValue };
+    }
+    if (action === 'featured') {
+        return { featured: featuredValue === 'true'};
+    }
+    if (action === 'price') {
+        const price = Number(priceValue);
+        if (Number.isNaN(price) || price < 0) {
+            throw new Error('Enter a valid price (0 or greater).');
+        }
+        return { price };
+    }
+    if (action === 'stock') {
+     const stock = Number(stockValue);
+        if (!Number.isInteger(stock) || stock < 0) {
+        throw new Error('Enter a valid stock quantity (whole number, 0 or greater).');
+    }
+    return { stock };
+};
+throw new Error('Unknown bulk action.');
+};
+
