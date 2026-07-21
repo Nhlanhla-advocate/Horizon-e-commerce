@@ -71,3 +71,26 @@ const handleApply = async () => {
 
     await onApply?.(updateData);
   };
+
+  return (
+    <div className="product-bulk-bar" role="region" aria-label="Bulk product actions">
+      <span className="product-bulk-bar-count">
+        {selectedCount} selected
+      </span>
+
+      <div className="product-bulk-bar-controls">
+        <label className="product-bulk-bar-field">
+          <span className="product-bulk-bar-label">Action</span>
+          <select
+            className="product-bulk-bar-select"
+            value={action}
+            disabled={disabled}
+            onChange={(e) => setAction(e.target.value)}
+          >
+            {ACTIONS.map((item) => (
+              <option key={item.value} value={item.value}>
+                {item.label}
+              </option>
+            ))}
+          </select>
+        </label>
