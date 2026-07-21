@@ -94,3 +94,34 @@ const handleApply = async () => {
             ))}
           </select>
         </label>
+
+        {action === 'status' && (
+          <label className="product-bulk-bar-field">
+            <span className="product-bulk-bar-label">Value</span>
+            <select
+              className="product-bulk-bar-select"
+              value={statusValue}
+              disabled={disabled}
+              onChange={(e) => setStatusValue(e.target.value)}
+            >
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="deleted">Deleted</option>
+            </select>
+          </label>
+        )}
+
+        {action === 'featured' && (
+          <label className="product-bulk-bar-field">
+            <span className="product-bulk-bar-label">Value</span>
+            <select
+              className="product-bulk-bar-select"
+              value={featuredValue}
+              disabled={disabled}
+              onChange={(e) => setFeaturedValue(e.target.value)}
+            >
+              <option value="true">Featured</option>
+              <option value="false">Not featured</option>
+            </select>
+          </label>
+        )}
