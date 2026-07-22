@@ -225,3 +225,22 @@
   }
 }
 
+/* BULK OPERATIONS */
+.product-bulk-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  border: 1px solid #bfdbfe;
+  border-radius: 0.5rem;
+  background: #eff6ff;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .product-bulk-bar {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+}
