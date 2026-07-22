@@ -244,3 +244,18 @@
     justify-content: space-between;
   }
 }
+
+.product-bulk-bar-count {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1e40af;
+  white-space: nowrap;
+}
+
+.product-bulk-bar-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+  width: 100%;
+}
