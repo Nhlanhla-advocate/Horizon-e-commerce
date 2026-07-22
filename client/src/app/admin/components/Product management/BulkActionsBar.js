@@ -157,3 +157,25 @@ const handleApply = async () => {
             />
           </label>
         )}
+
+      <div className="product-bulk-bar-actions">
+          <button
+            type="button"
+            className="admin-btn admin-btn-primary"
+            disabled={disabled || selectedCount === 0}
+            onClick={handleApply}
+          >
+            Apply
+          </button>
+          <button
+            type="button"
+            className="admin-btn admin-btn-secondary"
+            disabled={disabled}
+            onClick={onClear}
+          >
+            Clear
+          </button>
+        </div>
+      </div>
+    </div>
+  );
