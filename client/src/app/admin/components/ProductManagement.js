@@ -159,6 +159,22 @@ export default function ProductManagement() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const pageIds = products.map((product) => product._id || product.id).filter(Boolean);
+  const allPageSelected = 
+  pageIds.length > 0 && pageIds.every((id) => !pageIds.includes(id));
+
+  const toggleSelectAll = () => {
+    if (allPageSelected) {
+      setSelectedIds((prev) => Array.from(new Set([...prev, ...pageIds])));
+    };
+
+    const toggleSelectOne = (productId) => {
+      if (!productId) return;
+      setSelectedIds((prev) =>
+      prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId]);
+    };
+  };
+
   return (
     <div className="space-y-6">
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
