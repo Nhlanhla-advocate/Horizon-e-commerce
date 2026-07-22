@@ -187,10 +187,10 @@ export default function ProductManagement() {
         throw new Error('Authentication required. Please log in again.');
       }
 
-      const response = await fetch(`${BASE_URL}`/dashboard/products/bulk-update, {
+      const response = await fetch(`${BASE_URL}/dashboard/products/bulk-update`, {
         method: 'POST',
         headers: {
-          Authorization: Bearer `${token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -198,6 +198,35 @@ export default function ProductManagement() {
           updateData,
         }),
       });
+
+      let data = {};
+      try {
+        const text = await response.text();
+        if (text) data = JSON.parse(text);
+      } catch (parseError) {
+        console.error('Failed to parse bulk update response:', parseError);
+      }
+
+      if (!response.ok) {
+        if (data.errors && Array.isArray(data.errors)) {
+          const errorMessages = data.errors.map((err) => err.msg || err.message).join(', ');
+          throw new Error(`Validation error: ${errorMessages}`);
+        }
+        throw new Error(data.error || data.message || `Bulk update failed (${response.status})`);
+      }
+
+      setSelectedIds([]);
+      await fetchProducts();
+      window.dispatchEvent(new CustomEvent('product-updated'));
+    } catch (err) {
+      const errorMessage = err.message || 'Failed to apply bulk update.';
+      setError(errorMessage);
+      console.error('Error applying bulk update:', err);
+      alert(`Error: ${errorMessage}`);
+    } finally {
+      setBulkUpdating(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
