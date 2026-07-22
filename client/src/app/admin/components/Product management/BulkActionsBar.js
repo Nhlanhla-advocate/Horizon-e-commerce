@@ -125,3 +125,35 @@ const handleApply = async () => {
             </select>
           </label>
         )}
+
+        {action === 'price' && (
+          <label className="product-bulk-bar-field">
+            <span className="product-bulk-bar-label">Price</span>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              className="product-bulk-bar-input"
+              value={priceValue}
+              disabled={disabled}
+              placeholder="0.00"
+              onChange={(e) => setPriceValue(e.target.value)}
+            />
+          </label>
+        )}
+
+        {action === 'stock' && (
+          <label className="product-bulk-bar-field">
+            <span className="product-bulk-bar-label">Stock</span>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              className="product-bulk-bar-input"
+              value={stockValue}
+              disabled={disabled}
+              placeholder="0"
+              onChange={(e) => setStockValue(e.target.value)}
+            />
+          </label>
+        )}
