@@ -175,6 +175,30 @@ export default function ProductManagement() {
     };
   };
 
+  const handleBulkUpdate = async (updateData) => {
+    if (selectedIds.length === 0) return;
+
+    try {
+      setBulkUpdating(true);
+      setError(null);
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+
+      if (!token) {
+        throw new Error('Authentication required. Please log in again.');
+      }
+
+      const response = await fetch(`${BASE_URL}`/dashboard/products/bulk-update, {
+        method: 'POST',
+        headers: {
+          Authorization: Bearer `${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          productIds: selectedIds,
+          updateData,
+        }),
+      });
+
   return (
     <div className="space-y-6">
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
