@@ -3,50 +3,49 @@
 import { useState } from 'react';
 
 const ACTIONS = [
-    { value: 'status', label: 'Status' },
-    { value: 'featured', label: 'Featured' },
-    { value: 'price', label: 'Price' },
-    { value: 'stock', label: 'stock' },
+  { value: 'status', label: 'Status' },
+  { value: 'featured', label: 'Featured' },
+  { value: 'price', label: 'Price' },
+  { value: 'stock', label: 'Stock' },
 ];
 
 export default function BulkActionsBar({
-    selectedCount,
-    disabled = false,
-    onApply,
-    onClear,
+  selectedCount,
+  disabled = false,
+  onApply,
+  onClear,
 }) {
-    const [action, setAction] = useState('status');
-    const [statusValue, setStatusValue] = useState('active');
-    const [featuredValue, setFeaturedValue] = useState('true');
-    const [priceValue, setPriceValue] = useState('');
-    const [stockValue, setStockValue] = useState('');
-}
+  const [action, setAction] = useState('status');
+  const [statusValue, setStatusValue] = useState('active');
+  const [featuredValue, setFeaturedValue] = useState('true');
+  const [priceValue, setPriceValue] = useState('');
+  const [stockValue, setStockValue] = useState('');
 
-const buildUpdateData = () => {
+  const buildUpdateData = () => {
     if (action === 'status') {
-        return { status: statusValue };
+      return { status: statusValue };
     }
     if (action === 'featured') {
-        return { featured: featuredValue === 'true'};
+      return { featured: featuredValue === 'true' };
     }
     if (action === 'price') {
-        const price = Number(priceValue);
-        if (Number.isNaN(price) || price < 0) {
-            throw new Error('Enter a valid price (0 or greater).');
-        }
-        return { price };
+      const price = Number(priceValue);
+      if (Number.isNaN(price) || price < 0) {
+        throw new Error('Enter a valid price (0 or greater).');
+      }
+      return { price };
     }
     if (action === 'stock') {
-     const stock = Number(stockValue);
-        if (!Number.isInteger(stock) || stock < 0) {
+      const stock = Number(stockValue);
+      if (!Number.isInteger(stock) || stock < 0) {
         throw new Error('Enter a valid stock quantity (whole number, 0 or greater).');
+      }
+      return { stock };
     }
-    return { stock };
-};
-throw new Error('Unknown bulk action.');
-};
+    throw new Error('Unknown bulk action.');
+  };
 
-const handleApply = async () => {
+  const handleApply = async () => {
     if (disabled || selectedCount === 0) return;
 
     let updateData;
@@ -158,7 +157,7 @@ const handleApply = async () => {
           </label>
         )}
 
-      <div className="product-bulk-bar-actions">
+        <div className="product-bulk-bar-actions">
           <button
             type="button"
             className="admin-btn admin-btn-primary"
@@ -179,3 +178,4 @@ const handleApply = async () => {
       </div>
     </div>
   );
+}

@@ -312,7 +312,79 @@ export default function ProductManagement() {
     }));
   };
 
-  
+  const pageIds = products.map((product) => product._id || product.id).filter(Boolean);
+  const allPageSelected =
+    pageIds.length > 0 && pageIds.every((id) => selectedIds.includes(id));
+
+  const toggleSelectAll = () => {
+    if (allPageSelected) {
+      setSelectedIds((prev) => prev.filter((id) => !pageIds.includes(id)));
+      return;
+    }
+    setSelectedIds((prev) => Array.from(new Set([...prev, ...pageIds])));
+  };
+
+  const toggleSelectOne = (productId) => {
+    if (!productId) return;
+    setSelectedIds((prev) =>
+      prev.includes(productId)
+        ? prev.filter((id) => id !== productId)
+        : [...prev, productId]
+    );
+  };
+
+  const handleBulkUpdate = async (updateData) => {
+    if (selectedIds.length === 0) return;
+
+    try {
+      setBulkUpdating(true);
+      setError(null);
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+
+      if (!token) {
+        throw new Error('Authentication required. Please log in again.');
+      }
+
+      const response = await fetch(`${BASE_URL}/dashboard/products/bulk-update`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          productIds: selectedIds,
+          updateData,
+        }),
+      });
+
+      let data = {};
+      try {
+        const text = await response.text();
+        if (text) data = JSON.parse(text);
+      } catch (parseError) {
+        console.error('Failed to parse bulk update response:', parseError);
+      }
+
+      if (!response.ok) {
+        if (data.errors && Array.isArray(data.errors)) {
+          const errorMessages = data.errors.map((err) => err.msg || err.message).join(', ');
+          throw new Error(`Validation error: ${errorMessages}`);
+        }
+        throw new Error(data.error || data.message || `Bulk update failed (${response.status})`);
+      }
+
+      setSelectedIds([]);
+      await fetchProducts();
+      window.dispatchEvent(new CustomEvent('product-updated'));
+    } catch (err) {
+      const errorMessage = err.message || 'Failed to apply bulk update.';
+      setError(errorMessage);
+      console.error('Error applying bulk update:', err);
+      alert(`Error: ${errorMessage}`);
+    } finally {
+      setBulkUpdating(false);
+    }
+  };
 
   return (
     <div className="product-management-container">
