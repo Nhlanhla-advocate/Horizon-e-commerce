@@ -13,7 +13,7 @@ import{
     getStatusBadgeClass,
     shortOrderId,
 } from './orderUtils';
-import './accountSuccessModal.css';
+import '../../assets/css/accountSuccessModal.css';
 import '../../assets/css/orderStatus.css';
 
 export default function OrderDetailModal({ orderId, onClose, onOrderUpdated }) {

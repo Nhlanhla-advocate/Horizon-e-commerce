@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import './accountSuccessModal.css';
+import '../../assets/css/accountSuccessModal.css';
 
 export default function AccountSuccessModal({ message, onClose }) {
   useEffect(() => {
