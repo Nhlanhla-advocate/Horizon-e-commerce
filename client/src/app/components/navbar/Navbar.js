@@ -3,8 +3,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { FaShoppingCart, FaUser, FaUserCircle, FaTimes, FaSignOutAlt, FaTachometerAlt, FaSpinner } from 'react-icons/fa';
+import { FaShoppingCart, FaUser, FaUserCircle, FaTimes, FaSignOutAlt, FaTachometerAlt, FaSpinner, FaHeart } from 'react-icons/fa';
 import { useCart } from '@/app/components/cart/Cart';
+import { useWishlist } from '@/app/components/wishlist/Wishlist';
 import "../../assets/css/navbar.css";
 
 const normalizeRole = (roleValue) =>
@@ -31,6 +32,7 @@ const readAuthFromStorage = () => {
 
 const Navbar = () => {
   const { cartCount } = useCart();
+  const { wishlistCount, isAuthed: isWishlistAuthed } = useWishlist();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAuthed, setIsAuthed] = useState(false);
   const [hasAdminAccess, setHasAdminAccess] = useState(false);
@@ -225,6 +227,16 @@ const Navbar = () => {
                 <FaTachometerAlt />
               </Link>
             )}
+            <Link href="/wishlist" className="navbar-mobile-icon-btn" aria-label="Wishlist">
+              <div className="wishlist-icon-container">
+                <FaHeart />
+                {isWishlistAuthed && wishlistCount > 0 && (
+                  <span className="wishlist-badge">
+                    {wishlistCount > 99 ? '99+' : wishlistCount}
+                  </span>
+                )}
+              </div>
+            </Link>
             <Link href="/cart" className="navbar-mobile-icon-btn" aria-label="Cart">
               <div className="cart-icon-container">
                 <FaShoppingCart />
@@ -259,6 +271,16 @@ const Navbar = () => {
                 <FaTachometerAlt />
               </Link>
             )}
+            <Link href="/wishlist" className="navbar-icon-link wishlist-link" aria-label="Wishlist">
+              <div className="wishlist-icon-container">
+                <FaHeart />
+                {isWishlistAuthed && wishlistCount > 0 && (
+                  <span className="wishlist-badge">
+                    {wishlistCount > 99 ? '99+' : wishlistCount}
+                  </span>
+                )}
+              </div>
+            </Link>
             <Link href="/cart" className="navbar-icon-link cart-link" aria-label="Cart">
               <div className="cart-icon-container">
                 <FaShoppingCart />

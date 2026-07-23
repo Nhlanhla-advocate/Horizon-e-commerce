@@ -8,6 +8,7 @@ import ImageModal from '../../components/imagemodal/ImageModal';
 import { useCart } from '@/app/components/cart/Cart';
 import { useLocale } from '@/app/i18n/LocaleProvider';
 import { fetchWithUserAuth, getUserApiBaseUrl } from '@/app/utils/userAuthFetch';
+import WishlistHeartButton from '@/app/components/wishlist/WishlistHeartButton';
 import {
   buildCategoryGalleryItems,
   buildProductDetailHref,
@@ -396,6 +397,11 @@ export default function ProductDetail() {
               </svg>
               {t('product.addToCart')}
             </button>
+            <WishlistHeartButton
+              productId={product._id}
+              variant="inline"
+              showLabel
+            />
             <div style={{ fontSize: 15, color: '#666', marginBottom: 18 }}>
               <b>Seller:</b> Horizon Store <span style={{ color: '#16a34a', fontWeight: 500, marginLeft: 8 }}>4.8 ★</span>
             </div>
