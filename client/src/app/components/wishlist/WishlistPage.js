@@ -27,4 +27,15 @@ function WishlistItemImage({ product }) {
     setSrc(unique[0] || PLACEHOLDER);
   }, [product?._id, product?.name, product?.image]);
 
- 
+ return (
+  <img 
+  src={src}
+  alt={product?.name || 'Product'}
+  className="wishlist-item-img"
+  onError={() => {
+    const idx = unique.indexOf(src);
+    const next = idx >= 0 && idx < unique.length - 1 ? unique[idx + 1] : PLACEHOLDER;
+  }}
+  />
+ );
+}
