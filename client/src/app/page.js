@@ -8,6 +8,7 @@ import { useLocale } from '@/app/i18n/LocaleProvider';
 import { FaSearch, FaTimes } from 'react-icons/fa';
 import { useSearchParams } from 'next/navigation';
 import { productMatchesSearchQuery } from '@/app/utils/productSearch';
+import WishlistHeartButton from '@/app/components/wishlist/WishlistHeartButton';
 
 const normalizeProductImagePath = (value) => {
     if (typeof value !== 'string') return '/Pictures/placeholder.jpg';
@@ -224,6 +225,7 @@ const Products = () => {
                     {featuredProducts.map((product) => (
                         <div key={product.id} className="product-card">
                             <div className="product-image-container">
+                                <WishlistHeartButton productId={product._id} variant="overlay" />
                                 <Link href={`/products/${product.slug}`}>
                                     <div className="image-wrapper">
                                         <Image

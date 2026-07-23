@@ -6,6 +6,7 @@ import './assets/css/footer.css';
 import './assets/css/authlayout.css';
 
 import { CartProvider } from '@/app/components/cart/Cart';
+import { WishlistProvider } from '@/app/components/wishlist/Wishlist';
 import { LocaleProvider } from '@/app/i18n/LocaleProvider';
 import AuthLayoutWrapper from './components/AuthLayoutWrapper.js';
 
@@ -22,9 +23,11 @@ export default function RootLayout({ children }) {
       <body className={inter.className} suppressHydrationWarning>
         <LocaleProvider>
           <CartProvider>
-            <AuthLayoutWrapper>
-              {children}
-            </AuthLayoutWrapper>
+            <WishlistProvider>
+              <AuthLayoutWrapper>
+                {children}
+              </AuthLayoutWrapper>
+            </WishlistProvider>
           </CartProvider>
         </LocaleProvider>
       </body>

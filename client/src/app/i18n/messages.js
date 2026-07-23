@@ -28,6 +28,15 @@ const en = {
   'cart.itemAdded': 'item added to your cart',
   'cart.itemsAdded': 'items added to your cart',
   'cart.goToCart': 'GO TO CART',
+  'wishlist.title': 'Your Wishlist',
+  'wishlist.empty': 'Your wishlist is empty.',
+  'wishlist.continueShopping': 'Continue Shopping',
+  'wishlist.loading': 'Loading wishlist...',
+  'wishlist.add': 'Add to wishlist',
+  'wishlist.remove': 'Remove from wishlist',
+  'wishlist.signInRequired': 'Sign in to save items to your wishlist',
+  'wishlist.added': 'Added to wishlist',
+  'wishlist.removed': 'Removed from wishlist',
 };
 
 export const MESSAGES = { en };

@@ -8,6 +8,7 @@ import { useCart } from '@/app/components/cart/Cart';
 import { useLocale } from '@/app/i18n/LocaleProvider';
 import '../assets/css/product.css';
 import { productMatchesSearchQuery } from '@/app/utils/productSearch';
+import WishlistHeartButton from '@/app/components/wishlist/WishlistHeartButton';
 
 const normalizeProductImagePath = (value) => {
     if (typeof value !== 'string') return '/Pictures/placeholder.jpg';
@@ -332,6 +333,7 @@ return (
             {paginatedProducts.map((product) => (
                 <div key={product.id} className="product-card">
                     <div className="product-image-container"> 
+                        <WishlistHeartButton productId={product._id} variant="overlay" />
                         <Link href={`/products/${product.slug}`}>
                             <div className="image-wrapper">
                                 <Image
