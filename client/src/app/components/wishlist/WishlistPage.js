@@ -27,15 +27,33 @@ function WishlistItemImage({ product }) {
     setSrc(unique[0] || PLACEHOLDER);
   }, [product?._id, product?.name, product?.image]);
 
- return (
-  <img 
-  src={src}
-  alt={product?.name || 'Product'}
-  className="wishlist-item-img"
-  onError={() => {
-    const idx = unique.indexOf(src);
-    const next = idx >= 0 && idx < unique.length - 1 ? unique[idx + 1] : PLACEHOLDER;
-  }}
-  />
- );
+  return (
+    <img
+      src={src}
+      alt={product?.name || 'Product'}
+      className="wishlist-item-img"
+      onError={() => {
+        const idx = unique.indexOf(src);
+        const next =
+          idx >= 0 && idx < unique.length - 1
+            ? unique[idx + 1]
+            : PLACEHOLDER;
+
+        if (next !== src) setSrc(next);
+      }}
+    />
+  );
 }
+
+export default function WishlistPage() {
+  const { items, isLoading, removeFromWishlist, isPending } = useWishlist();
+  const { addToCart } = useCart();
+  const { t, formatPrice } = useLocale();
+
+  if (isLoading) {
+    return (
+      <div className="wishlist-container">
+        <p className="wishlist-loading">{t('wishlist.loading')}</p>
+      </div>
+    );
+  }
