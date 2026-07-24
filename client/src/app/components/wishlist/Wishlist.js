@@ -174,3 +174,30 @@ export function WishListProvide({ children }) {
     },
     [pendingIds]
   );
+
+  const value = useMemo(
+    () => ({
+      items,
+      wishlistCount,
+      isLoading,
+      isAuthed,
+      isInWishlist,
+      isPending,
+      togleWishlist,
+      removeFromWishlist,
+      refreshWishlist: loadWishlist,
+      requireAuth,
+    }),
+    [
+      items,
+      wishlistCount,
+      isLoading,
+      isAuthed,
+      isInWishlist,
+      isPending,
+      toggleWishlist,
+      removeFromWishlist,
+      loadWishlist,
+      requireAuth,
+    ]
+  );
