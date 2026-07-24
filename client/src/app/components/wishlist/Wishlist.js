@@ -65,3 +65,41 @@ export function WishListProvide({ children }) {
       setIsLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    syncAuth();
+    window.addEventListener('storage', syncAuth);
+    window.addEventListener('horizon-auth-change', syncAuth);
+    return () => {
+      window.removeEventListener('storage', syncAuth);
+      window.removeEventListener('horizon-auth-change', syncAuth);
+    };
+  }, [syncAuth]);
+
+  useEffect(() => {
+    if (isAuthed) {
+      loadWishlist();
+    } else {
+      setItems([]);
+      setIsLoading(false);
+    }
+  }, [isAuthed, loadWishlist]);
+
+  const wishlistIds = useMemo(() => {
+    const ids = new Set();
+    for (const product of items) {
+      const id = normalizeProductId(product?._id || product);
+      if (id) ids.add(id);
+    }
+    return ids;
+  }, [items]);
+
+  const wishlistCount = wishlistIds.size;
+
+  const isInWishlist = useCallback(
+    (productId) => {
+      const id = normalizeProductId(productId);
+      return Boolean(id && wishlistIds.has(id));
+    },
+    [wishlistIds]
+  );
