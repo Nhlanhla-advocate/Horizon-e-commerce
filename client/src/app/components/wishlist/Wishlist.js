@@ -166,3 +166,11 @@ export function WishListProvide({ children }) {
       setPending(id, false);
     }
   }, [requireAuth, setPending, wishlistIds]);
+
+  const isPending = useCallback(
+    (productId) => {
+      const id = normalizeProductId(productId);
+      return Boolean(id && pendingIds.has(id));
+    },
+    [pendingIds]
+  );
