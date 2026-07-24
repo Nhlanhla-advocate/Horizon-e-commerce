@@ -34,3 +34,17 @@ const readUserToken = () => {
     return false;
   }
 };
+
+export function WishListProvide({ children }) {
+  const [items, setItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isAuthed, setIsAuthed] = useState(false);
+  const[pendingids, setPendingids] = useState(() => new Set());
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const syncAuth = useCallback(() => {
+    setIsAuthed(readUserToken());
+  }, []);
+
+  
