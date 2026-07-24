@@ -201,3 +201,10 @@ export function WishListProvide({ children }) {
       requireAuth,
     ]
   );
+
+  return (
+    <WishlistContext.Provider value={value}>
+      {children}
+    </WishlistContext.Provider>
+  );
+}
