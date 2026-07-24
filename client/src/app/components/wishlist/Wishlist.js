@@ -103,3 +103,21 @@ export function WishListProvide({ children }) {
     },
     [wishlistIds]
   );
+
+  const requireAuth = useCallback(() => {
+    const redirect = pathname && pathname !== '/auth/signin'
+      ? `?redirect=${encodeURIComponent(pathname)}`
+      : '';
+    router.push(/auth/signin${redirect});
+  }, [pathname, router]);
+
+  const setPending = useCallback((productId, pending) => {
+    const id = normalizeProductId(productId);
+    if (!id) return;
+    setPendingIds((prev) => {
+      const next = new Set(prev);
+      if (pending) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  }, []);
