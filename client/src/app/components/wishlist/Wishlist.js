@@ -121,3 +121,34 @@ export function WishListProvide({ children }) {
       return next;
     });
   }, []);
+
+  const removeFromWishlist = useCallback(async (productId) => {
+    const id = normalizeProductId(productId);
+    if (!id) return { ok: false };
+
+    if (!readUserToken()) {
+      requireAuth();
+      return { ok: false, needsAuth: true };
+    }
+
+    setPending(id, true);
+    try {
+      const { products } = await apiRemove(id);
+      setItems(products);
+      return { ok: true };
+    } catch (err) {
+      console.error('Remove from wishlist failed:', err);
+      return { ok: false, error: err?.message };
+    } finally {
+      setPending(id, false);
+    }
+  }, [requireAuth, setPending]);
+
+  const toggleWishlist = useCallback(async (productId) => {
+    const id = normalizeProductId(productId);
+    if (!id) return { ok: false };
+
+    if (!readUserToken()) {
+      requireAuth();
+      return { ok: false, needsAuth: true };
+    }
