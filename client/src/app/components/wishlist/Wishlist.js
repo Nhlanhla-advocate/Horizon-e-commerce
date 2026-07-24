@@ -152,3 +152,17 @@ export function WishListProvide({ children }) {
       requireAuth();
       return { ok: false, needsAuth: true };
     }
+
+    const currentLyIn = wishlistIds.has(id);
+    setPending(id, true);
+    try {
+      const result = currentLyIn ? await apiRemove(id) : await apiAdd(id);
+      setItems(result.products);
+      return { ok: true, added: !currentLyIn, removed: currentLyIn };
+    } catch (err) {
+      console.error('Toggle wishlist failed:', err);
+      return { ok: false, error: err?.message };
+    } finally {
+      setPending(id, false);
+    }
+  }, [requireAuth, setPending, wishlistIds]);
