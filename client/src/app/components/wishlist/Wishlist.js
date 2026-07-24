@@ -47,4 +47,21 @@ export function WishListProvide({ children }) {
     setIsAuthed(readUserToken());
   }, []);
 
-  
+  const loadWishList = useCallback(async () => {
+    if (!readUserToken()) {
+      setItems([]);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { products } = await fetchWishlist();
+      setItems(products);
+    } catch (err) {
+      console.error("Wishlist load error:", err);
+      setItems([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
