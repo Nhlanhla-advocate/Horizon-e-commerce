@@ -35,11 +35,11 @@ const readUserToken = () => {
   }
 };
 
-export function WishListProvide({ children }) {
+export function WishlistProvider({ children }) {
   const [items, setItems] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isAuthed, setIsAuthed] = useState(false);
-  const[pendingids, setPendingids] = useState(() => new Set());
+  const [pendingIds, setPendingIds] = useState(() => new Set());
   const router = useRouter();
   const pathname = usePathname();
 
@@ -47,7 +47,7 @@ export function WishListProvide({ children }) {
     setIsAuthed(readUserToken());
   }, []);
 
-  const loadWishList = useCallback(async () => {
+  const loadWishlist = useCallback(async () => {
     if (!readUserToken()) {
       setItems([]);
       setIsLoading(false);
@@ -108,7 +108,7 @@ export function WishListProvide({ children }) {
     const redirect = pathname && pathname !== '/auth/signin'
       ? `?redirect=${encodeURIComponent(pathname)}`
       : '';
-    router.push(/auth/signin${redirect});
+    router.push(`/auth/signin${redirect}`);
   }, [pathname, router]);
 
   const setPending = useCallback((productId, pending) => {
@@ -153,12 +153,12 @@ export function WishListProvide({ children }) {
       return { ok: false, needsAuth: true };
     }
 
-    const currentLyIn = wishlistIds.has(id);
+    const currentlyIn = wishlistIds.has(id);
     setPending(id, true);
     try {
-      const result = currentLyIn ? await apiRemove(id) : await apiAdd(id);
+      const result = currentlyIn ? await apiRemove(id) : await apiAdd(id);
       setItems(result.products);
-      return { ok: true, added: !currentLyIn, removed: currentLyIn };
+      return { ok: true, added: !currentlyIn, removed: currentlyIn };
     } catch (err) {
       console.error('Toggle wishlist failed:', err);
       return { ok: false, error: err?.message };
@@ -183,7 +183,7 @@ export function WishListProvide({ children }) {
       isAuthed,
       isInWishlist,
       isPending,
-      togleWishlist,
+      toggleWishlist,
       removeFromWishlist,
       refreshWishlist: loadWishlist,
       requireAuth,
