@@ -39,3 +39,33 @@ function isExpired(expiresAt) {
   if (!expiresAt) return false;
   return new Date(expiresAt).getTime() < Date.now();
 }
+
+export default function ApiKeysPanel({ scopeOptions = DEFAULT_SCOPE_OPTIONS }) {
+  const [keys, setKeys] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [listError, setListError] = useState(null);
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
+  const [actionLoadingId, setActionLoadingId] = useState(null);
+  const [createdRawKey, setCreatedRawKey] = useState(null);
+  const [copied, setCopied] = useState(false);
+
+  const fetchKeys = useCallback(async () => {
+    setLoading(true);
+    setListError(null);
+    try {
+      const res = await fetch(API_KEYS_BASE, { headers: getAdminAuthHeaders() });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.success === false) {
+        throw new Error(data.message || data.error || `Failed to load API keys (${res.status})`);
+      }
+      setKeys(Array.isArray(data?.data) ? data.data : []);
+    } catch (err) {
+      setListError(err.message || 'Failed to load API keys');
+      setKeys([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
