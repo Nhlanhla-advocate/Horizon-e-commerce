@@ -23,9 +23,35 @@ export default function WishlistHeartButton({
   const label = active ? t('wishlist.remove') : t('wishlist.add');
   const classes = [
     'wishlist-heart-btn',
-    wishlist-heart-btn--${variant},
+    `wishlist-heart-btn--${variant}`,
     active ? 'wishlist-heart-btn--active' : '',
     className,
   ]
     .filter(Boolean)
     .join(' ');
+
+    return (
+        <button
+          type="button"
+          className={classes}
+          aria-label={label}
+          aria-pressed={active}
+          aria-busy={pending}
+          disabled={pending}
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            toggleWishlist(productId);
+          }}
+        >
+          {pending ? (
+            <FaSpinner className="wishlist-heart-spinner" aria-hidden />
+          ) : active ? (
+            <FaHeart aria-hidden />
+          ) : (
+            <FaRegHeart aria-hidden />
+          )}
+          {showLabel && <span className="wishlist-heart-label">{label}</span>}
+        </button>
+      );
+    }
