@@ -1,31 +1,71 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useWishlist } from '@/app/components/wishlist/Wishlist';
 import { useCart, normalizeProductId } from '@/app/components/cart/Cart';
 import { useLocale } from '@/app/i18n/LocaleProvider';
 import {
   buildProductDetailHref,
+  normalizeProductImagePath,
   resolveProductPrimaryImage,
 } from '@/app/utils/productGallery';
 import '../../assets/css/wishlist.css';
 
 const PLACEHOLDER = '/file.svg';
 
-function WishlistItemImage({ product }) {
-  const candidates = [
-    resolveProductPrimaryImage(product),
-    product?.image,
-    Array.isArray(product?.images) ? product.images[0] : null,
-  ].filter(Boolean);
+/** Encode path segments so spaces/special chars load (same approach as cart). */
+function encodeImageSrc(src) {
+  if (!src || typeof src !== 'string') return PLACEHOLDER;
+  if (src.startsWith('http://') || src.startsWith('https://')) return src;
 
-  const unique = [...new Set(candidates.map(String))];
-  const [src, setSrc] = useState(unique[0] || PLACEHOLDER);
+  const pathOnly = src.startsWith('/') ? src : `/${src}`;
+  const segments = pathOnly.split('/').filter(Boolean);
+  if (segments.length === 0) return PLACEHOLDER;
+
+  return `/${segments
+    .map((seg) => {
+      try {
+        return encodeURIComponent(decodeURIComponent(seg));
+      } catch {
+        return encodeURIComponent(seg);
+      }
+    })
+    .join('/')}`;
+}
+
+function resolveWishlistImageCandidates(product) {
+  const candidates = [];
+
+  if (Array.isArray(product?.images) && product.images[0]) {
+    candidates.push(product.images[0]);
+  }
+  if (product?.image) {
+    candidates.push(product.image);
+  }
+  if (product?.name) {
+    candidates.push(product.name);
+    candidates.push(String(product.name).replace(/\bnecklace\b/gi, 'necklaces'));
+  }
+
+  const normalized = candidates
+    .map((value) => encodeImageSrc(normalizeProductImagePath(value) || String(value || '')))
+    .filter((src) => src && src !== PLACEHOLDER);
+
+  const unique = [...new Set(normalized)];
+  return unique.length > 0 ? unique : [PLACEHOLDER];
+}
+
+function WishlistItemImage({ product }) {
+  const imageCandidates = useMemo(
+    () => resolveWishlistImageCandidates(product),
+    [product?._id, product?.name, product?.image, product?.images]
+  );
+  const [src, setSrc] = useState(imageCandidates[0] || PLACEHOLDER);
 
   useEffect(() => {
-    setSrc(unique[0] || PLACEHOLDER);
-  }, [product?._id, product?.name, product?.image]);
+    setSrc(imageCandidates[0] || PLACEHOLDER);
+  }, [imageCandidates]);
 
   return (
     <img
@@ -33,10 +73,10 @@ function WishlistItemImage({ product }) {
       alt={product?.name || 'Product'}
       className="wishlist-item-img"
       onError={() => {
-        const idx = unique.indexOf(src);
+        const idx = imageCandidates.indexOf(src);
         const next =
-          idx >= 0 && idx < unique.length - 1
-            ? unique[idx + 1]
+          idx >= 0 && idx < imageCandidates.length - 1
+            ? imageCandidates[idx + 1]
             : PLACEHOLDER;
 
         if (next !== src) setSrc(next);
