@@ -89,3 +89,24 @@ export default function ApiKeysPanel({ scopeOptions = DEFAULT_SCOPE_OPTIONS }) {
     }));
     setSubmitError(null);
   };
+
+  const handleCreate = async (e) => {
+    e.preventDefault();
+    setSubmitError(null);
+    setSuccessMessage(null);
+    setCreatedRawKey(null);
+    setCopies(false);
+
+    if (!form.name? .trim()) {
+      setSubmitError('API key name is required');
+      return;
+    }
+
+    setSubmitLoading(true);
+    try {
+      const payload = {
+        name: form.name.trim(),
+        scopes: form.scopes,
+      };
+    }
+  }
