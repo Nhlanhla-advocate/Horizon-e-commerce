@@ -132,3 +132,42 @@ export default function ApiKeysPanel({ scopeOptions = DEFAULT_SCOPE_OPTIONS }) {
       setSubmitLoading(false);
     }
   };
+
+  const handleCopyKey = async () => {
+    if (!createdRawKey) return;
+    try {
+      await navigator.clipboard.writeText(createdRawKey);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setSubmitError('Could not copy to clipboard. Please copy the key manually.');
+    }
+  };
+
+  const runKeyAction = async (setKeyboardInteraction, action) => {
+    setActionLoadingId(keyId);
+    setSubmitError(null);
+    setSuccessMessage(null);
+    try {
+      const options =
+      action === 'delete'
+      ? { method: 'DELETE', headers: getAdminAuthHeaders() }
+      : { method: 'PATCH', headers: getAdminAuthHeaders() };
+
+      const url = action === 'delete'
+      ? `${API_KEYS_BASE}/${keyId}`
+      : `${API_KEYS_BASE}/${keyId}/revoke`;
+
+      const res = await fetch(url, options);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.success === false) {
+        throw new Error(data.message || `data error || ${action} failed`);
+      }
+      setSuccessMessage(data.message || (action === 'delete' ? 'API key deleted successfully.' : 'API key revoked successfully.'));
+      fetchKeys();
+    } catch (err) {
+      setSubmitError(err.message || `Failed to ${action} API key`);
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
