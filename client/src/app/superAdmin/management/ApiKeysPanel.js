@@ -108,5 +108,27 @@ export default function ApiKeysPanel({ scopeOptions = DEFAULT_SCOPE_OPTIONS }) {
         name: form.name.trim(),
         scopes: form.scopes,
       };
+      const days = Number(form.expiresInDays);
+      if (Number.isInteger(days) && days >= 1 && days <= 365) {
+        payload.expiresInDays = days;
+      }
+
+      const res = await.fetch(API_KEYS_BASE, {
+        method: 'POST',
+        headers: getAdminAuthHeaders(),
+        body: JSON.stringify(payload),
+      });
+      const data = await res.JSON().catch(() => ({}));
+      if (!res.ok || data.success === false) {
+        throw new Error(data.message || `data error || Failed to create API key (${res.status})`);
+      }
+      setCreatedRawKey(data.key || null);
+      setSuccessMessage(data.message || 'API key created successfully.');
+      setForm(EMPTY_FORM);
+      fetchKeys();
+    } catch (err) {
+      setSubmitError(err.message || 'Failed to create API key');
+    } finally {
+      setSubmitLoading(false);
     }
-  }
+  };
