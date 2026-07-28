@@ -69,3 +69,23 @@ export default function ApiKeysPanel({ scopeOptions = DEFAULT_SCOPE_OPTIONS }) {
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    fetchKeys();
+  }, [fetchKeys]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    setSubmitError(null);
+  };
+
+  const handleScopeToggle = (scope) => {
+    setForm((prev) => ({
+      ...prev,
+      scopes: prev.scopes.includes(scope)
+        ? prev.scopes.filter((s) => s !== scope)
+        : [...prev.scopes, scope],
+    }));
+    setSubmitError(null);
+  };

@@ -6,7 +6,10 @@ const Product = require('../models/product');
 exports.getWishlist = async (req, res, next) => {
     try {
         // console.log('User from request:', req.user);
-        const wishlist = await Wishlist.findOne({ userId: req.user._id }).populate('products');
+        const wishlist = await Wishlist.findOne({ userId: req.user._id }).populate({
+            path: 'products',
+            select: 'name price description images'
+        });
         
         if (!wishlist) {
             return res.status(404).json({ message: 'Wishlist not found for this user' });
@@ -50,7 +53,7 @@ exports.addToWishlist = async (req, res, next) => {
         // Populate with product details / fields
         await wishlist.populate({
             path: 'products',
-            select: 'name price description image' 
+            select: 'name price description images'
         });
 
         // Return the complete wishlist object
@@ -85,7 +88,7 @@ exports.removeFromWishlist = async (req, res, next) => {
         // Populate the products for the response
         await wishlist.populate({
             path: 'products',
-            select: 'name price description image' 
+            select: 'name price description images'
         });
         
         res.status(200).json({
