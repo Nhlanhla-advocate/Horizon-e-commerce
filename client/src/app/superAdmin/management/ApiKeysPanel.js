@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { ADMIN_API_BASE, getAdminAuthHeaders } from '@/app/utils/adminAccountApi';
 import AccountSuccessModal from '@/app/components/accounts/AccountSuccessModal';
 
-const API_KEYS_BASE = `${ADMIN_API_BASE}`/dashboard/super-admin/api-keys;
+const API_KEYS_BASE = `${ADMIN_API_BASE}/dashboard/super-admin/api-keys`;
 
 const DEFAULT_SCOPE_OPTIONS = [
   'manage_products',
@@ -29,9 +29,9 @@ const EMPTY_FORM = {
 const btnCompact = { padding: '0.25rem 0.75rem', fontSize: '0.875rem' };
 
 function formatDate(value) {
-  if (!value) return '-';
+  if (!value) return '—';
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '-';
+  if (Number.isNaN(date.getTime())) return '—';
   return date.toLocaleString();
 }
 
@@ -95,10 +95,10 @@ export default function ApiKeysPanel({ scopeOptions = DEFAULT_SCOPE_OPTIONS }) {
     setSubmitError(null);
     setSuccessMessage(null);
     setCreatedRawKey(null);
-    setCopies(false);
+    setCopied(false);
 
-    if (!form.name? .trim()) {
-      setSubmitError('API key name is required');
+    if (!form.name?.trim()) {
+      setSubmitError('API key name is required.');
       return;
     }
 
@@ -113,15 +113,16 @@ export default function ApiKeysPanel({ scopeOptions = DEFAULT_SCOPE_OPTIONS }) {
         payload.expiresInDays = days;
       }
 
-      const res = await.fetch(API_KEYS_BASE, {
+      const res = await fetch(API_KEYS_BASE, {
         method: 'POST',
         headers: getAdminAuthHeaders(),
         body: JSON.stringify(payload),
       });
-      const data = await res.JSON().catch(() => ({}));
+      const data = await res.json().catch(() => ({}));
       if (!res.ok || data.success === false) {
-        throw new Error(data.message || `data error || Failed to create API key (${res.status})`);
+        throw new Error(data.message || data.error || `Create failed (${res.status})`);
       }
+
       setCreatedRawKey(data.key || null);
       setSuccessMessage(data.message || 'API key created successfully.');
       setForm(EMPTY_FORM);
@@ -144,26 +145,29 @@ export default function ApiKeysPanel({ scopeOptions = DEFAULT_SCOPE_OPTIONS }) {
     }
   };
 
-  const runKeyAction = async (setKeyboardInteraction, action) => {
+  const runKeyAction = async (keyId, action) => {
     setActionLoadingId(keyId);
     setSubmitError(null);
     setSuccessMessage(null);
     try {
       const options =
-      action === 'delete'
-      ? { method: 'DELETE', headers: getAdminAuthHeaders() }
-      : { method: 'PATCH', headers: getAdminAuthHeaders() };
+        action === 'delete'
+          ? { method: 'DELETE', headers: getAdminAuthHeaders() }
+          : { method: 'PATCH', headers: getAdminAuthHeaders() };
 
-      const url = action === 'delete'
-      ? `${API_KEYS_BASE}/${keyId}`
-      : `${API_KEYS_BASE}/${keyId}/revoke`;
+      const url =
+        action === 'delete'
+          ? `${API_KEYS_BASE}/${keyId}`
+          : `${API_KEYS_BASE}/${keyId}/revoke`;
 
       const res = await fetch(url, options);
       const data = await res.json().catch(() => ({}));
       if (!res.ok || data.success === false) {
-        throw new Error(data.message || `data error || ${action} failed`);
+        throw new Error(data.message || data.error || `${action} failed`);
       }
-      setSuccessMessage(data.message || (action === 'delete' ? 'API key deleted successfully.' : 'API key revoked successfully.'));
+      setSuccessMessage(
+        data.message || (action === 'delete' ? 'API key deleted.' : 'API key revoked.')
+      );
       fetchKeys();
     } catch (err) {
       setSubmitError(err.message || `Failed to ${action} API key`);
@@ -171,3 +175,60 @@ export default function ApiKeysPanel({ scopeOptions = DEFAULT_SCOPE_OPTIONS }) {
       setActionLoadingId(null);
     }
   };
+
+  return (
+    <div className="api-keys-panel">
+      <div className="admin-card" style={{ borderRadius: '0.75rem' }}>
+        <div className="product-management-header">
+          <div>
+            <h2 className="product-management-title">API keys</h2>
+            <p className="product-management-subtitle">
+              Create and manage API keys for integrations. The full key is shown only once after creation.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {(submitError || listError) && (
+        <div className="admin-alert admin-alert-error">{submitError || listError}</div>
+      )}
+
+      <AccountSuccessModal
+        message={successMessage || ''}
+        onClose={() => setSuccessMessage(null)}
+      />
+
+      {createdRawKey && (
+        <div className="admin-card api-keys-reveal" style={{ borderRadius: '0.75rem' }}>
+          <h3 className="product-management-form-title" style={{ marginBottom: '0.5rem' }}>
+            New API key — copy it now
+          </h3>
+          <p className="product-management-subtitle" style={{ marginBottom: '0.75rem' }}>
+            This secret will not be shown again. Store it in a secure place.
+          </p>
+          <div className="api-keys-reveal-row">
+            <code className="api-keys-reveal-value">{createdRawKey}</code>
+            <button
+              type="button"
+              className="admin-btn admin-btn-primary"
+              style={btnCompact}
+              onClick={handleCopyKey}
+            >
+              {copied ? 'Copied' : 'Copy'}
+            </button>
+            <button
+              type="button"
+              className="admin-btn admin-btn-secondary"
+              style={btnCompact}
+              onClick={() => {
+                setCreatedRawKey(null);
+                setCopied(false);
+              }}
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
+
+     
