@@ -297,3 +297,110 @@ export default function ApiKeysPanel({ scopeOptions = DEFAULT_SCOPE_OPTIONS }) {
           </div>
         </form>
       </div>
+
+      <div className="admin-card" style={{ borderRadius: '0.75rem' }}>
+        <h2 className="product-management-title">Your API keys</h2>
+        <p className="product-management-subtitle" style={{ marginBottom: 0 }}>
+          Active keys can be revoked. Deleted keys are removed permanently.
+        </p>
+      </div>
+
+      {loading ? (
+        <div className="product-management-loading">
+          <div
+            className="admin-spinner"
+            style={{ width: '2.5rem', height: '2.5rem', borderTopColor: '#2563eb', borderWidth: '4px' }}
+          />
+        </div>
+      ) : keys.length === 0 ? (
+        <div className="admin-card product-management-empty" style={{ borderStyle: 'dashed' }}>
+          <p className="product-management-empty-text">No API keys yet.</p>
+        </div>
+      ) : (
+        <div className="product-management-table-container">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Prefix</th>
+                <th>Scopes</th>
+                <th>Status</th>
+                <th>Expires</th>
+                <th>Last used</th>
+                <th className="product-management-table-cell-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {keys.map((key) => {
+                const expired = isExpired(key.expiresAt);
+                const statusLabel = !key.active
+                  ? 'Revoked'
+                  : expired
+                    ? 'Expired'
+                    : 'Active';
+                const statusClass = !key.active || expired
+                  ? 'api-keys-status--inactive'
+                  : 'api-keys-status--active';
+
+                return (
+                  <tr key={key._id}>
+                    <td className="product-management-table-cell-primary">{key.name}</td>
+                    <td className="product-management-table-cell-secondary">
+                      <code>{key.keyPrefix}…</code>
+                    </td>
+                    <td className="product-management-table-cell-secondary">
+                      {Array.isArray(key.scopes) && key.scopes.length > 0
+                        ? key.scopes.join(', ')
+                        : '—'}
+                    </td>
+                    <td>
+                      <span className={`api-keys-status ${statusClass}`}>{statusLabel}</span>
+                    </td>
+                    <td className="product-management-table-cell-secondary">
+                      {formatDate(key.expiresAt)}
+                    </td>
+                    <td className="product-management-table-cell-secondary">
+                      {formatDate(key.lastUsedAt)}
+                    </td>
+                    <td className="product-management-table-cell-right">
+                      <div className="product-management-actions">
+                        {key.active && !expired && (
+                          <button
+                            type="button"
+                            disabled={actionLoadingId === key._id}
+                            onClick={() => {
+                              if (window.confirm(`Revoke “${key.name}”? It will stop working immediately.`)) {
+                                runKeyAction(key._id, 'revoke');
+                              }
+                            }}
+                            className="admin-btn admin-btn-secondary"
+                            style={btnCompact}
+                          >
+                            Revoke
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          disabled={actionLoadingId === key._id}
+                          onClick={() => {
+                            if (window.confirm(`Permanently delete “${key.name}”?`)) {
+                              runKeyAction(key._id, 'delete');
+                            }
+                          }}
+                          className="admin-btn admin-btn-danger"
+                          style={btnCompact}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
