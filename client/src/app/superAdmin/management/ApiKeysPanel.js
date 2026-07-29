@@ -231,4 +231,69 @@ export default function ApiKeysPanel({ scopeOptions = DEFAULT_SCOPE_OPTIONS }) {
         </div>
       )}
 
-     
+<div className="admin-card" style={{ borderRadius: '0.75rem' }}>
+        <h2 className="product-management-title" style={{ marginBottom: '1rem' }}>
+          Create API key
+        </h2>
+        <form onSubmit={handleCreate} className="product-management-form">
+          <div className="admin-form-group">
+            <label className="admin-form-label" htmlFor="api-key-name">
+              Name <span style={{ color: '#dc2626' }}>*</span>
+            </label>
+            <input
+              id="api-key-name"
+              type="text"
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              placeholder="e.g. Inventory sync"
+              required
+              maxLength={100}
+              className="admin-form-input"
+            />
+          </div>
+          <div className="admin-form-group">
+            <label className="admin-form-label" htmlFor="api-key-expiry">
+              Expires in (days)
+            </label>
+            <input
+              id="api-key-expiry"
+              type="number"
+              name="expiresInDays"
+              value={form.expiresInDays}
+              onChange={handleChange}
+              placeholder="Default from security policy"
+              min={1}
+              max={365}
+              className="admin-form-input"
+            />
+          </div>
+          <div className="admin-form-group product-management-form-field-full">
+            <label className="admin-form-label">Scopes (optional)</label>
+            <p className="product-management-subtitle" style={{ marginBottom: '0.5rem' }}>
+              Limit what this key can access.
+            </p>
+            <div className="manage-permission-grid">
+              {scopeOptions.map((scope) => (
+                <label key={scope} className="manage-checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={form.scopes.includes(scope)}
+                    onChange={() => handleScopeToggle(scope)}
+                  />
+                  <span className="manage-checkbox-text">{scope}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+          <div className="product-management-form-actions">
+            <button
+              type="submit"
+              disabled={submitLoading}
+              className="admin-btn admin-btn-primary"
+            >
+              {submitLoading ? 'Creating...' : 'Create API key'}
+            </button>
+          </div>
+        </form>
+      </div>
