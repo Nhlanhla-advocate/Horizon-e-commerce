@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { ADMIN_API_BASE } from '@/app/utils/adminRoutes';
+import { ADMIN_API_BASE } from '@/app/utils/adminAccountApi';
 import '../../assets/css/superAdmin.css';
 
 const NAV_ITEMS = [
@@ -48,18 +48,18 @@ export default function SuperAdminShell({ children }) {
     })();
   }, [router]);
 
- const handleLogout = async () => {
-  const token = localStorage.getItem('AdminToken');
-  if (token) {
-    await fetch(`${ADMIN_API_BASE}/admin/signout`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    }).catch(() => {});
-  }
-  localStorage.removeItem('AdminToken');
-  localStorage.removeItem('token');
-  localStorage.removeItem('adminRole');
-  router.push('/superAdmin/signin');
+  const handleLogout = async () => {
+    const token = localStorage.getItem('adminToken');
+    if (token) {
+      await fetch(`${ADMIN_API_BASE}/admin/signout`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      }).catch(() => {});
+    }
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('token');
+    localStorage.removeItem('adminRole');
+    router.push('/superAdmin/signin');
   };
 
   if (checking) {
@@ -91,7 +91,7 @@ export default function SuperAdminShell({ children }) {
           ))}
         </nav>
         <div className="super-admin-shell-actions">
-          <Link href="/admin" className="super-admin-shell-link">Admin Dashboard"</Link>
+          <Link href="/admin" className="super-admin-shell-link">Admin Dashboard</Link>
           <Link href="/" className="super-admin-shell-link">Store</Link>
           <button type="button" className="super-admin-shell-logout" onClick={handleLogout}>Logout</button>
         </div>

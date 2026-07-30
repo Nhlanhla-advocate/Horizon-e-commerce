@@ -20,7 +20,7 @@ export default function CacheManagement() {
     try {
       setLoading(true);
       const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
-      const response = await fetch('/api/dashboard/cache/status', {
+      const response = await fetch('/dashboard/cache/status', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -48,7 +48,7 @@ export default function CacheManagement() {
     try {
       setActionLoading(true);
       const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
-      const response = await fetch('/api/dashboard/cache/refresh', {
+      const response = await fetch('/dashboard/cache/refresh', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -81,7 +81,7 @@ export default function CacheManagement() {
     try {
       setActionLoading(true);
       const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
-      const response = await fetch('/api/dashboard/cache/clear', {
+      const response = await fetch('/dashboard/cache/clear', {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
