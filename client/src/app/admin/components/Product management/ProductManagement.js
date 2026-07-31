@@ -288,7 +288,31 @@ export default function ProductManagement() {
         },
       });
 
-      
+      let data = {};
+      try {
+        const text = await response.text();
+        if (text) data = JSON.parse(text);
+      } catch (parseError) {
+        console.error('Failed to parse restore response:', parseError);
+      }
+
+      if (!response.ok) {
+        if (data.errors && Array.isArray(data.errors)) {
+          const errorMessages = data.errors.map((err) => err.msg || err.message).join(', ');
+          throw new Error`(Validation error: ${errorMessages})`;
+        }
+        throw new Error(data.error || data.message || `Failed to restore product (${response.status})`);
+      }
+
+      await fetchProducts();
+      window.dispatchEvent(new CustomEvent('product-updated'));
+    } catch (err) {
+      const errorMessage = err.message || 'Failed to restore product. Please try again.';
+      setError(errorMessage);
+      console.error('Error restoring product:', err);
+      alert`(Error: ${errorMessage})`;
+    }
+  };
 
   const [searchInput, setSearchInput] = useState('');
 
