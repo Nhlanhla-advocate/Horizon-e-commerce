@@ -211,65 +211,48 @@ export default function ProductManagement() {
   };
 
   const handleDeleteProduct = async (productId) => {
-    // Show confirmation dialog
-    if (!window.confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+    if (!window.confirm('Move this product to deleted? You can restore it later from the Deleted filter.')) {
       return;
     }
 
     if (!productId) {
       setError('Product ID is missing. Cannot delete product.');
-      console.error('Product ID is missing');
       return;
     }
 
     try {
       setError(null);
       const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
-      
+
       if (!token) {
         throw new Error('Authentication required. Please log in again.');
       }
 
-      console.log('Attempting to delete product:', productId);
-      console.log('URL:', `${BASE_URL}/dashboard/products/${productId}`);
-
       const response = await fetch(`${BASE_URL}/dashboard/products/${productId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       });
-
-      console.log('Delete response status:', response.status);
-      console.log('Delete response ok:', response.ok);
 
       let data = {};
       try {
         const text = await response.text();
-        if (text) {
-          data = JSON.parse(text);
-        }
+        if (text) data = JSON.parse(text);
       } catch (parseError) {
         console.error('Failed to parse response:', parseError);
       }
-      
-      console.log('Delete response data:', data);
 
       if (!response.ok) {
-        // Check for validation errors
         if (data.errors && Array.isArray(data.errors)) {
-          const errorMessages = data.errors.map(err => err.msg || err.message).join(', ');
+          const errorMessages = data.errors.map((err) => err.msg || err.message).join(', ');
           throw new Error(`Validation error: ${errorMessages}`);
         }
         throw new Error(data.error || data.message || `Failed to delete product (${response.status})`);
       }
 
-      // Success - refresh the product list
-      console.log('Product deleted successfully, refreshing list...');
       await fetchProducts();
-      
-      // Dispatch event to notify charts to refresh
       window.dispatchEvent(new CustomEvent('product-updated'));
     } catch (err) {
       const errorMessage = err.message || 'Failed to delete product. Please try again.';
@@ -278,6 +261,34 @@ export default function ProductManagement() {
       alert(`Error: ${errorMessage}`);
     }
   };
+
+  const handleRestoreProduct = async (productId) => {
+    if (!window.confirm('Restore this product? It will become active again.')) {
+      return;
+    }
+
+    if (!productId) {
+      setError('Product ID is missing. Cannot restore product.');
+      return;
+    }
+
+    try {
+      setError(null);
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+
+      if (!token) {
+        throw new Error('Authentication required. Please log in again.');
+      }
+
+      const response = await fetch(`${BASE_URL}/dashboard/products/${productId}/restore`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      
 
   const [searchInput, setSearchInput] = useState('');
 
@@ -409,13 +420,13 @@ export default function ProductManagement() {
         {/* Contextual Search Bar */}
         <div className="product-management-search-container">
           <div className="product-management-search-wrapper">
-            <svg 
-              className="product-management-search-icon" 
-              width="20" 
-              height="20" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
+            <svg
+              className="product-management-search-icon"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
               strokeWidth="2"
             >
               <circle cx="11" cy="11" r="8"></circle>
@@ -439,6 +450,25 @@ export default function ProductManagement() {
               </button>
             )}
           </div>
+          <label className="product-management-status-filter">
+            <span className="product-management-status-filter-label">Status</span>
+            <select
+              className="product-management-status-filter-select"
+              value={filters.status}
+              onChange={(e) =>
+                setFilters((prev) => ({
+                  ...prev,
+                  status: e.target.value,
+                  page: 1,
+                }))
+              }
+            >
+              <option value="">All (excl. deleted)</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="deleted">Deleted</option>
+            </select>
+          </label>
         </div>
       </div>
 
@@ -483,6 +513,7 @@ export default function ProductManagement() {
                   <th>Category</th>
                   <th>Price</th>
                   <th>Stock</th>
+                  <th>Status</th>
                   <th className="product-management-table-cell-right">Actions</th>
                 </tr>
               </thead>
@@ -490,6 +521,7 @@ export default function ProductManagement() {
                 {products.map((product) => {
                   const productId = product._id || product.id;
                   const isSelected = selectedIds.includes(productId);
+                  const isDeleted = product.status === 'deleted';
                   return (
                     <tr key={productId} className={isSelected ? 'product-bulk-row-selected' : undefined}>
                       <td className="product-bulk-checkbox-cell">
@@ -507,40 +539,54 @@ export default function ProductManagement() {
                         {typeof product.price === 'number' ? `R ${product.price.toFixed(2)}` : product.price}
                       </td>
                       <td className="product-management-table-cell-primary">{product.stock}</td>
+                      <td className="product-management-table-cell-secondary">
+                        <span
+                          className={`product-management-status product-management-status--${product.status || 'active'}`}
+                        >
+                          {product.status || 'active'}
+                        </span>
+                      </td>
                       <td className="product-management-table-cell-right">
                         <div className="product-management-actions">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setEditingProduct(product);
-                              setFormData({
-                                name: product.name || '',
-                                price: product.price || '',
-                                category: product.category || '',
-                                stock: product.stock || '',
-                                description: product.description || ''
-                              });
-                              setShowAddForm(true);
-                            }}
-                            className="admin-btn admin-btn-secondary"
-                            style={{ padding: '0.25rem 0.75rem', fontSize: '0.875rem' }}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            type="button"
-                            onClick={async () => {
-                              if (!productId) {
-                                alert('Error: Product ID is missing');
-                                return;
-                              }
-                              await handleDeleteProduct(productId);
-                            }}
-                            className="admin-btn admin-btn-danger"
-                            style={{ padding: '0.25rem 0.75rem', fontSize: '0.875rem' }}
-                          >
-                            Delete
-                          </button>
+                          {!isDeleted && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingProduct(product);
+                                setFormData({
+                                  name: product.name || '',
+                                  price: product.price || '',
+                                  category: product.category || '',
+                                  stock: product.stock || '',
+                                  description: product.description || '',
+                                });
+                                setShowAddForm(true);
+                              }}
+                              className="admin-btn admin-btn-secondary"
+                              style={{ padding: '0.25rem 0.75rem', fontSize: '0.875rem' }}
+                            >
+                              Edit
+                            </button>
+                          )}
+                          {isDeleted ? (
+                            <button
+                              type="button"
+                              onClick={() => handleRestoreProduct(productId)}
+                              className="admin-btn admin-btn-primary"
+                              style={{ padding: '0.25rem 0.75rem', fontSize: '0.875rem' }}
+                            >
+                              Restore
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteProduct(productId)}
+                              className="admin-btn admin-btn-danger"
+                              style={{ padding: '0.25rem 0.75rem', fontSize: '0.875rem' }}
+                            >
+                              Delete
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
