@@ -38,3 +38,36 @@ function policyToForm(policy = {}) {
     apiKeyDefaultExpiryDays: policy.apiKeyDefaultExpiryDays ?? DEFAULT_FORM.apiKeyDefaultExpiryDays,
   };
 }
+
+function parseIpAllowlist(text) {
+  return String(text || '')
+    .split(/[\n,]+/)
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+}
+
+export default function SecurityPolicyPanel() {
+  const [form, setForm] = useState(DEFAULT_FORM);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
+
+  const fetchPolicy = useCallback(async () => {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const res = await fetch(POLICY_URL, { headers: getAdminAuthHeaders() });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.success === false) {
+        throw new Error(data.message || data.error || Failed to load security policy (${res.status}));
+      }
+      setForm(policyToForm(data.data || {}));
+    } catch (err) {
+      setLoadError(err.message || 'Failed to load security policy');
+      setForm(DEFAULT_FORM);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
