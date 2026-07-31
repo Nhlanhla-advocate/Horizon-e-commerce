@@ -61,7 +61,7 @@ export default function SecurityPolicyPanel() {
       const res = await fetch(POLICY_URL, { headers: getAdminAuthHeaders() });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || data.success === false) {
-        throw new Error(data.message || data.error || Failed to load security policy (${res.status}));
+        throw new Error(data.message || data.error || `Failed to load security policy (${res.status})`);
       }
       setForm(policyToForm(data.data || {}));
     } catch (err) {
@@ -71,3 +71,30 @@ export default function SecurityPolicyPanel() {
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    fetchPolicy();
+  }, [fetchPolicy]);
+
+  const handleNumberChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value === '' ? '' : Number(value) }));
+    setSubmitError(null);
+  };
+
+  const handleCheckboxChange = (e) => {
+    const { name, checked } = e.target;
+    setForm((prev) => ({ ...prev, [name]: checked }));
+    setSubmitError(null);
+  };
+
+  const handleTextChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    setSubmitError(null);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitError(null);
+    setSuccessMessage(null);
