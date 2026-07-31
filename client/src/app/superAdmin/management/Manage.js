@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ADMIN_API_BASE, getAdminAuthHeaders } from '@/app/utils/adminAccountApi';
 import AccountSuccessModal from '@/app/components/accounts/AccountSuccessModal';
 import ApiKeysPanel from './ApiKeysPanel';
+import SecurityPolicyPanel from './SecurityPolicyPanel';
 import '../../assets/css/admin.css';
 import '../../assets/css/productManagement.css';
 import '../../assets/css/manage.css';
@@ -528,6 +529,10 @@ export default function Manage() {
           </table>
         </div>
       )}
+
+      <div className="api-keys-section-divider" aria-hidden="true" />
+
+      <SecurityPolicyPanel />
 
       <div className="api-keys-section-divider" aria-hidden="true" />
 
