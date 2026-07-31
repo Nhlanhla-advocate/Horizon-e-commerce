@@ -19,3 +19,22 @@ const DEFAULT_FORM = {
   ipAllowlistText: '',
   apiKeyDefaultExpiryDays: 90,
 };
+
+function policyToForm(policy = {}) {
+  const list = Array.isArray(policy.ipAllowlist) ? policy.ipAllowlist : [];
+  return {
+    passwordMinLength: policy.passwordMinLength ?? DEFAULT_FORM.passwordMinLength,
+    passwordRequireUppercase: Boolean(policy.passwordRequireUppercase ?? DEFAULT_FORM.passwordRequireUppercase),
+    passwordRequireNumber: Boolean(policy.passwordRequireNumber ?? DEFAULT_FORM.passwordRequireNumber),
+    passwordRequireSpecial: Boolean(policy.passwordRequireSpecial ?? DEFAULT_FORM.passwordRequireSpecial),
+    sessionTimeoutMinutes: policy.sessionTimeoutMinutes ?? DEFAULT_FORM.sessionTimeoutMinutes,
+    maxLoginAttempts: policy.maxLoginAttempts ?? DEFAULT_FORM.maxLoginAttempts,
+    lockoutDurationMinutes: policy.lockoutDurationMinutes ?? DEFAULT_FORM.lockoutDurationMinutes,
+    requireTwoFactorForAdmins: Boolean(policy.requireTwoFactorForAdmins ?? DEFAULT_FORM.requireTwoFactorForAdmins),
+    requireTwoFactorForSuperAdmins: Boolean(
+      policy.requireTwoFactorForSuperAdmins ?? DEFAULT_FORM.requireTwoFactorForSuperAdmins
+    ),
+    ipAllowlistText: list.join('\n'),
+    apiKeyDefaultExpiryDays: policy.apiKeyDefaultExpiryDays ?? DEFAULT_FORM.apiKeyDefaultExpiryDays,
+  };
+}
