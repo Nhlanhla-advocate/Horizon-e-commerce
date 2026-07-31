@@ -35,6 +35,10 @@
 
 /* SEARCH BAR CONTAINER */
 .product-management-search-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
   margin-top: 1rem;
   padding-top: 1rem;
   border-top: 1px solid #e5e7eb; /* border-t border-gray-200 */
@@ -46,9 +50,52 @@
   position: relative;
   display: flex;
   align-items: center;
+  flex: 1;
+  min-width: 12rem;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
+}
+
+.product-management-status-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.product-management-status-filter-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.product-management-status-filter-select {
+  min-width: 10.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  background: #fff;
+  font-size: 0.875rem;
+  color: #111827;
+}
+
+.product-management-status {
+  display: inline-block;
+  text-transform: capitalize;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.product-management-status--active {
+  color: #047857;
+}
+
+.product-management-status--inactive {
+  color: #b45309;
+}
+
+.product-management-status--deleted {
+  color: #b91c1c;
 }
 
 .product-management-search-icon {
