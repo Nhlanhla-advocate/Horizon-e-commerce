@@ -178,5 +178,42 @@ export default function SecurityPolicyPanel() {
     {(submitError || loadError) && (
       <div className="admin-alert admin-alert-error">{submitError || loadError}</div>
     )}
+
+    <AccountSuccessModal
+    message={successMessage || ''}
+    onClose={() => setSuccessMessage(null)}
+    />
+
+    {loading ? (
+      <div className="product-management-loading">
+      <div className="admin-spinner">
+      style=({ width: '2.5rem', height: '2.5rem', borderTopColor: '#2563eb', borderWidth: '4px'})
+      />
+      </div>
+    ) : (
+      <div className="admin-card" style={{ borderRadius: '0.75rem' }}>
+      <form onSubmit={handleSubmit} className="product-management-form">
+      <h3 className="product-management-form-title security-policy-section-title">Passwords</h3>
+      <div className="admin-form-group">
+      <label className="admin-form-label" htmlFor="passwordMinLength">
+      Minimum length
+      </label>
+      <input
+                id="passwordMinLength"
+                type="number"
+                name="passwordMinLength"
+                value={form.passwordMinLength}
+                onChange={handleNumberChange}
+                min={6}
+                max={128}
+                required
+                className="admin-form-input"
+              />
+      </div>
+      </form>
+      </div>
+    )
+      </div>
+    )}
   )
 }
