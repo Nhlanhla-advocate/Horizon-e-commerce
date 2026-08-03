@@ -98,3 +98,44 @@ export default function SecurityPolicyPanel() {
     e.preventDefault();
     setSubmitError(null);
     setSuccessMessage(null);
+
+    const passwordMinLength = Number(form.passwordMinLength);
+    const sessionTimeoutMinutes = Number(form.sessionTimeoutMinutes);
+    const maxLoginAttempts = Number(form.maxLoginAttempts);
+    const lockoutDurationMinutes = Number(form.lockoutDurationMinutes);
+    const apiKeyDefaultExpiryDays = Number(form.apiKeyDefaultExpiryDays);
+
+    if (!Number.isInteger(passwordMinLength) || passwordMinLength < 6 || passwordMinLength > 128) {
+      setSubmitError('Password minimum length must be an integer between 6 and 128.');
+      return;
+    }
+    if (!Number.isInteger(sessionTimeoutMinutes) || sessionTimeoutMinutes < 15 || sessionTimeoutMinutes > 10080) {
+      setSubmitError('Session timeout must be an integer between 15 and 10080 minutes.');
+      return;
+    }
+    if (!Number.isInteger(maxLoginAttempts) || maxLoginAttempts < 3 || maxLoginAttempts > 20) {
+      setSubmitError('Max login attempts must be an integer between 3 and 20.');
+      return;
+    }
+    if (!Number.isInteger(lockoutDurationMinutes) || lockoutDurationMinutes < 5 || lockoutDurationMinutes > 1440) {
+      setSubmitError('Lockout duration must be an integer between 5 and 1440 minutes.');
+      return;
+    }
+    if (!Number.isInteger(apiKeyDefaultExpiryDays) || apiKeyDefaultExpiryDays < 1 || apiKeyDefaultExpiryDays > 365) {
+      setSubmitError('API key default expiry must be an integer between 1 and 365 days.');
+      return;
+    }
+
+    const payload = {
+      passwordMinLength,
+      passwordRequireUppercase: Boolean(form.passwordRequireUppercase),
+      passwordRequireNumber: Boolean(form.passwordRequireNumber),
+      passwordRequireSpecial: Boolean(form.passwordRequireSpecial),
+      sessionTimeoutMinutes,
+      maxLoginAttempts,
+      lockoutDurationMinutes,
+      requireTwoFactorForAdmins: Boolean(form.requireTwoFactorForAdmins),
+      requireTwoFactorForSuperAdmins: Boolean(form.requireTwoFactorForSuperAdmins),
+      ipAllowlist: parseIpAllowlist(form.ipAllowlistText),
+      apiKeyDefaultExpiryDays,
+    };
