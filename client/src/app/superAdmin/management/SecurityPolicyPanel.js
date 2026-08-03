@@ -139,3 +139,26 @@ export default function SecurityPolicyPanel() {
       ipAllowlist: parseIpAllowlist(form.ipAllowlistText),
       apiKeyDefaultExpiryDays,
     };
+
+    setSubmitLoading(true);
+    try {
+      const res = await fetch(POLICY_URL, {
+        method: 'PUT',
+        headers: getAdminAuthHeaders(),
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.success === false) {
+        if (Array.isArray(data.errors) && data.errors.length > 0) {
+          throw new Error(data.errors.map((entry) => entry.msg).join(' '));
+        }
+        throw new Error(data.message || data.error || Failed to update security policy (${res.status}));
+      }
+      setForm(policyToForm(data.data || payload));
+      setSuccessMessage(data.message || 'Security policy updated.');
+    } catch (err) {
+      setSubmitError(err.message || 'Failed to update security policy');
+    } finally {
+      setSubmitLoading(false);
+    }
+  };
