@@ -242,6 +242,56 @@ export default function SecurityPolicyPanel() {
                 </label>
               </div>
             </div>
+
+            <h3 className="product-management-form-title security-policy-section-title">Sessions & lockout</h3>
+            <div className="admin-form-group">
+              <label className="admin-form-label" htmlFor="sessionTimeoutMinutes">
+                Session timeout (minutes)
+              </label>
+              <input
+                id="sessionTimeoutMinutes"
+                type="number"
+                name="sessionTimeoutMinutes"
+                value={form.sessionTimeoutMinutes}
+                onChange={handleNumberChange}
+                min={15}
+                max={10080}
+                required
+                className="admin-form-input"
+              />
+            </div>
+            <div className="admin-form-group">
+              <label className="admin-form-label" htmlFor="maxLoginAttempts">
+                Max login attempts
+              </label>
+              <input
+                id="maxLoginAttempts"
+                type="number"
+                name="maxLoginAttempts"
+                value={form.maxLoginAttempts}
+                onChange={handleNumberChange}
+                min={3}
+                max={20}
+                required
+                className="admin-form-input"
+              />
+            </div>
+            <div className="admin-form-group">
+              <label className="admin-form-label" htmlFor="lockoutDurationMinutes">
+                Lockout duration (minutes)
+              </label>
+              <input
+                id="lockoutDurationMinutes"
+                type="number"
+                name="lockoutDurationMinutes"
+                value={form.lockoutDurationMinutes}
+                onChange={handleNumberChange}
+                min={5}
+                max={1440}
+                required
+                className="admin-form-input"
+              />
+            </div>
       </form>
       </div>
     )
