@@ -210,6 +210,38 @@ export default function SecurityPolicyPanel() {
                 className="admin-form-input"
               />
       </div>
+      <div className="admin-form-group product-management-form-field-full">
+              <span className="admin-form-label">Requirements</span>
+              <div className="manage-permission-grid">
+                <label className="manage-checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="passwordRequireUppercase"
+                    checked={form.passwordRequireUppercase}
+                    onChange={handleCheckboxChange}
+                  />
+                  <span className="manage-checkbox-text">Require uppercase</span>
+                </label>
+                <label className="manage-checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="passwordRequireNumber"
+                    checked={form.passwordRequireNumber}
+                    onChange={handleCheckboxChange}
+                  />
+                  <span className="manage-checkbox-text">Require number</span>
+                </label>
+                <label className="manage-checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="passwordRequireSpecial"
+                    checked={form.passwordRequireSpecial}
+                    onChange={handleCheckboxChange}
+                  />
+                  <span className="manage-checkbox-text">Require special character</span>
+                </label>
+              </div>
+            </div>
       </form>
       </div>
     )
