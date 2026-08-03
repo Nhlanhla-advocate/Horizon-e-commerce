@@ -291,6 +291,23 @@ export default function SecurityPolicyPanel() {
                 required
                 className="admin-form-input"
               />
+              </div>
+            <div className="admin-form-group">
+              <label className="admin-form-label" htmlFor="lockoutDurationMinutes">
+                Lockout duration (minutes)
+              </label>
+              <input
+                id="lockoutDurationMinutes"
+                type="number"
+                name="lockoutDurationMinutes"
+                value={form.lockoutDurationMinutes}
+                onChange={handleNumberChange}
+                min={5}
+                max={1440}
+                required
+                className="admin-form-input"
+              />
+            </div>
             </div>
       </form>
       </div>
