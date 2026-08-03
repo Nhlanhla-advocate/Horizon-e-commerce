@@ -152,7 +152,7 @@ export default function SecurityPolicyPanel() {
         if (Array.isArray(data.errors) && data.errors.length > 0) {
           throw new Error(data.errors.map((entry) => entry.msg).join(' '));
         }
-        throw new Error(data.message || data.error || Failed to update security policy (${res.status}));
+        throw new Error(data.message || data.error || `Failed to update security policy (${res.status})`);
       }
       setForm(policyToForm(data.data || payload));
       setSuccessMessage(data.message || 'Security policy updated.');
@@ -162,3 +162,21 @@ export default function SecurityPolicyPanel() {
       setSubmitLoading(false);
     }
   };
+
+  return (
+    <div className="security-policy-panel">
+      <div className="admin-card" style={( borderRadius: '0.75rem' )}>
+      <div className="product-management-header">
+      </div>
+      <h2 className="product-management-title">Security policy</h2>
+      <p className="product-management-subtitle">
+      Global password, session, lockout, 2FA, and API key defaults for staff accounts.
+      </p>
+      </div>
+    </div>
+
+    {(submitError || loadError) && (
+      <div className="admin-alert admin-alert-error">{submitError || loadError}</div>
+    )}
+  )
+}
