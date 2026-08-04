@@ -165,40 +165,42 @@ export default function SecurityPolicyPanel() {
 
   return (
     <div className="security-policy-panel">
-      <div className="admin-card" style={( borderRadius: '0.75rem' )}>
-      <div className="product-management-header">
-      </div>
-      <h2 className="product-management-title">Security policy</h2>
-      <p className="product-management-subtitle">
-      Global password, session, lockout, 2FA, and API key defaults for staff accounts.
-      </p>
-      </div>
-    </div>
-
-    {(submitError || loadError) && (
-      <div className="admin-alert admin-alert-error">{submitError || loadError}</div>
-    )}
-
-    <AccountSuccessModal
-    message={successMessage || ''}
-    onClose={() => setSuccessMessage(null)}
-    />
-
-    {loading ? (
-      <div className="product-management-loading">
-      <div className="admin-spinner">
-      style=({ width: '2.5rem', height: '2.5rem', borderTopColor: '#2563eb', borderWidth: '4px'})
-      />
-      </div>
-    ) : (
       <div className="admin-card" style={{ borderRadius: '0.75rem' }}>
-      <form onSubmit={handleSubmit} className="product-management-form">
-      <h3 className="product-management-form-title security-policy-section-title">Passwords</h3>
-      <div className="admin-form-group">
-      <label className="admin-form-label" htmlFor="passwordMinLength">
-      Minimum length
-      </label>
-      <input
+        <div className="product-management-header">
+          <div>
+            <h2 className="product-management-title">Security policy</h2>
+            <p className="product-management-subtitle">
+              Global password, session, lockout, 2FA, and API key defaults for staff accounts.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {(submitError || loadError) && (
+        <div className="admin-alert admin-alert-error">{submitError || loadError}</div>
+      )}
+
+      <AccountSuccessModal
+        message={successMessage || ''}
+        onClose={() => setSuccessMessage(null)}
+      />
+
+      {loading ? (
+        <div className="product-management-loading">
+          <div
+            className="admin-spinner"
+            style={{ width: '2.5rem', height: '2.5rem', borderTopColor: '#2563eb', borderWidth: '4px' }}
+          />
+        </div>
+      ) : (
+        <div className="admin-card" style={{ borderRadius: '0.75rem' }}>
+          <form onSubmit={handleSubmit} className="product-management-form">
+            <h3 className="product-management-form-title security-policy-section-title">Passwords</h3>
+            <div className="admin-form-group">
+              <label className="admin-form-label" htmlFor="passwordMinLength">
+                Minimum length
+              </label>
+              <input
                 id="passwordMinLength"
                 type="number"
                 name="passwordMinLength"
@@ -209,8 +211,8 @@ export default function SecurityPolicyPanel() {
                 required
                 className="admin-form-input"
               />
-      </div>
-      <div className="admin-form-group product-management-form-field-full">
+            </div>
+            <div className="admin-form-group product-management-form-field-full">
               <span className="admin-form-label">Requirements</span>
               <div className="manage-permission-grid">
                 <label className="manage-checkbox-label">
@@ -291,28 +293,87 @@ export default function SecurityPolicyPanel() {
                 required
                 className="admin-form-input"
               />
+            </div>
+
+            <h3 className="product-management-form-title security-policy-section-title">Two-factor authentication</h3>
+            <div className="admin-form-group product-management-form-field-full">
+              <div className="manage-permission-grid">
+                <label className="manage-checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="requireTwoFactorForAdmins"
+                    checked={form.requireTwoFactorForAdmins}
+                    onChange={handleCheckboxChange}
+                  />
+                  <span className="manage-checkbox-text">Require 2FA for admins</span>
+                </label>
+                <label className="manage-checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="requireTwoFactorForSuperAdmins"
+                    checked={form.requireTwoFactorForSuperAdmins}
+                    onChange={handleCheckboxChange}
+                  />
+                  <span className="manage-checkbox-text">Require 2FA for super admins</span>
+                </label>
               </div>
+            </div>
+
+            <h3 className="product-management-form-title security-policy-section-title">API keys & IP allowlist</h3>
             <div className="admin-form-group">
-              <label className="admin-form-label" htmlFor="lockoutDurationMinutes">
-                Lockout duration (minutes)
+              <label className="admin-form-label" htmlFor="apiKeyDefaultExpiryDays">
+                Default API key expiry (days)
               </label>
               <input
-                id="lockoutDurationMinutes"
+                id="apiKeyDefaultExpiryDays"
                 type="number"
-                name="lockoutDurationMinutes"
-                value={form.lockoutDurationMinutes}
+                name="apiKeyDefaultExpiryDays"
+                value={form.apiKeyDefaultExpiryDays}
                 onChange={handleNumberChange}
-                min={5}
-                max={1440}
+                min={1}
+                max={365}
                 required
                 className="admin-form-input"
               />
             </div>
+            <div className="admin-form-group product-management-form-field-full">
+              <label className="admin-form-label" htmlFor="ipAllowlistText">
+                IP allowlist
+              </label>
+              <p className="product-management-subtitle" style={{ marginBottom: '0.5rem' }}>
+                One IP or CIDR per line (or comma-separated). Leave empty to allow all.
+              </p>
+              <textarea
+                id="ipAllowlistText"
+                name="ipAllowlistText"
+                value={form.ipAllowlistText}
+                onChange={handleTextChange}
+                rows={4}
+                placeholder={'203.0.113.10\n198.51.100.0/24'}
+                className="admin-form-input security-policy-textarea"
+              />
             </div>
-      </form>
-      </div>
-    )
-      </div>
-    )}
-  )
+
+            <div className="product-management-form-actions">
+              <button
+                type="button"
+                className="admin-btn admin-btn-secondary"
+                disabled={submitLoading}
+                onClick={fetchPolicy}
+              >
+                Reset
+              </button>
+              <button
+                type="submit"
+                disabled={submitLoading}
+                className="admin-btn admin-btn-primary"
+              >
+                {submitLoading ? 'Saving...' : 'Save security policy'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+    </div>
+  );
 }
