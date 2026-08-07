@@ -111,7 +111,7 @@ export default function OrderDetailModal({ orderId, onClose, onOrderUpdated }) {
             <div className="user-account-order-summary">
               <div>
                 <span className="user-account-order-label">Status</span>
-                <span className={status-badge `${getStatusBadgeClass(order.status)}`}>
+                <span className={`status-badge ${getStatusBadgeClass(order.status)}`}>
                   {order.status}
                 </span>
               </div>

@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useLocale } from '@/app/i18n/LocaleProvider';
 import { fetchOrderHistory } from './orderApi';
 import {
@@ -13,12 +14,27 @@ import {
 import OrderDetailModal from './OrderDetailModal';
 import '../../assets/css/orderStatus.css';
 
-export default function OrderHistorySection({ onError, onSuccess }) {
+const STATUS_FILTERS = [
+  { value: 'all', label: 'All' },
+  { value: 'pending', label: 'Pending' },
+  { value: 'processing', label: 'Processing' },
+  { value: 'shipped', label: 'Shipped' },
+  { value: 'delivered', label: 'Delivered' },
+  { value: 'cancelled', label: 'Cancelled' },
+];
 
+export default function OrderHistorySection({
+  onError,
+  onSuccess,
+  title = 'Order history',
+  subtitle = 'A log of everything you have purchased, including cancelled orders.',
+  showBackLink = false,
+}) {
   const { formatPrice } = useLocale();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [statusFilter, setStatusFilter] = useState('all');
 
   const loadOrders = useCallback(async () => {
     setLoading(true);
@@ -38,6 +54,24 @@ export default function OrderHistorySection({ onError, onSuccess }) {
     loadOrders();
   }, [loadOrders]);
 
+  const filteredOrders = useMemo(() => {
+    if (statusFilter === 'all') return orders;
+    return orders.filter(
+      (order) => String(order.status || '').toLowerCase() === statusFilter
+    );
+  }, [orders, statusFilter]);
+
+  const statusCounts = useMemo(() => {
+    const counts = { all: orders.length };
+    STATUS_FILTERS.forEach(({ value }) => {
+      if (value === 'all') return;
+      counts[value] = orders.filter(
+        (order) => String(order.status || '').toLowerCase() === value
+      ).length;
+    });
+    return counts;
+  }, [orders]);
+
   const handleOrderUpdated = () => {
     loadOrders();
     onSuccess?.('Order updated.');
@@ -47,10 +81,13 @@ export default function OrderHistorySection({ onError, onSuccess }) {
     <section className="user-account-card user-account-orders">
       <div className="user-account-orders-head">
         <div>
-          <h2>Order history</h2>
-          <p className="user-account-field-hint">
-            Track your purchases and order status after checkout.
-          </p>
+          {showBackLink && (
+            <Link href="/account" className="user-account-orders-back">
+              ← Back to account
+            </Link>
+          )}
+          <h2>{title}</h2>
+          <p className="user-account-field-hint">{subtitle}</p>
         </div>
         <button
           type="button"
@@ -62,6 +99,22 @@ export default function OrderHistorySection({ onError, onSuccess }) {
         </button>
       </div>
 
+      <div className="user-account-order-filters" role="tablist" aria-label="Filter orders by status">
+        {STATUS_FILTERS.map(({ value, label }) => (
+          <button
+            key={value}
+            type="button"
+            role="tab"
+            aria-selected={statusFilter === value}
+            className={`user-account-order-filter${statusFilter === value ? ' is-active' : ''}`}
+            onClick={() => setStatusFilter(value)}
+          >
+            {label}
+            <span className="user-account-order-filter-count">{statusCounts[value] || 0}</span>
+          </button>
+        ))}
+      </div>
+
       {loading && (
         <div className="user-account-order-loading">Loading your orders...</div>
       )}
@@ -69,15 +122,28 @@ export default function OrderHistorySection({ onError, onSuccess }) {
       {!loading && orders.length === 0 && (
         <div className="user-account-order-empty">
           <p>You have not placed any orders yet.</p>
-          <a href="/" className="user-account-btn user-account-btn--primary">
+          <Link href="/" className="user-account-btn user-account-btn--primary">
             Start shopping
-          </a>
+          </Link>
         </div>
       )}
 
-      {!loading && orders.length > 0 && (
+      {!loading && orders.length > 0 && filteredOrders.length === 0 && (
+        <div className="user-account-order-empty">
+          <p>No {statusFilter} orders found.</p>
+          <button
+            type="button"
+            className="user-account-btn user-account-btn--secondary"
+            onClick={() => setStatusFilter('all')}
+          >
+            Show all orders
+          </button>
+        </div>
+      )}
+
+      {!loading && filteredOrders.length > 0 && (
         <ul className="user-account-order-list">
-          {orders.map((order) => (
+          {filteredOrders.map((order) => (
             <li key={order._id} className="user-account-order-row">
               <div className="user-account-order-row-main">
                 <div className="user-account-order-row-top">

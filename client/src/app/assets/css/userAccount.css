@@ -494,4 +494,268 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
-/*
+/* Order history / purchase log */
+.user-account-orders-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.user-account-orders-head h2 {
+  margin-bottom: 0.35rem;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.user-account-orders-back {
+  display: inline-block;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.user-account-orders-back:hover {
+  text-decoration: underline;
+}
+
+.user-account-order-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.user-account-order-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  background: #fff;
+  color: #374151;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.user-account-order-filter.is-active {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.user-account-order-filter-count {
+  min-width: 1.25rem;
+  padding: 0.05rem 0.35rem;
+  border-radius: 999px;
+  background: #f3f4f6;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.user-account-order-filter.is-active .user-account-order-filter-count {
+  background: #dbeafe;
+}
+
+.user-account-order-loading,
+.user-account-order-empty {
+  padding: 1.5rem 0.5rem;
+  text-align: center;
+  color: #6b7280;
+}
+
+.user-account-order-empty p {
+  margin: 0 0 1rem;
+}
+
+.user-account-order-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.user-account-order-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fafafa;
+}
+
+.user-account-order-row-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.user-account-order-meta {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.user-account-order-row-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.user-account-order-row-total {
+  font-size: 1rem;
+  color: #111827;
+}
+
+.user-account-orders-teaser .user-account-orders-head {
+  margin-bottom: 0;
+}
+
+.user-account-order-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(17, 24, 39, 0.55);
+}
+
+.user-account-order-modal-panel {
+  width: min(36rem, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+}
+
+.user-account-order-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.user-account-order-modal-header h2 {
+  margin: 0 0 0.25rem;
+  padding: 0;
+  border: none;
+  font-size: 1.125rem;
+}
+
+.user-account-order-modal-header p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.user-account-order-modal-close {
+  border: none;
+  background: transparent;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  color: #6b7280;
+}
+
+.user-account-order-modal-body,
+.user-account-order-modal-loading {
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.user-account-order-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.875rem;
+  margin-bottom: 1.25rem;
+}
+
+.user-account-order-label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.user-account-order-items-title {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+.user-account-order-items {
+  list-style: none;
+  margin: 0 0 1.25rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.user-account-order-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.user-account-order-item-info,
+.user-account-order-item-prices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.user-account-order-item-prices {
+  align-items: flex-end;
+  color: #4b5563;
+  font-size: 0.875rem;
+}
+
+.user-account-order-modal-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.user-account-order-refund {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: #fffbeb;
+  color: #92400e;
+  font-size: 0.875rem;
+}
+
+@media (max-width: 640px) {
+  .user-account-order-row-side {
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .user-account-order-summary {
+    grid-template-columns: 1fr;
+  }
+}

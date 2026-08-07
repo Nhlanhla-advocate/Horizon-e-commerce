@@ -299,7 +299,7 @@ export default function ProductManagement() {
       if (!response.ok) {
         if (data.errors && Array.isArray(data.errors)) {
           const errorMessages = data.errors.map((err) => err.msg || err.message).join(', ');
-          throw new Error`(Validation error: ${errorMessages})`;
+          throw new Error(`Validation error: ${errorMessages}`);
         }
         throw new Error(data.error || data.message || `Failed to restore product (${response.status})`);
       }
