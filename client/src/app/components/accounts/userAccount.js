@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   changePassword,
@@ -17,7 +18,6 @@ import { EMPTY_PERSONAL, EMPTY_PREFS, IMAGE_ACCEPT } from './constants';
 import { CURRENCIES, LANGUAGES } from './localeData';
 import { useLocale } from '@/app/i18n/LocaleProvider';
 import AddressSection from './AddressSection';
-import OrderHistorySection from './OrderHistorySection';
 import LocationDetector from './LocationDetector';
 import AccountSuccessModal from './AccountSuccessModal';
 import '../../assets/css/userAccount.css';
@@ -357,7 +357,19 @@ export default function UserAccount() {
         onSuccess={setSuccess}
       />
 
-      <OrderHistorySection onError={setError} onSuccess={setSuccess} />
+      <section className="user-account-card user-account-orders-teaser">
+        <div className="user-account-orders-head">
+          <div>
+            <h2>My orders</h2>
+            <p className="user-account-field-hint">
+              View your full purchase log — delivered, cancelled, and in-progress orders.
+            </p>
+          </div>
+          <Link href="/account/orders" className="user-account-btn user-account-btn--primary">
+            View purchase log
+          </Link>
+        </div>
+      </section>
 
       <form className="user-account-card" onSubmit={handleChangePassword}>
         <h2>Change password</h2>

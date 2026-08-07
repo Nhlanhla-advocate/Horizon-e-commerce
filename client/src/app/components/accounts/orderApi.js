@@ -13,7 +13,7 @@ export async function fetchOrderHistory() {
 }
 
 export async function fetchOrder(orderId) {
-  const response = await fetchWithUserAuth(/orders/$`{orderId}`);
+  const response = await fetchWithUserAuth(`/orders/${orderId}`);
   if (!response.ok) {
     throw new Error(await parseApiError(response));
   }
@@ -21,7 +21,7 @@ export async function fetchOrder(orderId) {
 }
 
 export async function cancelOrder(orderId) {
-  const response = await fetchWithUserAuth(/orders/$`{orderId}`/cancel, {
+  const response = await fetchWithUserAuth(`/orders/${orderId}/cancel`, {
     method: 'DELETE',
   });
   if (!response.ok) {
