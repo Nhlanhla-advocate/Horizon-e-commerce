@@ -46,6 +46,22 @@ const DEFAULT_PERMISSIONS = [
   'override_orders',
 ];
 
+const PERMISSION_LABELS = {
+  manage_products: 'Manage products',
+  manage_orders: 'Manage orders',
+  view_users: 'View users',
+  manage_users: 'Manage users',
+  manage_admins: 'Manage admins',
+  view_audit_logs: 'View audit logs',
+  view_system_activity: 'View system activity',
+  view_failed_payments: 'View failed payments',
+  suspend_ban_users: 'Suspend / ban customer accounts',
+  override_orders: 'Override orders',
+  handle_refunds: 'Handle refunds',
+};
+
+const permissionLabel = (perm) => PERMISSION_LABELS[perm] || perm;
+
 const EMPTY_FORM = {
   email: '',
   username: '',
@@ -395,6 +411,9 @@ export default function Manage() {
           </div>
           <div className="admin-form-group product-management-form-field-full">
             <label className="admin-form-label">Permissions (optional)</label>
+            <p className="product-management-subtitle" style={{ marginBottom: '0.5rem' }}>
+              Super-admin-only actions (e.g. suspend / ban customers) can be granted here.
+            </p>
             <div className="manage-permission-grid">
               {permissionOptions.map((perm) => (
                 <label key={perm} className="manage-checkbox-label">
@@ -403,7 +422,7 @@ export default function Manage() {
                     checked={form.permissions.includes(perm)}
                     onChange={() => handlePermissionToggle(perm, 'create')}
                   />
-                  <span className="manage-checkbox-text">{perm}</span>
+                  <span className="manage-checkbox-text">{permissionLabel(perm)}</span>
                 </label>
               ))}
             </div>
@@ -628,6 +647,9 @@ export default function Manage() {
                 </div>
                 <div className="admin-form-group product-management-form-field-full">
                   <label className="admin-form-label">Permissions</label>
+                  <p className="product-management-subtitle" style={{ marginBottom: '0.5rem' }}>
+                    Super-admin-only actions (e.g. suspend / ban customers) can be granted here.
+                  </p>
                   <div className="manage-permission-grid">
                     {permissionOptions.map((perm) => (
                       <label key={perm} className="manage-checkbox-label">
@@ -636,7 +658,7 @@ export default function Manage() {
                           checked={editForm.permissions.includes(perm)}
                           onChange={() => handlePermissionToggle(perm, 'edit')}
                         />
-                        <span className="manage-checkbox-text">{perm}</span>
+                        <span className="manage-checkbox-text">{permissionLabel(perm)}</span>
                       </label>
                     ))}
                   </div>
