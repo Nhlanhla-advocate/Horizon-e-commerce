@@ -9,6 +9,7 @@ import '../../assets/css/superAdmin.css';
 const NAV_ITEMS = [
   { href: '/superAdmin/account', label: 'My Account' },
   { href: '/admin?tab=super-admin', label: 'Staff Management' },
+  { href: '/admin?tab=user-moderation', label: 'Registered Accounts' },
 ];
 
 export default function SuperAdminShell({ children }) {
