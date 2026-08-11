@@ -18,6 +18,16 @@
   color: #4b5563;
 }
 
+.api-keys-section-divider {
+  height: 1px;
+  margin: 1.5rem 0;
+  background: #e5e7eb;
+}
+
+:root.dark-mode .api-keys-section-divider {
+  background: #374151;
+}
+
 :root.dark-mode .manage-checkbox-text {
   color: #d1d5db;
 }

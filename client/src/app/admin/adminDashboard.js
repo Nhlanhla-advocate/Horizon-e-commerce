@@ -14,7 +14,10 @@ import VisualAnalyticsReports from './components/Visual analytics and reports/Vi
 import ViewAllUsers from './components/Customer management/ViewAllUsers';
 import AdminAccount from './components/Account/AdminAccount';
 import Manage from '../superAdmin/management/Manage';
+import UserAccountModeration from '../superAdmin/management/UserAccountModeration';
 import Sidebar from './components/Sidebar';
+
+const STAFF_ROLES = ['admin', 'super_admin', 'manager', 'support'];
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -22,22 +25,42 @@ const AdminDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [adminRole, setAdminRole] = useState(null);
+  const [adminPermissions, setAdminPermissions] = useState([]);
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const canModerateUsers =
+    adminRole === 'super_admin' ||
+    (Array.isArray(adminPermissions) && adminPermissions.includes('suspend_ban_users'));
 
   // Listen for tab changes from search bar
   useEffect(() => {
     const handleTabChange = (event) => {
       const tabId = event.detail;
-      const validTabs = ['overview', 'products', 'categories', 'analytics', 'inventory', 'reviews', 'cache', 'orders', 'visual-analytics', 'customers', 'account', 'super-admin'];
+      const validTabs = [
+        'overview',
+        'products',
+        'categories',
+        'analytics',
+        'inventory',
+        'reviews',
+        'cache',
+        'orders',
+        'visual-analytics',
+        'customers',
+        'user-moderation',
+        'account',
+        'super-admin',
+      ];
       if (!validTabs.includes(tabId)) return;
       if (tabId === 'super-admin' && adminRole !== 'super_admin') return;
+      if (tabId === 'user-moderation' && !canModerateUsers) return;
       setActiveTab(tabId);
     };
 
     window.addEventListener('admin-tab-change', handleTabChange);
     return () => window.removeEventListener('admin-tab-change', handleTabChange);
-  }, [adminRole]);
+  }, [adminRole, canModerateUsers]);
 
   // Check authentication on mount
   useEffect(() => {
@@ -78,19 +101,22 @@ const AdminDashboard = () => {
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.admin) {
-            // Additional check: Verify the admin role is actually admin or super_admin
-            if (data.admin.role && data.admin.role !== 'admin' && data.admin.role !== 'super_admin') {
-              console.error('Token validation failed - user does not have admin role:', data.admin.role);
+            const role = data.admin.role;
+            if (role && !STAFF_ROLES.includes(role)) {
+              console.error('Token validation failed - user does not have admin role:', role);
               localStorage.removeItem('adminToken');
               localStorage.removeItem('token');
               router.push('/admin/signin');
               return;
             }
             console.log('Admin token validated successfully');
-            setAdminRole(data.admin.role);
-            if (data.admin.role) {
-              localStorage.setItem('adminRole', data.admin.role);
+            setAdminRole(role);
+            const perms = Array.isArray(data.admin.permissions) ? data.admin.permissions : [];
+            setAdminPermissions(perms);
+            if (role) {
+              localStorage.setItem('adminRole', role);
             }
+            localStorage.setItem('adminPermissions', JSON.stringify(perms));
             setIsAuthenticated(true);
           } else {
             console.error('Token validation failed - invalid response:', data);
@@ -130,12 +156,22 @@ const AdminDashboard = () => {
   }, [adminRole, activeTab]);
 
   useEffect(() => {
-    if (adminRole !== 'super_admin') return;
-    const tab = searchParams.get('tab');
-    if (tab === 'super-admin') {
-      setActiveTab('super-admin');
+    if (!canModerateUsers && activeTab === 'user-moderation') {
+      setActiveTab('overview');
     }
-  }, [adminRole, searchParams]);
+  }, [canModerateUsers, activeTab]);
+
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (!tab) return;
+    if (tab === 'super-admin' && adminRole === 'super_admin') {
+      setActiveTab('super-admin');
+      return;
+    }
+    if (tab === 'user-moderation' && canModerateUsers) {
+      setActiveTab('user-moderation');
+    }
+  }, [adminRole, canModerateUsers, searchParams]);
 
   // Show loading while checking authentication
   if (loading) {
@@ -219,6 +255,14 @@ const AdminDashboard = () => {
       description: 'View registered users'
     },
     {
+      id: 'user-moderation',
+      label: 'Account Moderation',
+      icon: '',
+      component: UserAccountModeration,
+      description: 'Suspend or ban customer accounts',
+      requiresModerateUsers: true
+    },
+    {
       id: 'account',
       label: 'Account',
       icon: '',
@@ -242,9 +286,11 @@ const AdminDashboard = () => {
     }
   ];
 
-  const tabs = allTabs.filter(
-    (tab) => !tab.superAdminOnly || adminRole === 'super_admin'
-  );
+  const tabs = allTabs.filter((tab) => {
+    if (tab.superAdminOnly && adminRole !== 'super_admin') return false;
+    if (tab.requiresModerateUsers && !canModerateUsers) return false;
+    return true;
+  });
 
   const ActiveComponent = tabs.find(tab => tab.id === activeTab)?.component;
   const isRenderable = typeof ActiveComponent === 'function';

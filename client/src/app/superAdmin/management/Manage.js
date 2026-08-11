@@ -5,6 +5,7 @@ import { ADMIN_API_BASE, getAdminAuthHeaders } from '@/app/utils/adminAccountApi
 import AccountSuccessModal from '@/app/components/accounts/AccountSuccessModal';
 import ApiKeysPanel from './ApiKeysPanel';
 import SecurityPolicyPanel from './SecurityPolicyPanel';
+import UserAccountModeration from './UserAccountModeration';
 import '../../assets/css/admin.css';
 import '../../assets/css/productManagement.css';
 import '../../assets/css/manage.css';
@@ -548,6 +549,10 @@ export default function Manage() {
           </table>
         </div>
       )}
+
+      <div className="api-keys-section-divider" aria-hidden="true" />
+
+      <UserAccountModeration canModerate />
 
       <div className="api-keys-section-divider" aria-hidden="true" />
 
