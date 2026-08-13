@@ -111,13 +111,17 @@ exports.getOrder = async (req, res, next) => {
       return res.status(400).json({ message: "Invalid Order ID" });
     }
 
-    // const allOrders = await Order.find();
-    // console.log("All Orders:", allOrders); 
-
-    const order = await Order.findById(id).populate("customerId", "name email");
+    const order = await Order.findById(id)
+      .populate("customerId", "name email")
+      .populate("items.productId", "name price");
 
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
+    }
+
+    const ownerId = order.customerId?._id || order.customerId;
+    if (String(ownerId) !== String(req.user._id)) {
+      return res.status(403).json({ message: "You do not have access to this order" });
     }
 
     res.json(order);
@@ -188,6 +192,12 @@ exports.cancelOrder = async (req, res, next) => {
     
     if (!order) {
       return res.status(404).json({ message: 'Order not found' });
+    }
+
+    const adminRoles = ['admin', 'super_admin', 'manager', 'support'];
+    const isStaff = Boolean(req.admin) || adminRoles.includes(req.user?.role);
+    if (!isStaff && String(order.customerId) !== String(req.user._id)) {
+      return res.status(403).json({ message: 'You do not have access to this order' });
     }
 
     // Check if order can be cancelled

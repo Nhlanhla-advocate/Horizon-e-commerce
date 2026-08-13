@@ -3,7 +3,7 @@ const router = express.Router();
 const superAdminController = require('../controllers/superAdminController');
 const superAdminProfileController = require('../controllers/superAdminProfileController');
 const superAdminManagementController = require('../controllers/superAdminManagementController');
-const { requireSuperAdmin } = require('../middleware/authMiddleware');
+const { requireSuperAdmin, requirePermission } = require('../middleware/authMiddleware');
 const { parseAvatarUpload } = require('../middleware/profileUpload');
 const {
   validateChangePassword,
@@ -18,7 +18,13 @@ const {
   validate
 } = require('../utilities/validation');
 
-// All routes require super_admin (also enforced on dashboard mount)
+// Customer account moderation: super_admin by default, or staff with suspend_ban_users assigned
+router.post('/users/:userId/suspend', requirePermission('suspend_ban_users'), superAdminController.suspendUser);
+router.post('/users/:userId/unsuspend', requirePermission('suspend_ban_users'), superAdminController.unsuspendUser);
+router.post('/users/:userId/ban', requirePermission('suspend_ban_users'), superAdminController.banUser);
+router.post('/users/:userId/unban', requirePermission('suspend_ban_users'), superAdminController.unbanUser);
+
+// Remaining routes are super_admin only (staff CRUD, profile, audit, etc.)
 router.use(requireSuperAdmin);
 
 // --- Super admin profile (1–6) ---
@@ -52,12 +58,6 @@ router.patch('/admins/:adminId/role', superAdminController.assignRole);
 router.post('/admins/:adminId/suspend', superAdminManagementController.suspendAdmin);
 router.post('/admins/:adminId/deactivate', superAdminManagementController.deactivateAdmin);
 router.post('/admins/:adminId/activate', superAdminManagementController.activateAdmin);
-
-// --- User moderation ---
-router.post('/users/:userId/suspend', superAdminController.suspendUser);
-router.post('/users/:userId/unsuspend', superAdminController.unsuspendUser);
-router.post('/users/:userId/ban', superAdminController.banUser);
-router.post('/users/:userId/unban', superAdminController.unbanUser);
 
 // --- Orders, disputes ---
 router.patch('/orders/:orderId/override', superAdminController.overrideOrder);

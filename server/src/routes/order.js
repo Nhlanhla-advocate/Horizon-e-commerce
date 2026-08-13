@@ -27,6 +27,6 @@ router.get("/history", authMiddleware, getOrderHistory);
 // Parameter routes last
 router.get("/:id", authMiddleware, getOrder);
 router.patch("/update/:orderId", updateOrderStatus);
-router.delete("/:id/cancel", cancelOrder);
+router.delete("/:id/cancel", authMiddleware, cancelOrder);
 
 module.exports = router;
