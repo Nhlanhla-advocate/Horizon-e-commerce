@@ -211,6 +211,7 @@ const serializeAdminProfile = (doc) => ({
     lastLogin: doc.lastLogin,
     personalInfo: doc.personalInfo || {},
     avatar: doc.avatar || null,
+    permissions: Array.isArray(doc.permissions) ? doc.permissions : [],
     twoFactor: {
         enabled: Boolean(doc.twoFactor?.enabled)
     },

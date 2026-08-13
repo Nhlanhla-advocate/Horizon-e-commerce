@@ -188,7 +188,7 @@ async function listAdmins(req, res) {
     }
 }
 
-//--- 4. View and manage all users (getAllUsers in dashboard; super admin can also suspend or ban) ---
+//--- 4. Suspend / ban customers (requirePermission('suspend_ban_users'); super_admin by default) ---
 async function suspendUser(req, res) {
     try {
         const { userId } = req.params;
@@ -250,8 +250,8 @@ async function banUser(req, res) {
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found.'});
         }
-        if (user.role === 'super_admin') {
-            return res.status(403).json({ success: false, message: 'Cannot ban a super admin.'});
+        if (['super_admin', 'admin', 'manager', 'support'].includes(user.role)) {
+            return res.status(403).json({ success: false, message: 'Use admin management to deactivate staff.'});
         }
         user.status = 'banned';
         user.bannedAt = new Date();

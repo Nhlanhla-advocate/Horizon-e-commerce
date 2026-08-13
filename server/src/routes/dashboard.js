@@ -4,7 +4,7 @@ const dashboardController = require('../controllers/dashboardController');
 const productController = require('../controllers/productController');
 const categoryRoutes = require('./category');
 const superAdminRoutes = require('./superAdmin');
-const { authMiddleware, isAdmin, requireSuperAdmin } = require('../middleware/authMiddleware');
+const { authMiddleware, isAdmin } = require('../middleware/authMiddleware');
 const {
   validate,
   validateAddProduct,
@@ -28,8 +28,10 @@ router.use(isAdmin);
 // Category management (same as admin; allows product modal and category management to use /dashboard/categories)
 router.use('/categories', categoryRoutes);
 
-// Super admin only: manage admins, roles, users (suspend/ban), orders override, disputes, audit, activity, payments
-router.use('/super-admin', requireSuperAdmin, superAdminRoutes);
+// Super-admin tree: most routes enforce requireSuperAdmin inside the router.
+// Customer suspend/ban is gated by requirePermission('suspend_ban_users') so
+// super admins keep access by default and can assign it to other staff.
+router.use('/super-admin', superAdminRoutes);
 
 // Dashboard overview and statistics
 router.get('/stats', (req, res) => dashboardController.getDashboardStats(req, res));
