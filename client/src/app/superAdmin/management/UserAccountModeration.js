@@ -88,7 +88,7 @@ export default function UserAccountModeration({ canModerate = true }) {
       if (!res.ok) {
         throw new Error(data.message || data.error || Failed to ${action} user);
       }
-      setSuccessMessage(data.message || User ${action}ed successfully.);
+      setSuccessMessage(data.message || User `${action}`ed successfully.)``;
       setReasonModal(null);
       setReason('');
       await fetchUsers();
@@ -182,5 +182,131 @@ export default function UserAccountModeration({ canModerate = true }) {
           </div>
         </div>
       </div>
+
+      {error && <div className="admin-error-message">{error}</div>}
+
+      {loading && users.length === 0 ? (
+        <div className="dashboard-loading">
+          <div className="admin-spinner" />
+        </div>
+      ) : users.length === 0 ? (
+        <div className="orders-empty">
+          <p>No registered customer accounts found.</p>
+        </div>
+      ) : (
+        <div className="orders-wrapper">
+          <div className="orders-table-wrapper">
+            <table className="orders-table">
+              <thead>
+                <tr className="orders-head-row">
+                  <th className="orders-th">Email</th>
+                  <th className="orders-th">Username</th>
+                  <th className="orders-th">Status</th>
+                  <th className="orders-th">Registered</th>
+                  <th className="orders-th">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((user) => {
+                  const status = user.status || 'active';
+                  const busy = actionLoadingId === user._id;
+                  return (
+                    <tr key={user._id} className="orders-tr">
+                      <td className="orders-td">
+                        <strong>{user.email || '—'}</strong>
+                      </td>
+                      <td className="orders-td">{user.username || '—'}</td>
+                      <td className="orders-td">
+                        <span style={{ color: statusColor(status), fontWeight: 500 }}>{status}</span>
+                        {(user.suspensionReason || user.banReason) && (
+                          <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.15rem' }}>
+                            {user.banReason || user.suspensionReason}
+                          </div>
+                        )}
+                      </td>
+                      <td className="orders-td mono-text">
+                        {user.createdAt
+                          ? new Date(user.createdAt).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                            })
+                          : '—'}
+                      </td>
+                      <td className="orders-td">
+                        <div className="product-management-actions" style={{ flexWrap: 'wrap' }}>
+                          {status === 'active' || status === 'inactive' ? (
+                            <>
+                              <button
+                                type="button"
+                                className="admin-btn admin-btn-secondary"
+                                style={btnCompact}
+                                disabled={busy}
+                                onClick={() => openReasonModal(user, 'suspend')}
+                              >
+                                Suspend
+                              </button>
+                              <button
+                                type="button"
+                                className="admin-btn admin-btn-danger"
+                                style={btnCompact}
+                                disabled={busy}
+                                onClick={() => openReasonModal(user, 'ban')}
+                              >
+                                Ban
+                              </button>
+                            </>
+                          ) : null}
+                          {status === 'suspended' ? (
+                            <>
+                              <button
+                                type="button"
+                                className="admin-btn admin-btn-primary"
+                                style={btnCompact}
+                                disabled={busy}
+                                onClick={() => {
+                                  if (window.confirm(Unsuspend ${user.email}?)) {
+                                    runModeration(user, 'unsuspend');
+                                  }
+                                }}
+                              >
+                                Unsuspend
+                              </button>
+                              <button
+                                type="button"
+                                className="admin-btn admin-btn-danger"
+                                style={btnCompact}
+                                disabled={busy}
+                                onClick={() => openReasonModal(user, 'ban')}
+                              >
+                                Ban
+                              </button>
+                            </>
+                          ) : null}
+                          {status === 'banned' ? (
+                            <button
+                              type="button"
+                              className="admin-btn admin-btn-primary"
+                              style={btnCompact}
+                              disabled={busy}
+                              onClick={() => {
+                                if (window.confirm(Unban ${user.email}?)) {
+                                  runModeration(user, 'unban');
+                                }
+                              }}
+                            >
+                              Unban
+                            </button>
+                          ) : null}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       
