@@ -55,7 +55,7 @@ export default function UserAccountModeration({ canModerate = true }) {
       const params = new URLSearchParams({ role: 'user' });
       if (searchTerm.trim()) params.set('search', searchTerm.trim());
       if (statusFilter) params.set('status', statusFilter);
-      const res = await fetch`(${USERS_URL}?${params.toString()}, { headers })`;
+      const res = await fetch(`${USERS_URL}?${params.toString()}`, { headers });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.message || data.error || `Failed to load users (${res.status})`);
@@ -66,6 +66,7 @@ export default function UserAccountModeration({ canModerate = true }) {
       setError(err.message || 'Failed to load registered accounts');
       setUsers([]);
     } finally {
+      setLoading(false);
     }
   }, [searchTerm, statusFilter]);
 
@@ -79,21 +80,21 @@ export default function UserAccountModeration({ canModerate = true }) {
     setError(null);
     try {
       const headers = getAdminAuthHeaders();
-      const res = await fetch(${MODERATION_BASE}/${user._id}/${action}, {
+      const res = await fetch(`${MODERATION_BASE}/${user._id}/${action}`, {
         method: 'POST',
         headers,
         body: JSON.stringify(reasonText ? { reason: reasonText } : {}),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(data.message || data.error || Failed to ${action} user);
+        throw new Error(data.message || data.error || `Failed to ${action} user`);
       }
-      setSuccessMessage(data.message || User `${action}`ed successfully.)``;
+      setSuccessMessage(data.message || `User ${action}ed successfully.`);
       setReasonModal(null);
       setReason('');
       await fetchUsers();
     } catch (err) {
-      setError(err.message || Failed to ${action} user);
+      setError(err.message || `Failed to ${action} user`);
     } finally {
       setActionLoadingId(null);
     }
@@ -265,7 +266,7 @@ export default function UserAccountModeration({ canModerate = true }) {
                                 style={btnCompact}
                                 disabled={busy}
                                 onClick={() => {
-                                  if (window.confirm(Unsuspend ${user.email}?)) {
+                                  if (window.confirm(`Unsuspend ${user.email}?`)) {
                                     runModeration(user, 'unsuspend');
                                   }
                                 }}
@@ -290,7 +291,7 @@ export default function UserAccountModeration({ canModerate = true }) {
                               style={btnCompact}
                               disabled={busy}
                               onClick={() => {
-                                if (window.confirm(Unban ${user.email}?)) {
+                                if (window.confirm(`Unban ${user.email}?`)) {
                                   runModeration(user, 'unban');
                                 }
                               }}
