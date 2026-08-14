@@ -309,4 +309,66 @@ export default function UserAccountModeration({ canModerate = true }) {
         </div>
       )}
 
-      
+      {reasonModal && (
+        <div className="admin-modal-overlay" onClick={() => setReasonModal(null)}>
+          <div
+            className="admin-modal"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: '28rem', width: '90%' }}
+          >
+            <div style={{ padding: '1.5rem' }}>
+              <h3 className="product-management-form-title" style={{ marginTop: 0 }}>
+                {reasonModal.action === 'ban' ? 'Ban' : 'Suspend'} account
+              </h3>
+              <p className="product-management-subtitle">
+                {reasonModal.user.email}
+                {reasonModal.user.username ? ` (${reasonModal.user.username})` : ''}
+              </p>
+              <div className="admin-form-group">
+                <label className="admin-form-label" htmlFor="moderation-reason">
+                  Reason (optional)
+                </label>
+                <textarea
+                  id="moderation-reason"
+                  className="admin-form-input"
+                  rows={3}
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  placeholder="Why is this account being moderated?"
+                />
+              </div>
+              <div className="product-management-form-actions">
+                <button
+                  type="button"
+                  className="admin-btn admin-btn-secondary"
+                  onClick={() => setReasonModal(null)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className={
+                    reasonModal.action === 'ban' ? 'admin-btn admin-btn-danger' : 'admin-btn admin-btn-primary'
+                  }
+                  disabled={actionLoadingId === reasonModal.user._id}
+                  onClick={confirmReasonAction}
+                >
+                  {actionLoadingId === reasonModal.user._id
+                    ? 'Saving...'
+                    : reasonModal.action === 'ban'
+                      ? 'Ban account'
+                      : 'Suspend account'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <AccountSuccessModal
+        message={successMessage || ''}
+        onClose={() => setSuccessMessage(null)}
+      />
+    </div>
+  );
+}
