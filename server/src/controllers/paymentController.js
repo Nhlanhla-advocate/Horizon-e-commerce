@@ -53,3 +53,12 @@ exports.getStripeConfig = (req, res) => {
     publishableKey: process.env.STRIPE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || null, currency: STRIPE_CURRENCY,
   });
 };
+
+exports.createPaymentIntent = async (req, res) => {
+  try {
+    if (!isStripeConfigured()) {
+      return res.status(503).json({
+        success: false,
+        message: 'Stripe is not configured. Set STRIPE_SECRET_KEY on the server.',
+      });
+    }
