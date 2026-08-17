@@ -319,8 +319,14 @@ exports.updateItemQuantity = async (req, res) => {
 };
   
 // Create order from cart
-exports.createOrderFromCart = async (userId) => {
+exports.createOrderFromCart = async (userId, options = {}) => {
     try {
+        const {
+            paymentIntentId = null,
+            paymentStatus = 'pending',
+            orderStatus = 'pending',
+        } = options;
+
         // Find the user's cart
         const cart = await Cart.findOne({ customerId: userId }).populate('items.productId');
         if (!cart) {
@@ -339,6 +345,11 @@ exports.createOrderFromCart = async (userId) => {
                 item.price != null
                     ? Number(item.price)
                     : Number(product?.price) || 0;
+
+            if (product && product.stock < item.quantity) {
+                throw new Error(`Insufficient stock for ${product.name || 'product'}`);
+            }
+
             return {
                 productId,
                 name: item.name || product?.name || 'Product',
@@ -357,13 +368,21 @@ exports.createOrderFromCart = async (userId) => {
             customerId: userId,
             items: orderItems,
             totalPrice: orderTotal,
-            status: 'pending',
-            shippingAddress: {} // You might want to get this from the user's profile
+            status: orderStatus,
+            paymentIntentId: paymentIntentId || undefined,
+            paymentStatus,
+            currency: (process.env.STRIPE_CURRENCY || 'zar').toLowerCase(),
         });
 
         // Save the order
         await order.save();
         await recordUserOrder(userId);
+
+        for (const item of orderItems) {
+            await Product.findByIdAndUpdate(item.productId, {
+                $inc: { stock: -item.quantity },
+            });
+        }
 
         // Clear the cart
         cart.items = [];

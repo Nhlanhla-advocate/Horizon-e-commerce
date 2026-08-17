@@ -598,15 +598,21 @@ export const CartProvider = ({ children }) => {
     return cart.items.reduce((sum, item) => sum + item.quantity, 0);
   }, [cart.items]);
   
+  const clearCartLocal = useCallback(() => {
+    setCart({ items: [], totalPrice: 0 });
+    localStorage.removeItem('localCart');
+  }, []);
+
   const contextValue = useMemo(() => ({
     cart, 
     addToCart, 
     removeFromCart, 
     checkout,
+    clearCartLocal,
     updateQuantity,
     cartCount, 
     isLoading
-  }), [cart, addToCart, removeFromCart, checkout, updateQuantity, cartCount, isLoading]);
+  }), [cart, addToCart, removeFromCart, checkout, clearCartLocal, updateQuantity, cartCount, isLoading]);
   
   return (
     <CartContext.Provider value={contextValue}>

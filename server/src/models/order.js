@@ -16,6 +16,13 @@ const OrderSchema = new mongoose.Schema({
   items: [ItemSchema],
   totalPrice: { type: Number, required: true },
   status: { type: String, default: 'pending' },
+  paymentIntentId: { type: String },
+  paymentStatus: {
+    type: String,
+    enum: ['pending', 'paid', 'failed', 'refunded'],
+    default: 'pending',
+  },
+  currency: { type: String, default: 'zar' },
   overriddenBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   overrideReason: { type: String },
   overriddenAt: { type: Date },

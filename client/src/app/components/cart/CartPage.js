@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useCart, normalizeProductId } from './Cart';
 import { useLocale } from '@/app/i18n/LocaleProvider';
 import '../../assets/css/cart.css';
@@ -121,16 +122,25 @@ function CartItemImage({ item }) {
 }
 
 export default function CartPage() {
+    const router = useRouter();
     const { 
         cart, 
         removeFromCart, 
-        checkout, 
         isLoading, 
         updateQuantity
     } = useCart();
     const { t, formatPrice } = useLocale();
     const cartItems = Array.isArray(cart?.items) ? cart.items : [];
     const cartTotal = Number(cart?.totalPrice ?? 0);
+
+    const handleCheckout = () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            router.push('/auth/signin?redirect=/checkout');
+            return;
+        }
+        router.push('/checkout');
+    };
 
     if (isLoading) {
         return <div className="cart-container">{t('cart.loading')}</div>;
@@ -183,7 +193,7 @@ export default function CartPage() {
             
 
             
-            <button className="cart-checkout-button" onClick={checkout}>
+            <button type="button" className="cart-checkout-button" onClick={handleCheckout}>
                 {t('cart.checkout')}
             </button>
         </div>

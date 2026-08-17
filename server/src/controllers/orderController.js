@@ -5,12 +5,8 @@ const User = require('../models/user');
 const mongoose = require("mongoose");
 const { calculateTotalPriceAndValidateStock, updateProductStock } = require('../utilities/stock');
 const { recordUserOrder } = require('../utilities/userActivity');
-// const stripe = require('stripe');
+const { getStripeClient, isStripeConfigured, toStripeAmount } = require('../utilities/stripeClient');
 require('dotenv').config();
-
-// const stripeClient = new stripe(process.env.NHLANHLA_ADVOCATE_KEY, {
-//   apiVersion: '2023-10-16',
-// });
 
 exports.createOrder = async (req, res, next) => {
   try {
@@ -223,34 +219,45 @@ exports.cancelOrder = async (req, res, next) => {
 
 exports.createBulkOrder = async (req, res, next) => {
   try {
+    if (!isStripeConfigured()) {
+      return res.status(503).json({ message: 'Stripe is not configured' });
+    }
+
+    const stripe = getStripeClient();
     const { items, shippingAddress, paymentMethod, paymentToken } = req.body;
-    const userId = req.user?.id;
+    const userId = req.user?._id;
 
     const { totalPrice, processedItems } = await calculateTotalPriceAndValidateStock(items);
+    const currency = (process.env.STRIPE_CURRENCY || 'zar').toLowerCase();
 
-    const paymentIntent = await stripeClient.paymentIntents.create({
-      amount: Math.round(totalPrice * 100),
-      currency: 'zar',
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: toStripeAmount(totalPrice, currency),
+      currency,
       payment_method: paymentToken,
       confirm: true,
       description: `Bulk order for user ${userId}`,
     });
 
     if (paymentIntent.status === 'succeeded') {
+      const orderItems = processedItems.map((item) => ({
+        productId: item.product,
+        quantity: item.quantity,
+        price: item.price,
+      }));
+
       const newOrder = new Order({
-        user: userId,
-        items: processedItems,
+        customerId: userId,
+        items: orderItems,
         totalPrice,
-        shippingAddress,
-        paymentMethod,
-        paymentId: paymentIntent.id,
-        status: 'paid',
-        currency: 'ZAR',
-        isBulkOrder: true
+        status: 'processing',
+        paymentIntentId: paymentIntent.id,
+        paymentStatus: 'paid',
+        currency,
       });
 
       const savedOrder = await newOrder.save();
       await updateProductStock(processedItems);
+      if (userId) await recordUserOrder(userId);
 
       res.status(201).json(savedOrder);
     } else {

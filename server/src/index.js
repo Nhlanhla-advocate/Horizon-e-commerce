@@ -47,6 +47,7 @@ const wishListRoutes = require("./routes/wishList");
 const products = require("./routes/product");
 const dashboardRoutes = require("./routes/dashboard");
 const adminRoutes = require("./routes/admin");
+const paymentRoutes = require("./routes/payment");
 // Middleware to parse JSON
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -73,6 +74,7 @@ app.use("/wishlist", wishListRoutes);
 app.use("/products", products);
 app.use("/dashboard", dashboardRoutes);
 app.use("/admin", adminRoutes);
+app.use("/payments", paymentRoutes);
 
 // Set the server to listen on the specified port
 const PORT = process.env.PORT || 5000;
