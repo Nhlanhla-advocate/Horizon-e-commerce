@@ -14,3 +14,26 @@ async function loadCartForUser(userId) {
   }
   return cart;
 }
+
+async function buildCartCheckoutSummmary(cart) {
+  const orderItems = cart.items.map((item) => {
+    const product = item.productId && typeof item.productId === 'object' ? item.productId : null;
+    const productId = product? ._id || item.productId;
+    const price = item.price != null ? Number(item.price) : Number(product?.price) || 0;
+
+    if (product && product.stock < item.quantity) {
+      const error = new Error(`Insufficient stock for ${product.name || 'a product'}`);
+      error.statusCode = 400;
+      throw error;
+    }
+
+    return {
+      productId,
+      name: item.name || product?.name || 'Product',
+      quantity: item.quantity,
+      price,
+    };
+  });
+
+  const totalPrice = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+}
