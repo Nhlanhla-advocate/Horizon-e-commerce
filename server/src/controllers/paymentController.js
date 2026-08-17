@@ -36,4 +36,20 @@ async function buildCartCheckoutSummmary(cart) {
   });
 
   const totalPrice = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+};
+
+if (!(totalPrice > 0)) {
+  const error = new Error('Unable to calculate order total from cart items');
+  error.statusCode = 400;
+  throw error;
 }
+
+return { orderItems, totalPrice };
+}
+
+exports.getStripeConfig = (req, res) => {
+  res.json({ 
+    enabled: isStripeConfigured(),
+    publishableKey: process.env.STRIPE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || null, currency: STRIPE_CURRENCY,
+  });
+};
