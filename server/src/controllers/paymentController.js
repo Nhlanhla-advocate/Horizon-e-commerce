@@ -62,3 +62,19 @@ exports.createPaymentIntent = async (req, res) => {
         message: 'Stripe is not configured. Set STRIPE_SECRET_KEY on the server.',
       });
     }
+
+    const stripe = getStripeClient();
+    const userId = req.user ._id;
+    const cart = await loadCartForUser(userId);
+    const { totalPrice } = await buildCartCheckoutSummmary(cart);
+    const amount = toStripeAmount(totalPrice, STRIPE_CURRENCY);
+
+    const paymentIntent = await stripe.paymentIntents.create({ amount,
+      currency: STRIPE_CURRENCY,
+      automatic_payment_methods: { enabled: true },
+      metadata: {
+        userId: String(userId),
+        cartId: String(cart.id),
+      },
+      description: `Horizon order for user ${userId}`,
+    });
