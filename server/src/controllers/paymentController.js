@@ -111,3 +111,25 @@ exports.completePayment = async (req, res) => {
         message: 'paymentIntentId is required',
       });
     }
+
+    const stripe = getStripeClient();
+    const userId = req.user._id;
+    const cart = await loadCartForUser(userId);
+    const { totalPrice } = await buildCartCheckoutSummmary(cart);
+    const expectedAmount = toStripeAmount(totalPrice, STRIPE_CURRENCY);
+
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+    if (paymentIntent.metadata?.userId !== String(userId)) {
+      return res.status(403).json({
+        success: false,
+        message: 'This payment does not belong to your account',
+      });
+    }
+
+    if (paymentIntent.status !== 'succeeded') {
+      return res.status(400).json({
+        syccess: false,
+        message: `Payment is not complete (status: ${paymentIntent.status})`,
+      });
+    }
