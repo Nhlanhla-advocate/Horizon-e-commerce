@@ -26,3 +26,17 @@ export default function CheckoutPage() {
   
     const cartItems = Array.isArray(cart?.items) ? cart.items : [];
     const cartTotal = Number(cart?.totalPrice ?? 0);
+
+    const stripePromise = useMemo(() => {
+        if (!config?.publishableKey) return null;
+        return loadStripe(config.publishableKey);
+      }, [config?.publishableKey]);
+    
+      useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          router.replace('/auth/signin?redirect=/checkout');
+          return;
+        }
+        setAuthReady(true);
+      }, [router]);
