@@ -78,3 +78,19 @@ exports.createPaymentIntent = async (req, res) => {
       },
       description: `Horizon order for user ${userId}`,
     });
+
+    res.json({
+      success: true,
+      clientSecret: paymentIntent.client_secret,
+      paymentIntentId: paymentIntent.id,
+      amount: totalPrice,
+      currency: STRIPE_CURRENCY,
+    });
+  } catch (error) {
+    console.error('createPaymentIntent error:', error);
+    res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Failed to create payment intent',
+    });
+  }
+};
