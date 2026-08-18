@@ -133,3 +133,30 @@ exports.completePayment = async (req, res) => {
         message: `Payment is not complete (status: ${paymentIntent.status})`,
       });
     }
+
+    if (paymentIntent.amount !== expectedAmount || paymentIntent.currency !== STRIPE_CURRENCY) {
+      return res.status(400).json({
+        success: false,
+        message: 'Payment amount does not match your cart total. Please refresh and try again.',
+      });
+    }
+
+    const order = await cartController.createOrderFromCart(userId, {
+      paymentIntentId,
+      paymentStatus: 'paid',
+      orderStatus: 'processing',
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Payment successful. Order placed.',
+      order,
+    });
+  } catch (error) {
+    console.error('completePayment error:', error);
+    res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Failed to complete payment',
+    });
+  }
+};
