@@ -94,3 +94,20 @@ exports.createPaymentIntent = async (req, res) => {
     });
   }
 };
+
+exports.completePayment = async (req, res) => {
+  try {
+    if (!isStripeConfigured()) {
+      return res.status(503).json({
+        success: false,
+        message: 'Stripe is not configured.',
+      });
+    }
+
+    const { paymentIntentId } = req.body || {};
+    if (!paymentIntentId) {
+      return res.status(400).json({
+        success: false,
+        message: 'paymentIntentId is required',
+      });
+    }
