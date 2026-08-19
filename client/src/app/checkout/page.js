@@ -107,3 +107,36 @@ export default function CheckoutPage() {
           </div>
         );
       }
+
+      return (
+        <div className="checkout-page">
+          <div className="checkout-container">
+            <header className="checkout-header">
+              <div>
+                <h1>Checkout</h1>
+                <p>Review your order and pay securely with Stripe.</p>
+              </div>
+              <Link href="/cart" className="checkout-back-link">← Back to cart</Link>
+            </header>
+    
+            {error && <div className="checkout-alert checkout-alert--error">{error}</div>}
+    
+            <div className="checkout-grid">
+              <section className="checkout-summary-card">
+                <h2>Order summary</h2>
+                <ul className="checkout-item-list">
+                  {cartItems.map((item) => (
+                    <li key={item.productId || item.name} className="checkout-item">
+                      <div>
+                        <strong>{item.name}</strong>
+                        <span>Qty {item.quantity}</span>
+                      </div>
+                      <span>{formatPrice(Number(item.price || 0) * Number(item.quantity || 0))}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="checkout-total-row">
+                  <span>Total</span>
+                  <strong>{formatPrice(amount || cartTotal)}</strong>
+                </div>
+              </section>
