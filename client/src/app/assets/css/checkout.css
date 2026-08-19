@@ -1,0 +1,19 @@
+.checkout-page {
+    min-height: 60vh;
+    padding: 2rem 1rem 3rem;
+    background: #f9fafb;
+  }
+  
+  .checkout-container {
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  
+  .checkout-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
