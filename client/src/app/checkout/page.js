@@ -140,3 +140,22 @@ export default function CheckoutPage() {
                   <strong>{formatPrice(amount || cartTotal)}</strong>
                 </div>
               </section>
+
+              <section>
+            {clientSecret && stripePromise ? (
+              <StripeCheckoutPanel
+                stripePromise={stripePromise}
+                clientSecret={clientSecret}
+                paymentIntentId={paymentIntentId}
+                amount={amount || cartTotal}
+                onSuccess={handlePaymentSuccess}
+              />
+            ) : (
+              !error && <p className="checkout-loading">Loading payment form...</p>
+            )}
+          </section>
+        </div>
+      </div>
+    </div>
+  );
+}
