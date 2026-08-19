@@ -40,3 +40,38 @@ export default function CheckoutPage() {
         }
         setAuthReady(true);
       }, [router]);
+
+      useEffect(() => {
+        if (!authReady || cartLoading) return;
+    
+        if (cartItems.length === 0) {
+          setLoading(false);
+          return;
+        }
+    
+        let cancelled = false;
+    
+        (async () => {
+          setLoading(true);
+          setError('');
+          try {
+            const stripeConfig = await fetchStripeConfig();
+            if (!stripeConfig.enabled || !stripeConfig.publishableKey) {
+              throw new Error('Stripe is not configured on the server. Add STRIPE_SECRET_KEY and STRIPE_PUBLISHABLE_KEY.');
+            }
+            if (cancelled) return;
+            setConfig(stripeConfig);
+    
+            const intent = await createPaymentIntent();
+            if (cancelled) return;
+            setClientSecret(intent.clientSecret);
+            setPaymentIntentId(intent.paymentIntentId);
+            setAmount(intent.amount);
+          } catch (err) {
+            if (!cancelled) {
+              setError(err.message || 'Unable to start checkout');
+            }
+          } finally {
+            if (!cancelled) setLoading(false);
+          }
+        })();
