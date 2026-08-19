@@ -42,3 +42,31 @@
   .checkout-link-button:hover {
     text-decoration: underline;
   }
+
+  .checkout-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+  
+  @media (min-width: 900px) {
+    .checkout-grid {
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+    }
+  }
+  
+  .checkout-summary-card,
+  .checkout-payment-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  }
+  
+  .checkout-summary-card h2,
+  .checkout-payment-card h2 {
+    margin: 0 0 1rem;
+    font-size: 1.125rem;
+  }
