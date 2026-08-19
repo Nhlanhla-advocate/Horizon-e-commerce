@@ -17,3 +17,28 @@
     gap: 1rem;
     margin-bottom: 1.5rem;
   }
+
+  .checkout-header h1 {
+    margin: 0 0 0.35rem;
+    font-size: 1.75rem;
+    color: #111827;
+  }
+  
+  .checkout-header p {
+    margin: 0;
+    color: #6b7280;
+  }
+  
+  .checkout-back-link,
+  .checkout-link-button {
+    display: inline-flex;
+    align-items: center;
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  .checkout-back-link:hover,
+  .checkout-link-button:hover {
+    text-decoration: underline;
+  }
