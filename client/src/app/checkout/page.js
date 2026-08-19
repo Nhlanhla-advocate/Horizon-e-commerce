@@ -95,3 +95,15 @@ export default function CheckoutPage() {
           </div>
         );
       }
+
+      if (cartItems.length === 0) {
+        return (
+          <div className="checkout-page">
+            <div className="checkout-container">
+              <h1>Checkout</h1>
+              <p>Your cart is empty.</p>
+              <Link href="/products" className="checkout-link-button">Continue shopping</Link>
+            </div>
+          </div>
+        );
+      }
