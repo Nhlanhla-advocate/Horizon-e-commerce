@@ -70,3 +70,31 @@
     margin: 0 0 1rem;
     font-size: 1.125rem;
   }
+
+  .checkout-item-list {
+    list-style: none;
+    margin: 0 0 1rem;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .checkout-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  
+  .checkout-item div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+  
+  .checkout-item span {
+    color: #6b7280;
+    font-size: 0.875rem;
+  }
