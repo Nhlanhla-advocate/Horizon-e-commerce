@@ -75,3 +75,23 @@ export default function CheckoutPage() {
             if (!cancelled) setLoading(false);
           }
         })();
+
+        return () => {
+          cancelled = true;
+        };
+      }, [authReady, cartLoading, cartItems.length]);
+    
+      const handlePaymentSuccess = () => {
+        clearCartLocal();
+        router.push('/account/orders');
+      };
+    
+      if (!authReady || cartLoading || loading) {
+        return (
+          <div className="checkout-page">
+            <div className="checkout-container">
+              <p className="checkout-loading">Preparing secure checkout...</p>
+            </div>
+          </div>
+        );
+      }
