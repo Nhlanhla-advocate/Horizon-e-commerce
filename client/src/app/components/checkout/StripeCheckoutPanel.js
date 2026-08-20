@@ -23,5 +23,33 @@ function CheckoutForm({ paymentIntentId, onSuccess }) {
 
         setSubmitting(true);
         setError('');
+
+        try {
+            const { error: stripeError, paymentIntent } = await stripe.confirmPayment({
+              elements,
+              redirect: 'if_required',
+            });
+      
+            if (stripeError) {
+              throw new Error(stripeError.message || 'Payment failed');
+            }
+      
+            const intentId = paymentIntent?.id || paymentIntentId;
+            if (!intentId) {
+              throw new Error('Payment could not be confirmed');
+            }
+      
+            if (paymentIntent?.status !== 'succeeded') {
+              throw new Error(`Payment status: ${paymentIntent?.status || 'unknown'}`);
+            }
+      
+            const result = await completePayment(intentId);
+            onSuccess?.(result.order);
+          } catch (err) {
+            setError(err.message || 'Payment failed. Please try again.');
+          } finally {
+            setSubmitting(false);
+          }
+        };
     }
 }
