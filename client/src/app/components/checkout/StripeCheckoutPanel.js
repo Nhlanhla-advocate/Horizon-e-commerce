@@ -69,5 +69,19 @@ function CheckoutForm({ paymentIntentId, onSuccess }) {
             </form>
           );
         }
+
+        export default function StripeCheckoutPanel({
+            stripePromise,
+            clientSecret,
+            paymentIntentId,
+            amount,
+            onSuccess,
+          }) {
+            const { formatPrice } = useLocale();
+          
+            if (!clientSecret || !stripePromise) {
+              return null;
+            }
+          
     }
 }
