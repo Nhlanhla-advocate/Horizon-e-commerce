@@ -51,5 +51,23 @@ function CheckoutForm({ paymentIntentId, onSuccess }) {
             setSubmitting(false);
           }
         };
+
+        return (
+            <form className="checkout-form" onSubmit={handleSubmit}>
+              <PaymentElement options={{ layout: 'tabs' }} />
+              {error && <div className="checkout-alert checkout-alert--error">{error}</div>}
+              <button
+                type="submit"
+                className="checkout-pay-button"
+                disabled={!stripe || !elements || submitting}
+              >
+                {submitting ? 'Processing payment...' : 'Pay now'}
+              </button>
+              <p className="checkout-secure-note">
+                Payments are processed securely by Stripe. Test card: 4242 4242 4242 4242.
+              </p>
+            </form>
+          );
+        }
     }
 }
