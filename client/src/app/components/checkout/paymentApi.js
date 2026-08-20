@@ -4,7 +4,7 @@ import { parseApiError } from './accountUtils';
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export async function fetchStripeConfig() {
-  const response = await fetch(${API_BASE}/payments/config);
+  const response = await fetch(`${API_BASE}/payments/config`);
   if (!response.ok) {
     throw new Error('Unable to load payment configuration');
   }
