@@ -83,5 +83,15 @@ function CheckoutForm({ paymentIntentId, onSuccess }) {
               return null;
             }
           
-    }
-}
+            return (
+                <div className="checkout-payment-card">
+                  <div className="checkout-payment-summary">
+                    <span>Amount due</span>
+                    <strong>{formatPrice(amount)}</strong>
+                  </div>
+                  <Elements stripe={stripePromise} options={{ clientSecret }}>
+                    <CheckoutForm paymentIntentId={paymentIntentId} onSuccess={onSuccess} />
+                  </Elements>
+                </div>
+            );
+          }
