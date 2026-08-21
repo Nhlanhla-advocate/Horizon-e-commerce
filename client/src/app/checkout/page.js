@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { loadStripe } from '@stripe/stripe-js';
-import { useCart } from '@/app/components/cart/Cart';
+import { useCart, normalizeProductId } from '@/app/components/cart/Cart';
 import { useLocale } from '@/app/i18n/LocaleProvider';
 import { createPaymentIntent, fetchStripeConfig } from '@/app/components/checkout/paymentApi';
 import StripeCheckoutPanel from '@/app/components/checkout/StripeCheckoutPanel';
@@ -125,15 +125,19 @@ export default function CheckoutPage() {
               <section className="checkout-summary-card">
                 <h2>Order summary</h2>
                 <ul className="checkout-item-list">
-                  {cartItems.map((item) => (
-                    <li key={item.productId || item.name} className="checkout-item">
-                      <div>
-                        <strong>{item.name}</strong>
-                        <span>Qty {item.quantity}</span>
-                      </div>
-                      <span>{formatPrice(Number(item.price || 0) * Number(item.quantity || 0))}</span>
-                    </li>
-                  ))}
+                  {cartItems.map((item, index) => {
+                    const productKey =
+                      normalizeProductId(item.productId) || item.name || `item-${index}`;
+                    return (
+                      <li key={productKey} className="checkout-item">
+                        <div>
+                          <strong>{item.name}</strong>
+                          <span>Qty {item.quantity}</span>
+                        </div>
+                        <span>{formatPrice(Number(item.price || 0) * Number(item.quantity || 0))}</span>
+                      </li>
+                    );
+                  })}
                 </ul>
                 <div className="checkout-total-row">
                   <span>Total</span>

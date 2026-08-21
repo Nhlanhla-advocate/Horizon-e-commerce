@@ -1,7 +1,10 @@
 import { fetchWithUserAuth } from '@/app/utils/userAuthFetch';
-import { parseApiError } from './accountUtils';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
+function getErrorMessage(data, fallback) {
+  return data?.message || data?.error || fallback;
+}
 
 export async function fetchStripeConfig() {
   const response = await fetch(`${API_BASE}/payments/config`);
@@ -18,7 +21,7 @@ export async function createPaymentIntent() {
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok || data.success === false) {
-    throw new Error(data.message || (await parseApiError(response)));
+    throw new Error(getErrorMessage(data, 'Failed to create payment intent'));
   }
   return data;
 }
@@ -31,7 +34,7 @@ export async function completePayment(paymentIntentId) {
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok || data.success === false) {
-    throw new Error(data.message || (await parseApiError(response)));
+    throw new Error(getErrorMessage(data, 'Failed to complete payment'));
   }
   return data;
 }
