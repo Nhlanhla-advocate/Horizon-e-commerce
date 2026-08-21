@@ -1,5 +1,5 @@
 const Cart = require('../models/cart');
-const { getStripeClient, isStripeConfigured, toStripeAmount } = require('../utilities/stripeClient');
+const { getStripeClient, getPublishableKey, isStripeConfigured, toStripeAmount } = require('../utilities/stripeClient');
 const cartController = require('./cartController');
 
 const STRIPE_CURRENCY = (process.env.STRIPE_CURRENCY || 'zar').toLowerCase();
@@ -46,9 +46,10 @@ async function buildCartCheckoutSummary(cart) {
 }
 
 exports.getStripeConfig = (req, res) => {
+  const publishableKey = getPublishableKey();
   res.json({
     enabled: isStripeConfigured(),
-    publishableKey: process.env.STRIPE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || null,
+    publishableKey: publishableKey && publishableKey.startsWith('pk_') ? publishableKey : null,
     currency: STRIPE_CURRENCY,
   });
 };

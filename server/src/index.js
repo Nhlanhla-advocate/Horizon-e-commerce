@@ -16,6 +16,34 @@ if (!process.env.JWT_SECRET) {
   process.exit(1);
 }
 
+// Warn early if Stripe keys are misconfigured (does not block server startup)
+(async () => {
+  const sk = String(process.env.STRIPE_SECRET_KEY || '').trim();
+  const pk = String(process.env.STRIPE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '').trim();
+  if (!sk && !pk) return;
+  if (sk.startsWith('pk_')) {
+    console.error('[Stripe] STRIPE_SECRET_KEY is a publishable key (pk_...). Swap it with STRIPE_PUBLISHABLE_KEY.');
+    return;
+  }
+  if (pk.startsWith('sk_')) {
+    console.error('[Stripe] STRIPE_PUBLISHABLE_KEY is a secret key (sk_...). Swap it with STRIPE_SECRET_KEY.');
+    return;
+  }
+  if (!sk.startsWith('sk_')) {
+    console.error('[Stripe] STRIPE_SECRET_KEY must start with sk_test_ or sk_live_.');
+    return;
+  }
+  try {
+    const Stripe = require('stripe');
+    const stripe = new Stripe(sk, { apiVersion: '2024-11-20.acacia' });
+    await stripe.balance.retrieve();
+    console.log('[Stripe] Secret key verified.');
+  } catch (err) {
+    console.error('[Stripe] Secret key rejected by Stripe. Create a new key at https://dashboard.stripe.com/test/apikeys');
+    console.error('[Stripe]', err.message?.replace(/sk_test_[A-Za-z0-9]+/g, 'sk_test_[REDACTED]'));
+  }
+})();
+
 // Enable CORS for frontend at http://localhost:3000
 // app.use(cors({
 //   origin: 'http://localhost:3000',
