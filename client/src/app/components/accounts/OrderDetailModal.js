@@ -3,9 +3,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useLocale } from '@/app/i18n/LocaleProvider';
 import { cancelOrder, fetchOrder } from './orderApi';
-import{
+import {
     canCancelOrder,
     formatOrderDate,
+    getItemImage,
     getItemName,
     getItemPrice,
     getOrderItemCount,
@@ -142,8 +143,14 @@ export default function OrderDetailModal({ orderId, onClose, onOrderUpdated }) {
               {(order.items || []).map((item, index) => {
                 const unitPrice = getItemPrice(item);
                 const quantity = item.quantity || 0;
+                const imageSrc = getItemImage(item);
                 return (
                   <li key={item._id || index} className="user-account-order-item">
+                    {imageSrc ? (
+                      <img src={imageSrc} alt="" className="user-account-order-item-image" />
+                    ) : (
+                      <span className="user-account-order-item-image user-account-order-item-image--empty" />
+                    )}
                     <div className="user-account-order-item-info">
                       <strong>{getItemName(item)}</strong>
                       <span>Qty {quantity}</span>

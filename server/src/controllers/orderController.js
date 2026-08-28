@@ -8,6 +8,8 @@ const { recordUserOrder } = require('../utilities/userActivity');
 const { getStripeClient, isStripeConfigured, toStripeAmount } = require('../utilities/stripeClient');
 require('dotenv').config();
 
+
+
 exports.createOrder = async (req, res, next) => {
   try {
     const { items, customerId } = req.body;
@@ -74,7 +76,7 @@ exports.createOrder = async (req, res, next) => {
 
 exports.getOrderHistory = async (req, res) => {
   try {
-    const customerId = req.user?._id;
+    const customerId = toCustomerObjectId(req.user?._id);
 
     if (!customerId) {
       return res.status(400).json({ message: "Customer ID is required" });
@@ -83,14 +85,11 @@ exports.getOrderHistory = async (req, res) => {
     console.log("Fetching order history for customer:", customerId);
 
     const orders = await Order.find({ customerId })
-      .populate("items.productId", "name price") 
-      .sort({ createdAt: -1 });
+      .populate("items.productId", "name price images")
+      .sort({ createdAt: -1 })
+      .lean();
 
-    if (!orders.length) {
-      return res.status(404).json({ message: "No orders found for this customer" });
-    }
-
-    res.status(200).json(orders);
+    res.status(200).json(orders.map(serializeCustomerOrder));
   } catch (error) {
     console.error("Error fetching order history:", error.message); 
     console.error(error.stack); 
@@ -108,8 +107,8 @@ exports.getOrder = async (req, res, next) => {
     }
 
     const order = await Order.findById(id)
-      .populate("customerId", "name email")
-      .populate("items.productId", "name price");
+      .populate("customerId", "username email")
+      .populate("items.productId", "name price images");
 
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
@@ -120,7 +119,7 @@ exports.getOrder = async (req, res, next) => {
       return res.status(403).json({ message: "You do not have access to this order" });
     }
 
-    res.json(order);
+    res.json(serializeCustomerOrder(order));
   } catch (error) {
     console.error("Error fetching order:", error);
     res.status(500).json({ message: "Server error", error: error.message });

@@ -125,6 +125,11 @@
     color: #1e40af;
   }
 
+  .status-paid {
+    background-color: #d1fae5;
+    color: #065f46;
+  }
+
   .status-shipped {
     background-color: #d1fae5;
     color: #065f46;

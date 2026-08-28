@@ -337,7 +337,7 @@ exports.createOrderFromCart = async (userId, options = {}) => {
             throw new Error('Cart is empty');
         }
 
-        // Create order items from this user's cart only — always resolve current product pricing
+        // Create order items from this user's cart only — snapshot name, price, and image
         const orderItems = cart.items.map((item) => {
             const product = item.productId && typeof item.productId === 'object' ? item.productId : null;
             const productId = product?._id || item.productId;
@@ -345,6 +345,10 @@ exports.createOrderFromCart = async (userId, options = {}) => {
                 item.price != null
                     ? Number(item.price)
                     : Number(product?.price) || 0;
+            const productImage =
+                (typeof item.image === 'string' && item.image.trim()) ||
+                (Array.isArray(product?.images) && typeof product.images[0] === 'string' && product.images[0].trim()) ||
+                undefined;
 
             if (product && product.stock < item.quantity) {
                 throw new Error(`Insufficient stock for ${product.name || 'product'}`);
@@ -355,6 +359,7 @@ exports.createOrderFromCart = async (userId, options = {}) => {
                 name: item.name || product?.name || 'Product',
                 quantity: item.quantity,
                 price,
+                image: productImage,
             };
         });
 
@@ -363,9 +368,13 @@ exports.createOrderFromCart = async (userId, options = {}) => {
             throw new Error('Unable to calculate order total from cart items');
         }
 
-        // Create the order
+        const customerId = mongoose.Types.ObjectId.isValid(String(userId))
+            ? new mongoose.Types.ObjectId(String(userId))
+            : userId;
+
+        // Create the order, always owned by this authenticated customer
         const order = new Order({
-            customerId: userId,
+            customerId,
             items: orderItems,
             totalPrice: orderTotal,
             status: orderStatus,

@@ -34,7 +34,7 @@ const { getAllOrders } = require('../controllers/orderController');
 const categoryRoutes = require('./category');
 const { parseAvatarUpload } = require('../middleware/profileUpload');
 
-const { authMiddleware } = require('../middleware/authMiddleware');
+const { authMiddleware, isAdmin } = require('../middleware/authMiddleware');
 
 // Admin signup (public route)
 router.post('/signup', ...validateAdminSignUp, handleValidationErrors, adminSignUp);
@@ -58,7 +58,7 @@ router.post('/profile/2fa/verify', authMiddleware, ...validateTotpToken, validat
 router.delete('/profile/2fa', authMiddleware, ...validateDisableTwoFactor, validate, disableAdminTwoFactor);
 
 // Get all orders with filters (protected route - admin only)
-router.get('/orders', authMiddleware, getAllOrders);
+router.get('/orders', authMiddleware, isAdmin, getAllOrders);
 
 // Category management routes (protected route - admin only)
 router.use('/categories', categoryRoutes);
