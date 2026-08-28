@@ -81,9 +81,10 @@ export default function CheckoutPage() {
         };
       }, [authReady, cartLoading, cartItems.length]);
     
-      const handlePaymentSuccess = () => {
+      const handlePaymentSuccess = (order) => {
         clearCartLocal();
-        router.push('/account/orders');
+        const orderId = order?._id ? encodeURIComponent(String(order._id)) : '';
+        router.push(orderId ? `/account/orders?placed=1&orderId=${orderId}` : '/account/orders?placed=1');
       };
     
       if (!authReady || cartLoading || loading) {

@@ -263,6 +263,9 @@ const Navbar = () => {
             <Link href="/products" className="navbar-link">Products</Link>
             <Link href="/categories" className="navbar-link">Categories</Link>
             <Link href="/deals" className="navbar-link">Deals</Link>
+            {isAuthed && !hasAdminAccess && (
+              <Link href="/account/orders" className="navbar-link">Orders</Link>
+            )}
           </div>
 
           <div className="navbar-icons">
@@ -308,6 +311,9 @@ const Navbar = () => {
             <Link href="/products" className="navbar-link">Products</Link>
             <Link href="/categories" className="navbar-link">Categories</Link>
             <Link href="/deals" className="navbar-link">Deals</Link>
+            {isAuthed && !hasAdminAccess && (
+              <Link href="/account/orders" className="navbar-link">Orders</Link>
+            )}
             {isLoggedIn && (
               <>
                 <Link href={accountHref} className="navbar-link navbar-mobile-menu-account">

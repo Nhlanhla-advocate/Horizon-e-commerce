@@ -22,6 +22,18 @@ const STATUS_BADGE_CLASS = {
   
   export const getItemName = (item) =>
     item?.name || item?.productId?.name || 'Unknown product';
+
+  export const getItemImage = (item) => {
+    if (typeof item?.image === 'string' && item.image.trim()) return item.image.trim();
+    const product = item?.productId;
+    if (product && typeof product === 'object') {
+      if (Array.isArray(product.images) && typeof product.images[0] === 'string') {
+        return product.images[0];
+      }
+      if (typeof product.image === 'string' && product.image.trim()) return product.image.trim();
+    }
+    return '';
+  };
   
   export const getItemPrice = (item) => {
     const price = item?.price ?? item?.productId?.price;

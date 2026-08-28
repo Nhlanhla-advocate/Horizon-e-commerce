@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import OrderHistorySection from '@/app/components/accounts/OrderHistorySection';
 import AccountSuccessModal from '@/app/components/accounts/AccountSuccessModal';
 import '@/app/assets/css/userAccount.css';
@@ -14,11 +14,13 @@ const normalizeRole = (roleValue) =>
 
 const ADMIN_ROLES = new Set(['admin', 'super_admin', 'manager', 'support']);
 
-export default function AccountOrdersPage() {
+function AccountOrdersPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [status, setStatus] = useState('checking');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const placedOrderId = searchParams.get('orderId') || '';
 
   useEffect(() => {
     let token = null;
@@ -44,7 +46,10 @@ export default function AccountOrdersPage() {
     }
 
     setStatus('allowed');
-  }, [router]);
+    if (searchParams.get('placed') === '1') {
+      setSuccess('Payment received. Your checked-out items are listed below.');
+    }
+  }, [router, searchParams]);
 
   if (status !== 'allowed') {
     return (
@@ -69,9 +74,24 @@ export default function AccountOrdersPage() {
         onError={setError}
         onSuccess={setSuccess}
         title="Purchase log"
-        subtitle="Filter by status to find delivered, cancelled, or in-progress orders."
+        subtitle="Each order lists the items you checked out, including pending and processing purchases."
         showBackLink
+        highlightOrderId={placedOrderId}
       />
     </div>
+  );
+}
+
+export default function AccountOrdersPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="user-account-page">
+          <div className="user-account-loading">Loading your orders...</div>
+        </div>
+      }
+    >
+      <AccountOrdersPageContent />
+    </Suspense>
   );
 }

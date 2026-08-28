@@ -6,6 +6,8 @@ import { useLocale } from '@/app/i18n/LocaleProvider';
 import { fetchOrderHistory } from './orderApi';
 import {
   formatOrderDate,
+  getItemImage,
+  getItemName,
   getOrderItemCount,
   getOrderTotal,
   getStatusBadgeClass,
@@ -29,6 +31,7 @@ export default function OrderHistorySection({
   title = 'Order history',
   subtitle = 'A log of everything you have purchased, including cancelled orders.',
   showBackLink = false,
+  highlightOrderId = '',
 }) {
   const { formatPrice } = useLocale();
   const [orders, setOrders] = useState([]);
@@ -53,6 +56,12 @@ export default function OrderHistorySection({
   useEffect(() => {
     loadOrders();
   }, [loadOrders]);
+
+  useEffect(() => {
+    if (!highlightOrderId) return;
+    setStatusFilter('all');
+    setSelectedOrderId(highlightOrderId);
+  }, [highlightOrderId]);
 
   const filteredOrders = useMemo(() => {
     if (statusFilter === 'all') return orders;
@@ -143,20 +152,52 @@ export default function OrderHistorySection({
 
       {!loading && filteredOrders.length > 0 && (
         <ul className="user-account-order-list">
-          {filteredOrders.map((order) => (
-            <li key={order._id} className="user-account-order-row">
+          {filteredOrders.map((order) => {
+            const isHighlighted = String(order._id) === String(highlightOrderId);
+            const items = Array.isArray(order.items) ? order.items : [];
+            return (
+            <li
+              key={order._id}
+              className={`user-account-order-row${isHighlighted ? ' is-highlighted' : ''}`}
+            >
               <div className="user-account-order-row-main">
                 <div className="user-account-order-row-top">
                   <strong>{shortOrderId(order._id)}</strong>
                   <span className={`status-badge ${getStatusBadgeClass(order.status)}`}>
                     {order.status}
                   </span>
+                  {order.paymentStatus && (
+                    <span className={`status-badge status-${order.paymentStatus}`}>
+                      {order.paymentStatus === 'paid' ? 'Paid' : order.paymentStatus}
+                    </span>
+                  )}
                 </div>
                 <p className="user-account-order-meta">
                   {formatOrderDate(order.createdAt)}
                   {' · '}
                   {getOrderItemCount(order)} item{getOrderItemCount(order) === 1 ? '' : 's'}
                 </p>
+                {items.length > 0 && (
+                  <ul className="user-account-order-preview-items">
+                    {items.map((item, index) => {
+                      const imageSrc = getItemImage(item);
+                      return (
+                        <li key={item._id || `${order._id}-${index}`} className="user-account-order-preview-item">
+                          {imageSrc ? (
+                            <img src={imageSrc} alt="" className="user-account-order-preview-image" />
+                          ) : (
+                            <span className="user-account-order-preview-image user-account-order-preview-image--empty" />
+                          )}
+                          <span className="user-account-order-preview-name">{getItemName(item)}</span>
+                          <span className="user-account-order-preview-qty">×{item.quantity || 0}</span>
+                          <span className="user-account-order-preview-price">
+                            {formatPrice(Number(item.price || 0) * Number(item.quantity || 0))}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
               </div>
               <div className="user-account-order-row-side">
                 <strong className="user-account-order-row-total">
@@ -171,7 +212,8 @@ export default function OrderHistorySection({
                 </button>
               </div>
             </li>
-          ))}
+            );
+          })}
         </ul>
       )}
 

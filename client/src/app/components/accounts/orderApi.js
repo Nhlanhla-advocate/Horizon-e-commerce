@@ -9,7 +9,10 @@ export async function fetchOrderHistory() {
   if (!response.ok) {
     throw new Error(await parseApiError(response));
   }
-  return response.json();
+  const data = await response.json();
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.orders)) return data.orders;
+  return [];
 }
 
 export async function fetchOrder(orderId) {
