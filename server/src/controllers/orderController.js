@@ -24,6 +24,13 @@ product.image.trim();
 return '';
 }
 
+function serializeOrderItem(item = {}) {
+  const product = item.productId && typeof item.productId === 'object' && item.productId._id ? item.productId : null;
+  const productId = product?._id || item.productId;
+
+  
+}
+
 exports.createOrder = async (req, res, next) => {
   try {
     const { items, customerId } = req.body;
