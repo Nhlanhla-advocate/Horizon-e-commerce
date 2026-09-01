@@ -38,6 +38,16 @@ function serializeOrderItem(item = {}) {
   };
 }
 
+function serializeCustomerOrder(order) {
+  if (!order) return order;
+  const plain = typeof order.toObject === 'function' ? order.toObject() : { ...order };
+  return {
+    ...plain,
+    customerId: plain.customerId?._id || plain.customerId,
+    items: Array.isArray(plain.items) ? plain.items.map(serializeOrderItem) : [],
+  };
+}
+
 exports.createOrder = async (req, res, next) => {
   try {
     const { items, customerId } = req.body;
