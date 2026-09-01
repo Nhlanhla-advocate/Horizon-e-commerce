@@ -14,6 +14,16 @@ function toCustomerObjectId(userId) {
   return new mongoose.Types.ObjectId(raw);
 }
 
+function productImageFrom(product, fallback) {
+  if (typeof fallback === 'string' && fallback.trim()) return fallback.trim();
+  if (Array.isArray(product?.images) && typeof product.images[0] === 'string' && product.images[0].trim()) {
+    return product.images[0].trim();
+} 
+if (typeof product?.image === 'string' && product.image.trim()) return 
+product.image.trim();
+return '';
+}
+
 exports.createOrder = async (req, res, next) => {
   try {
     const { items, customerId } = req.body;
