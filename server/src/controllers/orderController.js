@@ -28,7 +28,14 @@ function serializeOrderItem(item = {}) {
   const product = item.productId && typeof item.productId === 'object' && item.productId._id ? item.productId : null;
   const productId = product?._id || item.productId;
 
-  
+  return {
+    _id: item._id,
+    productId,
+    name: item.name || product?.name || 'Product',
+    price: item.price != null ? Number(item.price) : Number(product?.price) || 0,
+    quantity: Number(item.quantity) || 0,
+    image: productImageFrom(product, item.image),
+  };
 }
 
 exports.createOrder = async (req, res, next) => {
