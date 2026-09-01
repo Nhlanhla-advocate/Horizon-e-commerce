@@ -8,7 +8,11 @@ const { recordUserOrder } = require('../utilities/userActivity');
 const { getStripeClient, isStripeConfigured, toStripeAmount } = require('../utilities/stripeClient');
 require('dotenv').config();
 
-
+function toCustomerObjectId(userId) {
+  const raw = String(userId || '');
+  if (!mongoose.Types.ObjectId.isValid(raw)) return null;
+  return new mongoose.Types.ObjectId(raw);
+}
 
 exports.createOrder = async (req, res, next) => {
   try {
