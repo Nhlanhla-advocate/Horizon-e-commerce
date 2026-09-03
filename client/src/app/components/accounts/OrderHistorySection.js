@@ -6,7 +6,6 @@ import { useLocale } from '@/app/i18n/LocaleProvider';
 import { fetchOrderHistory } from './orderApi';
 import {
   formatOrderDate,
-  getItemImage,
   getItemName,
   getOrderItemCount,
   getOrderTotal,
@@ -14,6 +13,7 @@ import {
   shortOrderId,
 } from './orderUtils';
 import OrderDetailModal from './OrderDetailModal';
+import OrderItemImage from './OrderItemImage';
 import '../../assets/css/orderStatus.css';
 
 const STATUS_FILTERS = [
@@ -179,23 +179,16 @@ export default function OrderHistorySection({
                 </p>
                 {items.length > 0 && (
                   <ul className="user-account-order-preview-items">
-                    {items.map((item, index) => {
-                      const imageSrc = getItemImage(item);
-                      return (
+                    {items.map((item, index) => (
                         <li key={item._id || `${order._id}-${index}`} className="user-account-order-preview-item">
-                          {imageSrc ? (
-                            <img src={imageSrc} alt="" className="user-account-order-preview-image" />
-                          ) : (
-                            <span className="user-account-order-preview-image user-account-order-preview-image--empty" />
-                          )}
+                          <OrderItemImage item={item} className="user-account-order-preview-image" />
                           <span className="user-account-order-preview-name">{getItemName(item)}</span>
                           <span className="user-account-order-preview-qty">×{item.quantity || 0}</span>
                           <span className="user-account-order-preview-price">
                             {formatPrice(Number(item.price || 0) * Number(item.quantity || 0))}
                           </span>
                         </li>
-                      );
-                    })}
+                    ))}
                   </ul>
                 )}
               </div>
