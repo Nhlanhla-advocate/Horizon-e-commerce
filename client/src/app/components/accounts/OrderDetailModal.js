@@ -6,7 +6,6 @@ import { cancelOrder, fetchOrder } from './orderApi';
 import {
     canCancelOrder,
     formatOrderDate,
-    getItemImage,
     getItemName,
     getItemPrice,
     getOrderItemCount,
@@ -14,6 +13,7 @@ import {
     getStatusBadgeClass,
     shortOrderId,
 } from './orderUtils';
+import OrderItemImage from './OrderItemImage';
 import '../../assets/css/accountSuccessModal.css';
 import '../../assets/css/orderStatus.css';
 
@@ -143,14 +143,9 @@ export default function OrderDetailModal({ orderId, onClose, onOrderUpdated }) {
               {(order.items || []).map((item, index) => {
                 const unitPrice = getItemPrice(item);
                 const quantity = item.quantity || 0;
-                const imageSrc = getItemImage(item);
                 return (
                   <li key={item._id || index} className="user-account-order-item">
-                    {imageSrc ? (
-                      <img src={imageSrc} alt="" className="user-account-order-item-image" />
-                    ) : (
-                      <span className="user-account-order-item-image user-account-order-item-image--empty" />
-                    )}
+                    <OrderItemImage item={item} className="user-account-order-item-image" />
                     <div className="user-account-order-item-info">
                       <strong>{getItemName(item)}</strong>
                       <span>Qty {quantity}</span>

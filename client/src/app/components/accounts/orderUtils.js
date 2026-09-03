@@ -1,3 +1,7 @@
+import { normalizeProductImagePath } from '@/app/utils/productGallery';
+
+const PLACEHOLDER_IMAGE = '/file.svg';
+
 const STATUS_BADGE_CLASS = {
     pending: 'status-pending',
     processing: 'status-processing',
@@ -23,17 +27,77 @@ const STATUS_BADGE_CLASS = {
   export const getItemName = (item) =>
     item?.name || item?.productId?.name || 'Unknown product';
 
-  export const getItemImage = (item) => {
-    if (typeof item?.image === 'string' && item.image.trim()) return item.image.trim();
-    const product = item?.productId;
-    if (product && typeof product === 'object') {
-      if (Array.isArray(product.images) && typeof product.images[0] === 'string') {
-        return product.images[0];
-      }
-      if (typeof product.image === 'string' && product.image.trim()) return product.image.trim();
-    }
-    return '';
+  const encodeImageSrc = (src) => {
+    if (!src || typeof src !== 'string') return '';
+    if (src.startsWith('http://') || src.startsWith('https://')) return src;
+
+    const pathOnly = src.startsWith('/') ? src : `/${src}`;
+    const segments = pathOnly.split('/').filter(Boolean);
+    if (segments.length === 0) return '';
+
+    return `/${segments
+      .map((seg) => {
+        try {
+          return encodeURIComponent(decodeURIComponent(seg));
+        } catch {
+          return encodeURIComponent(seg);
+        }
+      })
+      .join('/')}`;
   };
+
+  const playstationFallbacksByName = (productName) => {
+    const normalizedName = String(productName || '').toLowerCase();
+    if (!normalizedName) return [];
+
+    if (normalizedName.includes('playstation 4') || normalizedName.includes('ps4')) {
+      return [
+        '/Pictures/Playstation 4.jpg',
+        '/Pictures/Playstation4.jpg',
+        '/Pictures/Playstation 4 Slim.jpg',
+        '/Pictures/Playstation 4 pro.jpg',
+        '/Pictures/Playstation 4 Pro.jpg',
+      ];
+    }
+
+    if (normalizedName.includes('playstation 5') || normalizedName.includes('ps5')) {
+      return [
+        '/Pictures/Playstation 5.jpg',
+        '/Pictures/Playstation 5 Digital.jpg',
+        '/Pictures/Playstation 5 disk.jpg',
+        '/Pictures/Playstation 5 pro.jpg',
+      ];
+    }
+
+    return [];
+  };
+
+  export const getItemImageCandidates = (item) => {
+    const product = item?.productId && typeof item.productId === 'object' ? item.productId : null;
+    const name = getItemName(item);
+    const rawCandidates = [];
+
+    if (typeof item?.image === 'string') rawCandidates.push(item.image);
+    if (Array.isArray(item?.images)) rawCandidates.push(...item.images);
+    if (Array.isArray(product?.images)) rawCandidates.push(...product.images);
+    if (typeof product?.image === 'string') rawCandidates.push(product.image);
+    if (name && name !== 'Unknown product' && name !== 'Product') {
+      rawCandidates.push(name);
+      rawCandidates.push(name.replace(/\bnecklace\b/gi, 'necklaces'));
+      rawCandidates.push(name.replace(/\bearrings\b/gi, 'earings'));
+      rawCandidates.push(name.replace(/\bearings\b/gi, 'earrings'));
+    }
+    rawCandidates.push(...playstationFallbacksByName(name));
+
+    const normalized = rawCandidates
+      .map((value) => encodeImageSrc(normalizeProductImagePath(value) || ''))
+      .filter(Boolean);
+
+    const unique = [...new Set(normalized)];
+    return unique.length > 0 ? unique : [PLACEHOLDER_IMAGE];
+  };
+
+  export const getItemImage = (item) => getItemImageCandidates(item)[0] || PLACEHOLDER_IMAGE;
   
   export const getItemPrice = (item) => {
     const price = item?.price ?? item?.productId?.price;
