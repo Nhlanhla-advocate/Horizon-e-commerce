@@ -74,10 +74,10 @@ export default function ResetPassword({ params }) {
                         <label className={styles.label}>New password</label>
                         <input
                             type="password"
-                            placeholder="Enter your new password"
                             className={styles.input}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
+                            autoComplete="new-password"
                             required
                         />
                     </div>
@@ -86,10 +86,10 @@ export default function ResetPassword({ params }) {
                         <label className={styles.label}>Repeat password</label>
                         <input
                             type="password"
-                            placeholder="Repeat your new password"
                             className={styles.input}
                             value={repeatPassword}
                             onChange={(e) => setRepeatPassword(e.target.value)}
+                            autoComplete="new-password"
                             required
                         />
                     </div>

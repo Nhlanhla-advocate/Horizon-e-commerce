@@ -7,6 +7,7 @@ import '../../assets/css/buttons.css';
 import Link from 'next/link';
 import { getLoginIpPayload } from '../../utils/clientIp';
 import AuthBrandPanel from '@/app/components/auth/AuthBrandPanel';
+import { blankAuthFieldProps, useBlankAuthForm } from '@/app/components/auth/useBlankAuthForm';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -17,6 +18,7 @@ const SuperAdminSignin = () => {
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+    const { formProps, locked, unlock } = useBlankAuthForm();
 
     useEffect(() => {
         const checkSuperAdminAuth = async () => {
@@ -129,18 +131,21 @@ const SuperAdminSignin = () => {
                         <h1 className={styles.title}>Super admin sign in</h1>
                         <p className={styles.subtitleMuted}>Sign in with a super admin account only.</p>
                         {error && <div className={styles.errorMessage}>{error}</div>}
-                        <form className={styles.form} onSubmit={handleSubmit}>
+                        <form className={styles.form} onSubmit={handleSubmit} {...formProps}>
                             <div className={styles.formGroup}>
                                 <label className={styles.label} htmlFor="super-admin-email">Email</label>
                                 <input
                                     className={styles.input}
                                     id="super-admin-email"
+                                    name="horizon-super-admin-email"
                                     type="email"
-                                    placeholder="Super admin email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
+                                    onFocus={unlock}
+                                    readOnly={locked}
+                                    autoComplete="off"
                                     required
-                                    autoComplete="email"
+                                    {...blankAuthFieldProps}
                                 />
                             </div>
                             <div className={styles.formGroup}>
@@ -149,12 +154,15 @@ const SuperAdminSignin = () => {
                                     <input
                                         className={styles.input}
                                         id="super-admin-password"
+                                        name="horizon-super-admin-password"
                                         type={showPassword ? 'text' : 'password'}
-                                        placeholder="Password"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
+                                        onFocus={unlock}
+                                        readOnly={locked}
+                                        autoComplete="new-password"
                                         required
-                                        autoComplete="current-password"
+                                        {...blankAuthFieldProps}
                                     />
                                     <button
                                         type="button"

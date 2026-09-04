@@ -288,6 +288,12 @@
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
+.input[readonly] {
+    background: #fff;
+    color: #0f172a;
+    cursor: text;
+}
+
 .input::placeholder {
     color: #94a3b8;
     opacity: 1;

@@ -6,6 +6,7 @@ import '../../assets/css/buttons.css';
 import Link from 'next/link';
 import { getLoginIpPayload } from '../../utils/clientIp';
 import AuthBrandPanel from '@/app/components/auth/AuthBrandPanel';
+import { blankAuthFieldProps, useBlankAuthForm } from '@/app/components/auth/useBlankAuthForm';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -18,6 +19,7 @@ const AdminSignin = () => {
     const [step, setStep] = useState('credentials');
     const [twoFactorToken, setTwoFactorToken] = useState('');
     const [totpCode, setTotpCode] = useState('');
+    const { formProps, locked, unlock } = useBlankAuthForm();
 
     useEffect(() => {
         // Always allow account switching from admin sign-in page.
@@ -204,17 +206,21 @@ const AdminSignin = () => {
                         {error && <div className={styles.errorMessage}>{error}</div>}
 
                         {step === 'credentials' ? (
-                            <form className={styles.form} onSubmit={handleSubmit}>
+                            <form className={styles.form} onSubmit={handleSubmit} {...formProps}>
                                 <div className={styles.formGroup}>
                                     <label className={styles.label} htmlFor="admin-email">Email</label>
                                     <input
                                         className={styles.input}
                                         id="admin-email"
+                                        name="horizon-admin-email"
                                         type="email"
-                                        placeholder="Enter admin email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
+                                        onFocus={unlock}
+                                        readOnly={locked}
+                                        autoComplete="off"
                                         required
+                                        {...blankAuthFieldProps}
                                     />
                                 </div>
                                 <div className={styles.formGroup}>
@@ -223,11 +229,15 @@ const AdminSignin = () => {
                                         <input
                                             className={styles.input}
                                             id="admin-password"
+                                            name="horizon-admin-password"
                                             type={showPassword ? 'text' : 'password'}
-                                            placeholder="Enter admin password"
                                             value={password}
                                             onChange={(e) => setPassword(e.target.value)}
+                                            onFocus={unlock}
+                                            readOnly={locked}
+                                            autoComplete="new-password"
                                             required
+                                            {...blankAuthFieldProps}
                                         />
                                         <button
                                             type="button"
@@ -267,14 +277,15 @@ const AdminSignin = () => {
                                     <input
                                         className={styles.input}
                                         id="admin-2fa-code"
+                                        name="horizon-admin-2fa"
                                         type="text"
                                         inputMode="numeric"
-                                        autoComplete="one-time-code"
-                                        placeholder="000000"
+                                        autoComplete="off"
                                         maxLength={6}
                                         value={totpCode}
                                         onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ''))}
                                         required
+                                        {...blankAuthFieldProps}
                                     />
                                 </div>
                                 <button className="button" type="submit" disabled={loading}>
