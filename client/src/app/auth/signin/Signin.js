@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import styles from '../../assets/css/auth.module.css';
 import '../../assets/css/buttons.css';
 import Link from 'next/link';
+import AuthBrandPanel from '@/app/components/auth/AuthBrandPanel';
 
 const Signin = () => {
     const [email, setEmail] = useState('');
@@ -115,21 +116,16 @@ const Signin = () => {
     return (
         <div className={styles.authPageWrapper}>
             <div className={styles.authSplit}>
-                <div className={styles.mediaPane}>
-                    <div className={styles.mediaImageWrapper}>
-                        <img src="/Pictures/Playstation 5 pro.jpg" alt="Promo" className={styles.mediaImage} />
-                        <div className={styles.mediaOverlay}>
-                            <h2 className={styles.mediaTitle}>Solar Vision</h2>
-                            <p className={styles.mediaSubtitle}>See the Sun, Own the Style</p>
-                        </div>
-                    </div>
-                </div>
+                <AuthBrandPanel
+                    title="Welcome back"
+                    subtitle="Sign in to manage your orders, wishlist, and checkout."
+                />
 
                 <div className={styles.formPane}>
                     <div className={styles.container}>
-                        <h2 className={styles.title}>Sign In</h2>
-                        <p className={styles.subtitle} style={{ marginBottom: '1.5rem', color: '#666', fontSize: '0.9rem' }}>
-                            Welcome back! Please sign in to your account.
+                        <h1 className={styles.title}>Sign in</h1>
+                        <p className={styles.subtitle}>
+                            Enter your email and password to continue.
                         </p>
                         {error && <div className={styles.errorMessage}>{error}</div>}
                         <form className={styles.form} onSubmit={handleSubmit}>

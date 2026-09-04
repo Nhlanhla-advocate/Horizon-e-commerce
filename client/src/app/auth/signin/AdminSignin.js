@@ -5,6 +5,7 @@ import styles from '../../assets/css/auth.module.css';
 import '../../assets/css/buttons.css';
 import Link from 'next/link';
 import { getLoginIpPayload } from '../../utils/clientIp';
+import AuthBrandPanel from '@/app/components/auth/AuthBrandPanel';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -180,25 +181,25 @@ const AdminSignin = () => {
     return (
         <div className={styles.authPageWrapper}>
             <div className={styles.authSplit}>
-                <div className={styles.mediaPane}>
-                    <div className={styles.mediaImageWrapper}>
-                        <img src="/Pictures/Playstation 5 pro.jpg" alt="Admin Access" className={styles.mediaImage} />
-                        <div className={styles.mediaOverlay}>
-                            <h2 className={styles.mediaTitle}>Admin Portal</h2>
-                            <p className={styles.mediaSubtitle}>Secure Admin Access</p>
-                        </div>
-                    </div>
-                </div>
+                <AuthBrandPanel
+                    title="Admin portal"
+                    subtitle="Sign in to manage products, orders, and customers."
+                    points={[
+                        'Staff access only',
+                        'Secure two-factor support',
+                        'Store operations in one place',
+                    ]}
+                />
 
                 <div className={styles.formPane}>
                     <div className={styles.container}>
-                        <h2 className={styles.title}>
-                            {step === 'twoFactor' ? 'Two-Factor Authentication' : 'Admin Sign In'}
-                        </h2>
-                        <p className={styles.subtitle} style={{ marginBottom: '1.5rem', color: '#666', fontSize: '0.9rem' }}>
+                        <h1 className={styles.title}>
+                            {step === 'twoFactor' ? 'Two-factor authentication' : 'Admin sign in'}
+                        </h1>
+                        <p className={styles.subtitle}>
                             {step === 'twoFactor'
                                 ? 'Enter the 6-digit code from your authenticator app.'
-                                : 'Access your admin dashboard'}
+                                : 'Use your staff email and password.'}
                         </p>
                         {error && <div className={styles.errorMessage}>{error}</div>}
 
@@ -251,10 +252,10 @@ const AdminSignin = () => {
                                 <button className="button" type="submit" disabled={loading}>
                                     {loading ? 'Signing in...' : 'Sign In'}
                                 </button>
-                                <div className={styles.authLinks} style={{ marginTop: '1rem' }}>
-                                    <p className={styles.signupRedirect} style={{ textAlign: 'center', fontSize: '0.875rem' }}>
-                                        <Link href="/" style={{ color: '#666', textDecoration: 'none' }}>
-                                            ← Back to Store
+                                <div className={styles.authLinks}>
+                                    <p className={styles.signupRedirect}>
+                                        <Link href="/" className={styles.authLinkSecondary}>
+                                            ← Back to store
                                         </Link>
                                     </p>
                                 </div>
@@ -279,12 +280,11 @@ const AdminSignin = () => {
                                 <button className="button" type="submit" disabled={loading}>
                                     {loading ? 'Verifying...' : 'Verify and sign in'}
                                 </button>
-                                <div className={styles.authLinks} style={{ marginTop: '1rem' }}>
+                                <div className={styles.authLinks}>
                                     <button
                                         type="button"
                                         className={styles.forgotPassword}
                                         onClick={handleBackToCredentials}
-                                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                                     >
                                         ← Back to sign in
                                     </button>

@@ -56,8 +56,12 @@ export default function ResetPassword({ params }) {
 
     return (
         <div className={styles.authCenter}>
-            <div className={styles.container}>
-                <h1 className={styles.title}>Reset Your Password</h1>
+            <div className={styles.centerCard}>
+                <div className={styles.compactBrand}>
+                    <Link href="/">Horizon</Link>
+                </div>
+                <h1 className={styles.title}>Reset password</h1>
+                <p className={styles.subtitle}>Choose a new password for your account.</p>
                 
                 {message && (
                     <div className={`${success ? styles.successMessage : styles.errorMessage}`}>
@@ -67,7 +71,7 @@ export default function ResetPassword({ params }) {
                 
                 <form onSubmit={handleReset} className={styles.form}>
                     <div className={styles.formGroup}>
-                        <label className={styles.label}>New Password</label>
+                        <label className={styles.label}>New password</label>
                         <input
                             type="password"
                             placeholder="Enter your new password"
@@ -79,7 +83,7 @@ export default function ResetPassword({ params }) {
                     </div>
 
                     <div className={styles.formGroup}>
-                        <label className={styles.label}>Repeat Password</label>
+                        <label className={styles.label}>Repeat password</label>
                         <input
                             type="password"
                             placeholder="Repeat your new password"
@@ -95,13 +99,13 @@ export default function ResetPassword({ params }) {
                         className="button"
                         disabled={loading}
                     >
-                        {loading ? 'Resetting...' : 'Reset Password'}
+                        {loading ? 'Resetting...' : 'Reset password'}
                     </button>
                 </form>
 
-                <div className={styles.forgotPassword}>
-                    Don't have an account? <Link href="/auth/signup">Sign Up</Link>
-                </div>
+                <p className={styles.loginRedirect}>
+                    <Link href="/auth/signin">← Back to sign in</Link>
+                </p>
             </div>
         </div>
     );
