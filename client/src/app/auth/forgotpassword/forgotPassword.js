@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import styles from '../../assets/css/auth.module.css';
 import '../../assets/css/buttons.css';
 
@@ -45,8 +46,14 @@ const ForgotPassword = () => {
 
   return (
     <div className={styles.authCenter}>
-      <div className={styles.container}>
-        <h2 className={styles.title}>Forgot Password</h2>
+      <div className={styles.centerCard}>
+        <div className={styles.compactBrand}>
+          <Link href="/">Horizon</Link>
+        </div>
+        <h1 className={styles.title}>Forgot password</h1>
+        <p className={styles.subtitle}>
+          Enter your email and we will send a reset link if an account exists.
+        </p>
         {error && <div className={styles.errorMessage}>{error}</div>}
         {success && <div className={styles.successMessage}>{success}</div>}
         <form className={styles.form} onSubmit={handleSubmit}>
@@ -64,8 +71,11 @@ const ForgotPassword = () => {
             />
           </div>
           <button className="button" type="submit" disabled={loading}>
-            {loading ? 'Sending...' : 'Send Reset Link'}
+            {loading ? 'Sending...' : 'Send reset link'}
           </button>
+          <p className={styles.loginRedirect}>
+            <Link href="/auth/signin">← Back to sign in</Link>
+          </p>
         </form>
       </div>
     </div>

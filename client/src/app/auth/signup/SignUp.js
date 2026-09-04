@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import styles from '../../assets/css/auth.module.css';
-import '../../assets/css/buttons.css'; 
+import '../../assets/css/buttons.css';
+import AuthBrandPanel from '@/app/components/auth/AuthBrandPanel'; 
 
 const SignUp = () => {
   const [username, setUsername] = useState("");
@@ -55,19 +57,15 @@ const SignUp = () => {
   return (
     <div className={styles.authPageWrapper}>
       <div className={styles.authSplit}>
-        <div className={styles.mediaPane}>
-          <div className={styles.mediaImageWrapper}>
-            <img src="/Pictures/Playstation 5 disk.jpg" alt="Promo" className={styles.mediaImage} />
-            <div className={styles.mediaOverlay}>
-              <h2 className={styles.mediaTitle}>Solar Vision</h2>
-              <p className={styles.mediaSubtitle}>Join and Own the Style</p>
-            </div>
-          </div>
-        </div>
+        <AuthBrandPanel
+          title="Create your account"
+          subtitle="Join Horizon to save your cart, track orders, and checkout faster."
+        />
 
         <div className={styles.formPane}>
           <div className={styles.container}>
-            <h2 className={styles.title}>Sign Up</h2>
+            <h1 className={styles.title}>Sign up</h1>
+            <p className={styles.subtitle}>Fill in your details to get started.</p>
             {error && <div className={styles.errorMessage}>{error}</div>}
             <form onSubmit={handleSubmit} className={styles.form}>
               <div className={styles.formGroup}>
@@ -130,7 +128,7 @@ const SignUp = () => {
                 {loading ? "Signing Up..." : "Sign Up"}
               </button>
               <p className={styles.loginRedirect}>
-                already have an account? <a href="/auth/signin">Signin</a>
+                Already have an account? <Link href="/auth/signin">Sign in</Link>
               </p>
             </form>
           </div>

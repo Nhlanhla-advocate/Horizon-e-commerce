@@ -6,6 +6,7 @@ import styles from '../../assets/css/auth.module.css';
 import '../../assets/css/buttons.css';
 import Link from 'next/link';
 import { getLoginIpPayload } from '../../utils/clientIp';
+import AuthBrandPanel from '@/app/components/auth/AuthBrandPanel';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -113,20 +114,20 @@ const SuperAdminSignin = () => {
     return (
         <div className={styles.authPageWrapper}>
             <div className={styles.authSplit}>
-                <div className={styles.mediaPane}>
-                    <div className={styles.mediaImageWrapper}>
-                        <img src="/Pictures/Playstation 5 pro.jpg" alt="Super Admin" className={styles.mediaImage} />
-                        <div className={styles.mediaOverlay}>
-                            <h2 className={styles.mediaTitle}>Super Admin</h2>
-                            <p className={styles.mediaSubtitle}>Restricted access</p>
-                        </div>
-                    </div>
-                </div>
+                <AuthBrandPanel
+                    title="Super admin"
+                    subtitle="Restricted access for store ownership and security controls."
+                    points={[
+                        'Super admin accounts only',
+                        'Staff should use the admin portal',
+                        'Changes are audited',
+                    ]}
+                />
 
                 <div className={styles.formPane}>
                     <div className={styles.container}>
-                        <h2 className={styles.title}>Super Admin Sign In</h2>
-                        <p className={styles.subtitleMuted}>Sign in with a super_admin account only</p>
+                        <h1 className={styles.title}>Super admin sign in</h1>
+                        <p className={styles.subtitleMuted}>Sign in with a super admin account only.</p>
                         {error && <div className={styles.errorMessage}>{error}</div>}
                         <form className={styles.form} onSubmit={handleSubmit}>
                             <div className={styles.formGroup}>
@@ -184,7 +185,7 @@ const SuperAdminSignin = () => {
                                         Admin sign in
                                     </Link>
                                     <Link href="/" className={styles.authLinkSecondary}>
-                                        ← Back to Store
+                                        ← Back to store
                                     </Link>
                                 </p>
                             </div>
@@ -195,3 +196,5 @@ const SuperAdminSignin = () => {
         </div>
     );
 }
+
+export default SuperAdminSignin;
