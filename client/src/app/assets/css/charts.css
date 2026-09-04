@@ -448,4 +448,45 @@
   height: 100% !important;
   min-height: 150px !important;
 }
+
+.charts-pie-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.charts-pie-plot {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.charts-pie-legend {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.3rem 0.7rem;
+  margin: 0;
+  padding: 0.35rem 0.15rem 0;
+  flex-shrink: 0;
+}
+
+.charts-pie-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.7rem;
+  line-height: 1.2;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.charts-pie-legend-swatch {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
   

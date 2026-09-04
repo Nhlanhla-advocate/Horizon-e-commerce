@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from '../../assets/css/auth.module.css';
 import '../../assets/css/buttons.css';
-import AuthBrandPanel from '@/app/components/auth/AuthBrandPanel'; 
+import AuthBrandPanel from '@/app/components/auth/AuthBrandPanel';
+import { blankAuthFieldProps, useBlankAuthForm } from '@/app/components/auth/useBlankAuthForm'; 
 
 const SignUp = () => {
   const [username, setUsername] = useState("");
@@ -15,6 +16,7 @@ const SignUp = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { formProps, locked, unlock } = useBlankAuthForm();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -67,17 +69,21 @@ const SignUp = () => {
             <h1 className={styles.title}>Sign up</h1>
             <p className={styles.subtitle}>Fill in your details to get started.</p>
             {error && <div className={styles.errorMessage}>{error}</div>}
-            <form onSubmit={handleSubmit} className={styles.form}>
+            <form onSubmit={handleSubmit} className={styles.form} {...formProps}>
               <div className={styles.formGroup}>
                 <label htmlFor="username" className={styles.label}>Username</label>
                 <input
                   type="text"
                   id="username"
-                  placeholder="Enter your username"
+                  name="horizon-username"
                   className={styles.input}
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
+                  onFocus={unlock}
+                  readOnly={locked}
+                  autoComplete="off"
                   required
+                  {...blankAuthFieldProps}
                 />
               </div>
               <div className={styles.formGroup}>
@@ -85,11 +91,15 @@ const SignUp = () => {
                 <input
                   type="email"
                   id="email"
-                  placeholder="Enter your email"
+                  name="horizon-signup-email"
                   className={styles.input}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onFocus={unlock}
+                  readOnly={locked}
+                  autoComplete="off"
                   required
+                  {...blankAuthFieldProps}
                 />
               </div>
               <div className={styles.formGroup}>
@@ -98,11 +108,15 @@ const SignUp = () => {
                   <input
                     type={showPassword ? "text" : "password"}
                     id="password"
-                    placeholder="Enter your password"
+                    name="horizon-signup-password"
                     className={styles.input}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    onFocus={unlock}
+                    readOnly={locked}
+                    autoComplete="new-password"
                     required
+                    {...blankAuthFieldProps}
                   />
                   <button
                     type="button"

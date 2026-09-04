@@ -4,12 +4,14 @@ import { useState } from 'react';
 import Link from 'next/link';
 import styles from '../../assets/css/auth.module.css';
 import '../../assets/css/buttons.css';
+import { blankAuthFieldProps, useBlankAuthForm } from '@/app/components/auth/useBlankAuthForm';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const { formProps, locked, unlock } = useBlankAuthForm();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -56,18 +58,21 @@ const ForgotPassword = () => {
         </p>
         {error && <div className={styles.errorMessage}>{error}</div>}
         {success && <div className={styles.successMessage}>{success}</div>}
-        <form className={styles.form} onSubmit={handleSubmit}>
+        <form className={styles.form} onSubmit={handleSubmit} {...formProps}>
           <div className={styles.formGroup}>
             <label className={styles.label} htmlFor="email">Email</label>
             <input
               className={styles.input}
               id="email"
-              name="email"
+              name="horizon-reset-email"
               type="email"
-              placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onFocus={unlock}
+              readOnly={locked}
+              autoComplete="off"
               required
+              {...blankAuthFieldProps}
             />
           </div>
           <button className="button" type="submit" disabled={loading}>

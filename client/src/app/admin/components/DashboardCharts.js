@@ -161,7 +161,7 @@ export default function DashboardCharts({ showCharts = null }) {
     ? (chartData?.revenueOverTime?.length > 0 ? chartData.revenueOverTime : placeholderData)
     : (chartData?.revenueOverTime || []);
 
-  // Determine which charts to show
+  const statusTotal = orderStatusData.reduce((sum, entry) => sum + Number(entry.value || 0), 0);
   const showAll = !showCharts || showCharts.length === 0;
   const showRevenue = showAll || showCharts.includes('revenue');
   const showOrders = showAll || showCharts.includes('orders');
@@ -325,35 +325,51 @@ if (showCharts && showCharts.length > 0 && !showAll) {
               </button>
             </div>
           ) : orderStatusData.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%" className="charts-4box-responsive">
-              <PieChart>
-                <Pie
-                  data={orderStatusData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={55}
-                  dataKey="value"
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                >
-                  {orderStatusData.map((entry, i) => (
-                    <Cell
-                      key={i}
-                      fill={statusColors[entry.name.toLowerCase()] || COLORS.categories[i % COLORS.categories.length]}
+            <div className="charts-pie-layout">
+              <div className="charts-pie-plot">
+                <ResponsiveContainer width="100%" height="100%" className="charts-4box-responsive">
+                  <PieChart margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
+                    <Pie
+                      data={orderStatusData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={22}
+                      outerRadius={52}
+                      paddingAngle={2}
+                      dataKey="value"
+                      nameKey="name"
+                      label={false}
+                      labelLine={false}
+                    >
+                      {orderStatusData.map((entry, i) => (
+                        <Cell
+                          key={entry.name}
+                          fill={statusColors[entry.name.toLowerCase()] || COLORS.categories[i % COLORS.categories.length]}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(value, name) => {
+                        const percent = statusTotal ? Math.round((Number(value) / statusTotal) * 100) : 0;
+                        return [`${value} (${percent}%)`, name];
+                      }}
                     />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend 
-                  verticalAlign="bottom" 
-                  height={36}
-                  formatter={(value, entry) => {
-                    const statusLower = value.toLowerCase();
-                    const color = statusColors[statusLower] || entry.color;
-                    return <span style={{ color }}>{value}</span>;
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <ul className="charts-pie-legend">
+                {orderStatusData.map((entry, i) => {
+                  const color = statusColors[entry.name.toLowerCase()] || COLORS.categories[i % COLORS.categories.length];
+                  const percent = statusTotal ? Math.round((Number(entry.value) / statusTotal) * 100) : 0;
+                  return (
+                    <li key={entry.name} className="charts-pie-legend-item">
+                      <span className="charts-pie-legend-swatch" style={{ backgroundColor: color }} />
+                      <span>{entry.name} {percent}%</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
           ) : (
             <div className="charts-empty charts-empty-compact">
               No order data available

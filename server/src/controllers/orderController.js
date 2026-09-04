@@ -14,19 +14,29 @@ function toCustomerObjectId(userId) {
   return new mongoose.Types.ObjectId(raw);
 }
 
-function productImageFrom(product, fallback) {
-  if (typeof fallback === 'string' && fallback.trim()) return fallback.trim();
-  if (Array.isArray(product?.images) && typeof product.images[0] === 'string' && product.images[0].trim()) {
-    return product.images[0].trim();
-} 
-if (typeof product?.image === 'string' && product.image.trim()) return 
-product.image.trim();
-return '';
+function collectProductImages(product, fallback) {
+  const collected = [];
+  const pushImage = (value) => {
+    if (typeof value !== 'string') return;
+    const trimmed = value.trim();
+    if (trimmed && !collected.includes(trimmed)) collected.push(trimmed);
+  };
+
+  pushImage(fallback);
+  if (Array.isArray(product?.images)) {
+    product.images.forEach(pushImage);
+  }
+  pushImage(product?.image);
+  return collected;
 }
 
 function serializeOrderItem(item = {}) {
-  const product = item.productId && typeof item.productId === 'object' && item.productId._id ? item.productId : null;
+  const product =
+    item.productId && typeof item.productId === 'object' && item.productId._id
+      ? item.productId
+      : null;
   const productId = product?._id || item.productId;
+  const images = collectProductImages(product, item.image);
 
   return {
     _id: item._id,
@@ -34,7 +44,8 @@ function serializeOrderItem(item = {}) {
     name: item.name || product?.name || 'Product',
     price: item.price != null ? Number(item.price) : Number(product?.price) || 0,
     quantity: Number(item.quantity) || 0,
-    image: productImageFrom(product, item.image),
+    image: images[0] || '',
+    images,
   };
 }
 
@@ -123,7 +134,7 @@ exports.getOrderHistory = async (req, res) => {
     console.log("Fetching order history for customer:", customerId);
 
     const orders = await Order.find({ customerId })
-      .populate("items.productId", "name price images")
+      .populate("items.productId", "name price images image")
       .sort({ createdAt: -1 })
       .lean();
 
@@ -146,7 +157,7 @@ exports.getOrder = async (req, res, next) => {
 
     const order = await Order.findById(id)
       .populate("customerId", "username email")
-      .populate("items.productId", "name price images");
+      .populate("items.productId", "name price images image");
 
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
