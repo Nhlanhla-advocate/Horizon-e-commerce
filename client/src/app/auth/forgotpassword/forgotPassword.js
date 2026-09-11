@@ -5,6 +5,7 @@ import Link from 'next/link';
 import styles from '../../assets/css/auth.module.css';
 import '../../assets/css/buttons.css';
 import { blankAuthFieldProps, useBlankAuthForm } from '@/app/components/auth/useBlankAuthForm';
+import { getUserApiBaseUrl } from '@/app/utils/userAuthFetch';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -20,7 +21,8 @@ const ForgotPassword = () => {
     setSuccess(null);
 
     try {
-      const response = await fetch('http://localhost:5000/auth/forgot-password', {
+      const apiBase = getUserApiBaseUrl().replace(/\/$/, '');
+      const response = await fetch(`${apiBase}/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),

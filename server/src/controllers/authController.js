@@ -360,10 +360,13 @@ exports.forgotPassword = async (req, res) => {
 
     await user.save({ validateBeforeSave: false });
 
-    // Create reset URL
-    const resetUrl = `${req.protocol}://${req.get(
-      'host'
-    )}/auth/reset-password/${resetToken}`;
+    // Email links must open the Next.js app, not the API host
+    const frontendBase = (
+      process.env.FRONTEND_URL ||
+      process.env.CLIENT_URL ||
+      'http://localhost:3000'
+    ).replace(/\/$/, '');
+    const resetUrl = `${frontendBase}/auth/resetpassword/${resetToken}`;
 
     // Create email message
     const message = {
