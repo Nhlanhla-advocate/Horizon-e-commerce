@@ -11,7 +11,8 @@ export default function layouClient({ children }) {
     pathname === '/auth/signin' ||
     pathname === '/auth/signup' ||
     pathname === '/auth/forgotpassword' ||
-    pathname === '/auth/resetpassword';
+    pathname === '/auth/resetpassword' ||
+    pathname?.startsWith('/auth/resetpassword/');
 
     if (isAuthPage) {
         return <div className= 'auth-layout'>{children}</div>;
