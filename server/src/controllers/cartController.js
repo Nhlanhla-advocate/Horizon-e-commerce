@@ -2,15 +2,17 @@ const Cart = require('../models/cart');
 const Product = require('../models/product');
 const Order = require('../models/order');
 const { recordUserOrder } = require('../utilities/userActivity');
-const User = require('../models/user');
 const mongoose = require('mongoose');
 const { recalculateDocumentTotal, sumLineItems } = require('../utilities/cartTotals');
 
-
+function authenticatedCustomerId(req) {
+    return req.user?._id || null;
+}
 
 // Add item to the cart
 exports.addToCart = async (req, res) => {
-    const { userId, productId, quantity, items } = req.body;
+    const userId = authenticatedCustomerId(req);
+    const { productId, quantity, items } = req.body;
     try {
         console.log(`[CART:add] Attempting add for customerId=${userId}`);
         
@@ -46,23 +48,8 @@ exports.addToCart = async (req, res) => {
             });
         }
         
-        // Check if userId is provided
         if (!userId) {
-            console.warn('[CART:add] Missing userId in request', { productId: productIdToAdd });
-            return res.status(400).json({ 
-                message: 'User ID is required',
-                suggestion: 'Send userId in the request body'
-            });
-        }
-        
-        // Validate userId format
-        if (!mongoose.Types.ObjectId.isValid(userId)) {
-            console.warn('[CART:add] Invalid userId format', { userId, productId: productIdToAdd });
-            return res.status(400).json({ 
-                message: 'Invalid user ID format',
-                receivedId: userId,
-                suggestion: 'User ID should be a 24-character hexadecimal string'
-            });
+            return res.status(401).json({ message: 'Authentication required' });
         }
         
         // Check if quantity is valid
@@ -167,11 +154,15 @@ function findCartLineItemIndex(items, productIdInput) {
 
 // Removing a single item from the cart
 exports.removeFromCart = async (req, res) => {
-    const { userId, productId } = req.body;
+    const userId = authenticatedCustomerId(req);
+    const { productId } = req.body;
 
     try {
-        if (!userId || !productId) {
-            return res.status(400).json({ message: 'userId and productId are required' });
+        if (!userId) {
+            return res.status(401).json({ message: 'Authentication required' });
+        }
+        if (!productId) {
+            return res.status(400).json({ message: 'productId is required' });
         }
         const cart = await Cart.findOne({ customerId: userId });
         if (!cart) {
@@ -194,9 +185,13 @@ exports.removeFromCart = async (req, res) => {
 
 // Remove multiple items from the cart
 exports.removeMultipleItems = async (req, res) => {
-    const { userId, productIds } = req.body;
+    const userId = authenticatedCustomerId(req);
+    const { productIds } = req.body;
 
     try {
+        if (!userId) {
+            return res.status(401).json({ message: 'Authentication required' });
+        }
         const cart = await Cart.findOne({ customerId: userId});
         if (!cart) {
             return res.status(404).json({ message: 'Cart not found'});
@@ -219,12 +214,15 @@ exports.removeMultipleItems = async (req, res) => {
 
     // Clear the cart
     exports.clearCart = async (req, res) => {
-        const { userId } = req.body;
+        const userId = authenticatedCustomerId(req);
 
         try {
+            if (!userId) {
+                return res.status(401).json({ message: 'Authentication required' });
+            }
             const cart = await Cart.findOne({ customerId: userId });
             if (!cart) {
-            return res.status(404).json({ message: 'Cart not found'});
+            return res.status(200).json({ message: 'Cart cleared successfully', items: [], totalPrice: 0 });
         }
 
         cart.items = [];
@@ -237,11 +235,14 @@ exports.removeMultipleItems = async (req, res) => {
     }
  };
 
-    // Get customer cart and make it persistent even when a user logs out
+    // Get the authenticated customer's cart
     exports.getCart = async (req, res) => {
-        const { userId } = req.params;
+        const userId = authenticatedCustomerId(req);
 
         try {
+            if (!userId) {
+                return res.status(401).json({ message: 'Authentication required' });
+            }
             const cart = await Cart.findOne({ customerId: userId }).populate('items.productId');
             if (!cart) {
                 return res.status(404).json({ message: 'Cart not found' });
@@ -286,10 +287,14 @@ exports.removeMultipleItems = async (req, res) => {
 
 // Update quantity of a cart item
 exports.updateItemQuantity = async (req, res) => {
-    const { userId, productId, quantity } = req.body;
+    const userId = authenticatedCustomerId(req);
+    const { productId, quantity } = req.body;
     try {
-        if (!userId || !productId || typeof quantity !== 'number') {
-            return res.status(400).json({ message: 'userId, productId and numeric quantity are required' });
+        if (!userId) {
+            return res.status(401).json({ message: 'Authentication required' });
+        }
+        if (!productId || typeof quantity !== 'number') {
+            return res.status(400).json({ message: 'productId and numeric quantity are required' });
         }
 
         const cart = await Cart.findOne({ customerId: userId });
@@ -402,6 +407,27 @@ exports.createOrderFromCart = async (userId, options = {}) => {
     } catch (error) {
         console.error('Error creating order from cart:', error);
         throw error;
+    }
+};
+
+exports.checkoutCart = async (req, res) => {
+    try {
+        const userId = authenticatedCustomerId(req);
+        if (!userId) {
+            return res.status(401).json({ message: 'Authentication required' });
+        }
+        const order = await exports.createOrderFromCart(userId);
+        res.status(200).json({ message: 'Order created successfully', order });
+    } catch (error) {
+        console.error('Checkout error:', error);
+        const clientError =
+            error.message === 'Cart not found' ||
+            error.message === 'Cart is empty' ||
+            String(error.message || '').startsWith('Insufficient stock');
+        res.status(clientError ? 400 : 500).json({
+            message: 'Error creating order from cart',
+            error: error.message,
+        });
     }
 };
   

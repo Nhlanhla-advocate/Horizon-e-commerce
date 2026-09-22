@@ -309,7 +309,6 @@ const validateGuestOrder = [
 ];
 
 const validateNewOrder = [
-  body("customerId").isMongoId().withMessage("Invalid customer ID."),
   body("items")
     .isArray()
     .withMessage("Items must be an array.")

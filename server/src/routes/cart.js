@@ -1,50 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const cartController = require('../controllers/cartController');
-// Add item to cart
+const { authMiddleware } = require('../middleware/authMiddleware');
+
+router.use(authMiddleware);
+
 router.post('/add', cartController.addToCart);
-
-// Remove a single item from cart
 router.post('/remove', cartController.removeFromCart);
-
-// Update item quantity
 router.post('/update-quantity', cartController.updateItemQuantity);
-
-// Clear cart by user/guest id
-router.delete('/clear/:userId', async (req, res) => {
-    try {
-        const { userId } = req.params;
-        const cart = await require('../models/cart').findOne({ customerId: userId });
-        if (!cart) {
-            return res.status(404).json({ message: 'Cart not found' });
-        }
-        cart.items = [];
-        cart.totalPrice = 0;
-        await cart.save();
-        return res.status(200).json({ message: 'Cart cleared successfully' });
-    } catch (error) {
-        return res.status(500).json({ message: 'Error clearing cart', error: error.message });
-    }
-});
-
-// Keep customer cart even when a user logs out
+router.delete('/clear/:userId', cartController.clearCart);
+router.delete('/clear', cartController.clearCart);
+router.post('/checkout/:userId', cartController.checkoutCart);
+router.post('/checkout', cartController.checkoutCart);
 router.get('/:userId', cartController.getCart);
-
-// Convert cart items to an order
-router.post('/checkout/:userId', async (req, res) => {
-    console.log('Checkout route hit with userId:', req.params.userId);
-    try {
-        const { userId } = req.params;
-        const order = await cartController.createOrderFromCart(userId);
-        res.status(200).json({ message: 'Order created successfully', order });
-    } catch (error) {
-        console.error('Checkout error:', error);
-        res.status(500).json({ 
-            message: 'Error creating order from cart', 
-            error: error.message 
-        });
-    }
-});
+router.get('/', cartController.getCart);
 
 module.exports = router;
-
