@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { body } = require("express-validator");
-const { validateGuestOrder, validateNewOrder } = require('../utilities/validation');
+const { validateNewOrder, handleValidationErrors } = require('../utilities/validation');
 
 const {
   createOrder,
@@ -13,20 +12,17 @@ const {
   getOrderAnalytics,
   createGuestOrder,
 } = require("../controllers/orderController");
-const { authMiddleware } = require("../middleware/authMiddleware");
+const { authMiddleware, isAdmin } = require("../middleware/authMiddleware");
 
-// Route for creating orders
-router.post("/create", validateNewOrder, createOrder);
-router.post("/bulk", createBulkOrder);
-router.post("/create-guest-order", validateGuestOrder, createGuestOrder);
+router.post("/create", authMiddleware, validateNewOrder, handleValidationErrors, createOrder);
+router.post("/bulk", authMiddleware, createBulkOrder);
+router.post("/create-guest-order", createGuestOrder);
 
-// Routes for information
-router.get("/analytics/all", authMiddleware, getOrderAnalytics);
+router.get("/analytics/all", authMiddleware, isAdmin, getOrderAnalytics);
 router.get("/history", authMiddleware, getOrderHistory);
 
-// Parameter routes last
 router.get("/:id", authMiddleware, getOrder);
-router.patch("/update/:orderId", updateOrderStatus);
+router.patch("/update/:orderId", authMiddleware, isAdmin, updateOrderStatus);
 router.delete("/:id/cancel", authMiddleware, cancelOrder);
 
 module.exports = router;

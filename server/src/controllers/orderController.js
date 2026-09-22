@@ -61,12 +61,11 @@ function serializeCustomerOrder(order) {
 
 exports.createOrder = async (req, res, next) => {
   try {
-    const { items, customerId } = req.body;
+    const { items } = req.body;
+    const customerId = req.user?._id;
 
-    console.log("Received customerId:", customerId);
-    
     if (!customerId) {
-      return res.status(400).json({ message: "customerId is required" });
+      return res.status(401).json({ message: "Authentication required" });
     }
 
     const user = await User.findById(customerId).select("username email");
@@ -267,13 +266,17 @@ exports.cancelOrder = async (req, res, next) => {
 
 exports.createBulkOrder = async (req, res, next) => {
   try {
+    const userId = req.user?._id;
+    if (!userId) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+
     if (!isStripeConfigured()) {
       return res.status(503).json({ message: 'Stripe is not configured' });
     }
 
     const stripe = getStripeClient();
     const { items, shippingAddress, paymentMethod, paymentToken } = req.body;
-    const userId = req.user?._id;
 
     const { totalPrice, processedItems } = await calculateTotalPriceAndValidateStock(items);
     const currency = (process.env.STRIPE_CURRENCY || 'zar').toLowerCase();
@@ -411,67 +414,11 @@ exports.getOrderAnalytics = async (req, res, next) => {
 };
 
 
-exports.createGuestOrder = async (req, res, next) => {
-  try {
-    const { items, customerDetails } = req.body;
-
-    if (!customerDetails || !customerDetails.email || !customerDetails.name || !customerDetails.address) {
-      return res.status(400).json({ 
-        message: "Customer details (name, email, and address) are required" 
-      });
-    }
-
-    let totalPrice = 0;
-    let formattedItems = [];
-
-    for (let item of items) {
-      const product = await Product.findById(item.productId);
-      if (!product) {
-        return res.status(404).json({ message: `Product ${item.productId} not found` });
-      }
-      if (product.stock < item.quantity) {
-        return res.status(400).json({ message: `Insufficient stock for product ${item.productId}` });
-      }
-
-      totalPrice += product.price * item.quantity;
-
-      formattedItems.push({
-        productId: item.productId,
-        name: product.name,
-        price: product.price,
-        quantity: item.quantity
-      });
-    }
-
-    // Create a temporary guest user ID
-    const guestId = new mongoose.Types.ObjectId();
-
-    const newOrder = new Order({
-      customerId: guestId, 
-      items: formattedItems,
-      totalPrice,
-      status: "pending",
-      isGuestOrder: true,
-      guestDetails: customerDetails 
-    });
-
-    const savedOrder = await newOrder.save();
-
-    // Update product stock
-    for (let item of formattedItems) {
-      await Product.findByIdAndUpdate(item.productId, {
-        $inc: { stock: -item.quantity }
-      });
-    }
-
-    res.status(201).json({
-      message: "Guest order created successfully",
-      order: savedOrder
-    });
-  } catch (error) {
-    console.error("Guest order creation error:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
+exports.createGuestOrder = async (req, res) => {
+  return res.status(401).json({
+    success: false,
+    message: "Guest checkout is not available. Sign in to place an order.",
+  });
 };
 
 // Get all orders with filters (Admin only)
