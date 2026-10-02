@@ -17,7 +17,7 @@ import {
 } from 'recharts';
 import '../../../assets/css/charts.css';
 
-const BASE_URL = 'http://localhost:5000';
+const getBaseUrl = () => (typeof window !== 'undefined' ? '' : 'http://localhost:5000');
 
 const COLORS = {
     revenue: '#3b82f6',
@@ -27,30 +27,6 @@ const COLORS = {
     gradientEnd: '#60a5fa'
 };
 
-//Generate placeholder data for revenue charts
-const generatePlaceholderData = (days = 30) => {
-    const data = [];
-    const today = new Date();
-
-    for (let i = days - 1; i >= 0; i--) {
-        const date = new Date(today);
-        date.setDate(date.getDate() - i);
-
-        //Generate realistic-looking data with some variation
-        const baseRevenue = 5000 + Math.random() * 3000;
-        const baseOrders = 10 + Math.floor(Math.random() * 15);
-
-        data.push({
-            date: date.toISOString().split('T')[0],
-            revenue: Math.round(baseRevenue + Math.sin(i/5) * 1000),
-            orders: baseOrders,
-            avgOrderValue: Math.round((baseRevenue + Math.sin(i / 5) * 1000) / baseOrders)
-        });
-    }
-
-    return data;
-};
-
 export default function RevenueCharts() {
     const [chartData, setChartData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -58,16 +34,14 @@ export default function RevenueCharts() {
     const [period, setPeriod] = useState('30');
     const [summary, setSummary] = useState(null);
 
-    //Generate placeholder data
-    const placeholderData = generatePlaceholderData(parseInt(period));
-    
     const fetchChartData = async () => {
         try {
             setLoading(true);
             setError(null);
+            setSummary(null);
 
             const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
-            const response = await fetch(`${BASE_URL}/dashboard/charts?period=${period}`, {
+            const response = await fetch(`${getBaseUrl()}/dashboard/charts?period=${period}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -105,16 +79,6 @@ export default function RevenueCharts() {
         } catch (err) {
             setError(err.message);
             console.error('Error fetching chart data:', err);
-            //Use placeholder data on error
-            const totalRevenue = placeholderData.reduce((sum, item) => sum + item.revenue, 0);
-            const totalOrders = placeholderData.reduce((sum, item) => sum + item.orders, 0);
-            setSummary({
-                totalRevenue,
-                totalOrders,
-                avgOrderValue: totalOrders > 0 ? totalRevenue / totalOrders : 0,
-                maxRevenue: Math.max(...placeholderData.map(item => item.revenue)),
-                minRevenue: Math.min(...placeholderData.map(item => item.revenue))
-            });
         } finally {
             setLoading(false);
         }
@@ -138,10 +102,11 @@ export default function RevenueCharts() {
         return date.toLocaleDateString('en-ZA', { month: 'short', day: 'numeric' });
     };
 
-    //Use actual data if available, otherwise use placeholder
-    const revenueData = chartData?.revenueOverTime?.length > 0
+    const revenueData = (chartData?.revenueOverTime || []).some(
+        (item) => Number(item.revenue) > 0 || Number(item.orders) > 0
+    )
         ? chartData.revenueOverTime
-        : placeholderData;
+        : [];
 
     //Calculate revenue with orders for combined chart
     const combinedData = revenueData.map(item => ({

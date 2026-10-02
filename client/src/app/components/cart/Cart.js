@@ -3,12 +3,33 @@ import React, { createContext, useState, useContext, useEffect, useCallback, use
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useLocale } from '@/app/i18n/LocaleProvider';
+import { fetchWithUserAuth } from '@/app/utils/userAuthFetch';
 
 const CartContext = createContext();
 export const useCart = () => useContext(CartContext);
 
-// Backend base URL 
-const BASE_URL = 'http://localhost:5000';
+function hasUserSession() {
+  if (typeof window === 'undefined') return false;
+  return Boolean(localStorage.getItem('token') && localStorage.getItem('userId'));
+}
+
+function getSessionUserId() {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('userId');
+}
+
+function readLocalCart() {
+  if (typeof window === 'undefined') return { items: [], totalPrice: 0 };
+  const raw = localStorage.getItem('localCart');
+  if (!raw) return { items: [], totalPrice: 0 };
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && Array.isArray(parsed.items)) return parsed;
+  } catch {
+    // ignore invalid local cart JSON
+  }
+  return { items: [], totalPrice: 0 };
+}
 
 const normalizeCartImageSrc = (src) => {
   if (!src || typeof src !== 'string') return '/file.svg';
@@ -100,9 +121,11 @@ export const CartProvider = ({ children }) => {
   const [showAddedToast, setShowAddedToast] = useState(false);
   const [addedItem, setAddedItem] = useState(null);
 
-  const refreshCartFromServer = useCallback(async (cartId) => {
+  const refreshCartFromServer = useCallback(async () => {
+    if (!hasUserSession()) return;
+    const userId = getSessionUserId();
     try {
-      const res = await fetch(`${BASE_URL}/cart/${cartId}`);
+      const res = await fetchWithUserAuth(`/cart/${userId}`);
       if (!res.ok) return;
       const data = await res.json();
       setCart(data);
@@ -121,89 +144,56 @@ export const CartProvider = ({ children }) => {
     return next;
   }, []);
 
-  // Fetch cart from Express backend
+  // Fetch cart from Express backend when signed in; guests stay on localStorage only
   const fetchCart = useCallback(async () => {
     console.log('fetchCart called');
-    const userId = localStorage.getItem('userId');
-    const guestId = getGuestId();
-    
-    // Always try to fetch from server first (either user cart or guest cart)
-    const cartId = userId || guestId;
-    
+
+    if (!hasUserSession()) {
+      setCart(readLocalCart());
+      setIsLoading(false);
+      return;
+    }
+
+    const userId = getSessionUserId();
+
     try {
-      const res = await fetch(`${BASE_URL}/cart/${cartId}`);
-      if(res.ok) {
+      const res = await fetchWithUserAuth(`/cart/${userId}`);
+      if (res.ok) {
         const data = await res.json();
         setCart(data);
-        // Update localStorage for cross-browser consistency
         localStorage.setItem('localCart', JSON.stringify(data));
         console.log('Cart fetched from server and synced to localStorage');
       } else if (res.status === 404) {
-        console.log('No cart found on server, checking localStorage...');
-        // Check localStorage for existing cart data
-        if (typeof window !== 'undefined') {
-          const localCart = localStorage.getItem('localCart');
-          if (localCart) {
+        const parsedCart = readLocalCart();
+        setCart(parsedCart);
+        if (parsedCart.items.length > 0) {
+          console.log('No server cart yet; syncing local cart for signed-in user...');
+          for (const item of parsedCart.items) {
             try {
-              const parsedCart = JSON.parse(localCart);
-              if (parsedCart.items && parsedCart.items.length > 0) {
-                console.log('Found existing cart in localStorage, using it');
-                setCart(parsedCart);
-                // Try to sync this cart to server for cross-browser persistence
-                if (guestId && !userId) {
-                  console.log('Syncing localStorage cart to server for guest user...');
-                  for (const item of parsedCart.items) {
-                    try {
-                      await fetch(`${BASE_URL}/cart/add`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                          userId: guestId, 
-                          productId: normalizeProductId(item.productId), 
-                          quantity: item.quantity 
-                        }),
-                      });
-                    } catch (e) {
-                      console.error('Error syncing item to server:', e);
-                    }
-                  }
-                }
-              } else {
-                console.log('No items in localStorage cart, initializing empty cart');
-                setCart({ items: [], totalPrice: 0 });
-              }
+              await fetchWithUserAuth('/cart/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  productId: normalizeProductId(item.productId),
+                  quantity: item.quantity,
+                }),
+              });
             } catch (e) {
-              console.error('Error parsing local cart:', e);
-              setCart({ items: [], totalPrice: 0 });
+              console.error('Error syncing item to server:', e);
             }
-          } else {
-            console.log('No cart found in localStorage, initializing empty cart');
-            setCart({ items: [], totalPrice: 0 });
           }
+          await refreshCartFromServer();
         }
+      } else {
+        setCart(readLocalCart());
       }
     } catch (err) {
       console.error('Error fetching cart:', err);
-      // On error, try to get from localStorage as fallback
-      if (typeof window !== 'undefined') {
-        const localCart = localStorage.getItem('localCart');
-        if (localCart) {
-          try {
-            const parsedCart = JSON.parse(localCart);
-            setCart(parsedCart);
-            console.log('Using localStorage cart as fallback due to server error');
-          } catch (e) {
-            console.error('Error parsing local cart:', e);
-            setCart({ items: [], totalPrice: 0 });
-          }
-        } else {
-          setCart({ items: [], totalPrice: 0 });
-        }
-      }
+      setCart(readLocalCart());
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [refreshCartFromServer]);
 
   useEffect(() => {
     console.log('useEffect fetchCart triggered');
@@ -213,66 +203,38 @@ export const CartProvider = ({ children }) => {
 
   // Function to sync cart when user logs in
   const syncCartOnLogin = useCallback(async (userId) => {
-    if (!userId) return;
+    if (!userId || !hasUserSession()) return;
     
     try {
-      // First, try to get cart from server
-      const res = await fetch(`${BASE_URL}/cart/${userId}`);
+      const res = await fetchWithUserAuth(`/cart/${userId}`);
       if (res.ok) {
         const serverCart = await res.json();
         setCart(serverCart);
         localStorage.setItem('localCart', JSON.stringify(serverCart));
         console.log('Cart synced from server on login');
       } else if (res.status === 404) {
-        // No server cart, check if we have local cart to sync
-        const localCart = localStorage.getItem('localCart');
-        if (localCart) {
-          try {
-            const parsedLocalCart = JSON.parse(localCart);
-            if (parsedLocalCart.items && parsedLocalCart.items.length > 0) {
-              console.log('Syncing local cart to server on login...');
-              // Sync each item to server
-              for (const item of parsedLocalCart.items) {
-                await fetch(`${BASE_URL}/cart/add`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ 
-                    userId, 
-                    productId: normalizeProductId(item.productId), 
-                    quantity: item.quantity 
-                  }),
-                });
-              }
-              // Fetch the updated cart from server
-              const updatedRes = await fetch(`${BASE_URL}/cart/${userId}`);
-              if (updatedRes.ok) {
-                const updatedData = await updatedRes.json();
-                setCart(updatedData);
-                localStorage.setItem('localCart', JSON.stringify(updatedData));
-                console.log('Local cart successfully synced to server on login');
-              }
-            }
-          } catch (e) {
-            console.error('Error syncing local cart to server on login:', e);
+        const parsedLocalCart = readLocalCart();
+        if (parsedLocalCart.items.length > 0) {
+          console.log('Syncing local cart to server on login...');
+          for (const item of parsedLocalCart.items) {
+            await fetchWithUserAuth('/cart/add', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                productId: normalizeProductId(item.productId),
+                quantity: item.quantity,
+              }),
+            });
           }
+          await refreshCartFromServer();
         }
       }
-      
-      // Clear guest cart after successful login
-      const guestId = localStorage.getItem('guestId');
-      if (guestId) {
-        try {
-          await fetch(`${BASE_URL}/cart/clear/${guestId}`, { method: 'DELETE' });
-          localStorage.removeItem('guestId');
-          console.log('Guest cart cleared after login');
-        } catch (e) {
-          console.error('Error clearing guest cart:', e);
-        }
-      }
+
+      localStorage.removeItem('guestId');
     } catch (err) {
       console.error('Error syncing cart on login:', err);
     }
-  }, []);
+  }, [refreshCartFromServer]);
 
   // After logout: empty the UI cart and start a fresh guest session.
   // Do not clear the logged-in user's server cart — that stays for their next login.
@@ -375,12 +337,10 @@ export const CartProvider = ({ children }) => {
 
   // Add to cart 
   const addToCart = useCallback(async (productId, quantity = 1, productData = null) => {
-    const userId = localStorage.getItem('userId');
-    const guestId = getGuestId();
-    const cartId = userId || guestId;
+    const signedIn = hasUserSession();
     const normalizedProductId = normalizeProductId(productId);
     const isValidHex24 = typeof normalizedProductId === 'string' && /^[a-fA-F0-9]{24}$/.test(normalizedProductId);
-    console.log('addToCart called', { productId: normalizedProductId, quantity, hasUserId: !!userId, hasGuestId: !!guestId, cartId, isValidHex24 });
+    console.log('addToCart called', { productId: normalizedProductId, quantity, signedIn, isValidHex24 });
     
     // Prepare product data
     let productPrice = 0;
@@ -402,22 +362,21 @@ export const CartProvider = ({ children }) => {
     setTimeout(() => setShowAddedToast(false), 3500);
     
     return enqueueCartMutation(async () => {
-      if (isValidHex24) {
+      if (signedIn && isValidHex24) {
         try {
-          console.log('Syncing cart with server for cross-browser persistence...');
-          const res = await fetch(`${BASE_URL}/cart/add`, {
+          console.log('Syncing cart with server for signed-in user...');
+          const res = await fetchWithUserAuth('/cart/add', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              userId: cartId,
-              productId: normalizedProductId, 
-              quantity 
+            body: JSON.stringify({
+              productId: normalizedProductId,
+              quantity,
             }),
           });
           
           if (res.ok) {
             await res.json().catch(() => ({}));
-            await refreshCartFromServer(cartId);
+            await refreshCartFromServer();
             console.log('Server sync successful - cart refreshed from server');
           } else {
             const errorData = await safeReadResponseBody(res);
@@ -429,7 +388,9 @@ export const CartProvider = ({ children }) => {
           updateLocalCart(normalizedProductId, quantity, productData);
         }
       } else {
-        console.warn('Skipping server sync due to invalid productId format. Using local cart only.', normalizedProductId);
+        if (signedIn && !isValidHex24) {
+          console.warn('Skipping server sync due to invalid productId format. Using local cart only.', normalizedProductId);
+        }
         updateLocalCart(normalizedProductId, quantity, productData);
       }
     });
@@ -460,9 +421,22 @@ export const CartProvider = ({ children }) => {
 
   // Remove from cart
   const removeFromCart = useCallback(async (productId) => {
-    const userId = localStorage.getItem('userId');
-    const guestId = getGuestId();
-    const cartId = userId || guestId;
+    const applyLocalRemove = () => {
+      const targetId = normalizeProductId(productId);
+      setCart((prev) => {
+        const items = Array.isArray(prev.items) ? prev.items : [];
+        const updatedItems = items.filter(
+          (item) => normalizeProductId(item.productId) !== targetId
+        );
+        const newTotalPrice = updatedItems.reduce(
+          (total, item) => total + (item.price * item.quantity),
+          0
+        );
+        const updatedCart = { items: updatedItems, totalPrice: newTotalPrice };
+        localStorage.setItem('localCart', JSON.stringify(updatedCart));
+        return updatedCart;
+      });
+    };
 
     return enqueueCartMutation(async () => {
       try {
@@ -471,58 +445,33 @@ export const CartProvider = ({ children }) => {
           console.error('removeFromCart: missing product id');
           return;
         }
-        const res = await fetch(`${BASE_URL}/cart/remove`, {
+        if (!hasUserSession()) {
+          applyLocalRemove();
+          return;
+        }
+        const res = await fetchWithUserAuth('/cart/remove', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: cartId, productId: productIdForApi }),
+          body: JSON.stringify({ productId: productIdForApi }),
         });
 
         if (res.ok) {
-          await refreshCartFromServer(cartId);
+          await refreshCartFromServer();
           console.log('Item removed from server and cart refreshed');
         } else {
           const errBody = await safeReadResponseBody(res);
           console.error('Failed to remove from cart on server', res.status, errBody);
-          const targetId = normalizeProductId(productId);
-          setCart((prev) => {
-            const items = Array.isArray(prev.items) ? prev.items : [];
-            const updatedItems = items.filter(
-              (item) => normalizeProductId(item.productId) !== targetId
-            );
-            const newTotalPrice = updatedItems.reduce(
-              (total, item) => total + (item.price * item.quantity),
-              0
-            );
-            const updatedCart = { items: updatedItems, totalPrice: newTotalPrice };
-            localStorage.setItem('localCart', JSON.stringify(updatedCart));
-            return updatedCart;
-          });
+          applyLocalRemove();
         }
       } catch (error) {
         console.error('Error removing from cart:', error);
-        const targetId = normalizeProductId(productId);
-        setCart((prev) => {
-          const items = Array.isArray(prev.items) ? prev.items : [];
-          const updatedItems = items.filter(
-            (item) => normalizeProductId(item.productId) !== targetId
-          );
-          const newTotalPrice = updatedItems.reduce(
-            (total, item) => total + (item.price * item.quantity),
-            0
-          );
-          const updatedCart = { items: updatedItems, totalPrice: newTotalPrice };
-          localStorage.setItem('localCart', JSON.stringify(updatedCart));
-          return updatedCart;
-        });
+        applyLocalRemove();
       }
     });
   }, [enqueueCartMutation, refreshCartFromServer]);
 
   // Update item quantity
   const updateQuantity = useCallback(async (productId, nextQuantity) => {
-    const userId = localStorage.getItem('userId');
-    const guestId = getGuestId();
-    const cartId = userId || guestId;
     const productIdString =
       typeof productId === 'string'
         ? productId
@@ -533,20 +482,19 @@ export const CartProvider = ({ children }) => {
       typeof productIdString === 'string' && /^[a-fA-F0-9]{24}$/.test(productIdString);
 
     return enqueueCartMutation(async () => {
-      if (isValidHex24) {
+      if (hasUserSession() && isValidHex24) {
         try {
-          const res = await fetch(`${BASE_URL}/cart/update-quantity`, {
+          const res = await fetchWithUserAuth('/cart/update-quantity', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              userId: cartId,
               productId: productIdString,
               quantity: nextQuantity,
             }),
           });
           if (res.ok) {
             await res.json().catch(() => ({}));
-            await refreshCartFromServer(cartId);
+            await refreshCartFromServer();
             console.log('Server sync successful - cart refreshed from server');
           } else {
             console.error('Failed to update quantity on server');
@@ -564,14 +512,14 @@ export const CartProvider = ({ children }) => {
 
   // Checkout - create order from cart
   const checkout = useCallback(async () => {
-    const userId = localStorage.getItem('userId');
-    
-    if (!userId) {
+    if (!hasUserSession()) {
       throw new Error('User must be logged in to checkout');
     }
+
+    const userId = getSessionUserId();
     
     try {
-      const res = await fetch(`${BASE_URL}/cart/checkout/${userId}`, {
+      const res = await fetchWithUserAuth(`/cart/checkout/${userId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
