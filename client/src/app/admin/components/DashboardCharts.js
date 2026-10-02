@@ -13,7 +13,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer
 } from 'recharts';
 import '../../assets/css/charts.css';
@@ -35,37 +34,11 @@ const statusColors = {
   cancelled: '#ef4444'
 };
 
-// Generate placeholder data for revenue and orders charts
-const generatePlaceholderData = (days = 30) => {
-  const data = [];
-  const today = new Date();
-  
-  for (let i = days - 1; i >= 0; i--) {
-    const date = new Date(today);
-    date.setDate(date.getDate() - i);
-    
-    // Generate realistic-looking data with some variation
-    const baseRevenue = 5000 + Math.random() * 3000;
-    const baseOrders = 10 + Math.floor(Math.random() * 15);
-    
-    data.push({
-      date: date.toISOString().split('T')[0],
-      revenue: Math.round(baseRevenue + Math.sin(i / 5) * 1000),
-      orders: baseOrders
-    });
-  }
-  
-  return data;
-};
-
 export default function DashboardCharts({ showCharts = null }) {
   const [chartData, setChartData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [period, setPeriod] = useState('30');
-  
-  // Generate placeholder data
-  const placeholderData = generatePlaceholderData(parseInt(period));
+  const [period] = useState('30');
 
   const fetchChartData = async () => {
     try {
@@ -99,32 +72,19 @@ export default function DashboardCharts({ showCharts = null }) {
   };
 
   useEffect(() => {
-    // Only fetch data if showing all charts or if we need category/status data
-    const needsLiveData = !showCharts || showCharts.length === 0 || 
-                          showCharts.includes('category') || 
-                          showCharts.includes('status');
-    
-    if (needsLiveData) {
-      fetchChartData();
-    } else {
-      // For revenue/orders only, use placeholder data immediately
-      setLoading(false);
-      setChartData(null);
-    }
+    fetchChartData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period, showCharts]);
 
-  // Listen for product updates to refresh category chart
   useEffect(() => {
     const handleProductUpdate = () => {
-      // Only refresh if we're showing the category chart
       if (!showCharts || showCharts.length === 0 || showCharts.includes('category')) {
         fetchChartData();
       }
     };
 
     window.addEventListener('product-updated', handleProductUpdate);
-    
+
     return () => {
       window.removeEventListener('product-updated', handleProductUpdate);
     };
@@ -139,7 +99,6 @@ export default function DashboardCharts({ showCharts = null }) {
     }).format(value);
   };
 
-  // Format order status data for pie chart
   const orderStatusData = chartData?.orderStatusDistribution
     ? Object.entries(chartData.orderStatusDistribution).map(([status, data]) => ({
         name: status.charAt(0).toUpperCase() + status.slice(1),
@@ -148,27 +107,39 @@ export default function DashboardCharts({ showCharts = null }) {
       }))
     : [];
 
-  // Format category data for bar chart
   const categoryData = chartData?.categoryBreakdown || [];
-  
-  // Use placeholder data for revenue and orders when showing individual charts
-  // or when actual data is not available
-  const revenueData = (showCharts && (showCharts.includes('revenue') || showCharts.includes('orders'))) 
-    ? (chartData?.revenueOverTime?.length > 0 ? chartData.revenueOverTime : placeholderData)
-    : (chartData?.revenueOverTime || []);
-  
-  const ordersData = (showCharts && showCharts.includes('orders'))
-    ? (chartData?.revenueOverTime?.length > 0 ? chartData.revenueOverTime : placeholderData)
-    : (chartData?.revenueOverTime || []);
+  const seriesData = chartData?.revenueOverTime || [];
+  const revenueData = seriesData.some((item) => Number(item.revenue) > 0) ? seriesData : [];
+  const ordersData = seriesData.some((item) => Number(item.orders) > 0) ? seriesData : [];
 
   const statusTotal = orderStatusData.reduce((sum, entry) => sum + Number(entry.value || 0), 0);
   const showAll = !showCharts || showCharts.length === 0;
-  const showRevenue = showAll || showCharts.includes('revenue');
-  const showOrders = showAll || showCharts.includes('orders');
-  const showCategory = showAll || showCharts.includes('category');
-  const showStatus = showAll || showCharts.includes('status');
 
-  // Show loading state for all charts view
+  const chartState = () => {
+    if (loading) {
+      return (
+        <div className="charts-loading charts-empty-compact">
+          <div className="charts-loading-spinner"></div>
+          <p className="charts-loading-text">Loading...</p>
+        </div>
+      );
+    }
+    if (error) {
+      return (
+        <div className="charts-error">
+          <p className="charts-error-message">Error: {error}</p>
+          <button
+            onClick={fetchChartData}
+            className="charts-error-retry"
+          >
+            Retry
+          </button>
+        </div>
+      );
+    }
+    return null;
+  };
+
   if (loading && showAll) {
     return (
       <div className="charts-loading">
@@ -180,7 +151,6 @@ export default function DashboardCharts({ showCharts = null }) {
     );
   }
 
-  // Show error state for all charts view
   if (error && showAll) {
     return (
       <div className="charts-error">
@@ -195,195 +165,159 @@ export default function DashboardCharts({ showCharts = null }) {
     );
   }
 
-  // ✅ SINGLE 4-BOX CARD RENDER
-if (showCharts && showCharts.length > 0 && !showAll) {
+  if (showCharts && showCharts.length > 0 && !showAll) {
+    const pendingState = chartState();
 
-  /* REVENUE */
-  if (showCharts.includes('revenue')) {
-    return (
-      <div className="charts-4box-card">
-        <h3 className="charts-4box-title">Revenue Over Time</h3>
-        <div className="charts-4box-body">
-          {revenueData.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%" className="charts-4box-responsive">
-              <LineChart data={revenueData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `R${v}`} />
-                <Tooltip formatter={(v) => formatCurrency(v)} />
-                <Line
-                  type="monotone"
-                  dataKey="revenue"
-                  stroke={COLORS.revenue}
-                  strokeWidth={2}
-                  dot={{ r: 3 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="charts-empty charts-empty-compact">
-              No revenue data available
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  /* ORDERS */
-  if (showCharts.includes('orders')) {
-    return (
-      <div className="charts-4box-card">
-        <h3 className="charts-4box-title">Orders Over Time</h3>
-        <div className="charts-4box-body">
-          {ordersData.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%" className="charts-4box-responsive">
-              <LineChart data={ordersData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 10 }} />
-                <Tooltip />
-                <Line
-                  type="monotone"
-                  dataKey="orders"
-                  stroke={COLORS.orders}
-                  strokeWidth={2}
-                  dot={{ r: 3 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="charts-empty charts-empty-compact">
-              No orders data available
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  /* CATEGORY */
-  if (showCharts.includes('category')) {
-    return (
-      <div className="charts-4box-card">
-        <h3 className="charts-4box-title">Products by Category</h3>
-        <div className="charts-4box-body">
-          {loading ? (
-            <div className="charts-loading charts-empty-compact">
-              <div className="charts-loading-spinner"></div>
-              <p className="charts-loading-text">Loading...</p>
-            </div>
-          ) : error ? (
-            <div className="charts-error">
-              <p className="charts-error-message">Error: {error}</p>
-              <button
-                onClick={fetchChartData}
-                className="charts-error-retry"
-              >
-                Retry
-              </button>
-            </div>
-          ) : categoryData.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%" className="charts-4box-responsive">
-              <BarChart data={categoryData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="category" tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 10 }} />
-                <Tooltip />
-                <Bar dataKey="count" fill={COLORS.categories[0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="charts-empty charts-empty-compact">
-              No category data available
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  /* STATUS */
-  if (showCharts.includes('status')) {
-    return (
-      <div className="charts-4box-card">
-        <h3 className="charts-4box-title">Order Status</h3>
-        <div className="charts-4box-body">
-          {loading ? (
-            <div className="charts-loading charts-empty-compact">
-              <div className="charts-loading-spinner"></div>
-              <p className="charts-loading-text">Loading...</p>
-            </div>
-          ) : error ? (
-            <div className="charts-error">
-              <p className="charts-error-message">Error: {error}</p>
-              <button
-                onClick={fetchChartData}
-                className="charts-error-retry"
-              >
-                Retry
-              </button>
-            </div>
-          ) : orderStatusData.length > 0 ? (
-            <div className="charts-pie-layout">
-              <div className="charts-pie-plot">
-                <ResponsiveContainer width="100%" height="100%" className="charts-4box-responsive">
-                  <PieChart margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
-                    <Pie
-                      data={orderStatusData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={22}
-                      outerRadius={52}
-                      paddingAngle={2}
-                      dataKey="value"
-                      nameKey="name"
-                      label={false}
-                      labelLine={false}
-                    >
-                      {orderStatusData.map((entry, i) => (
-                        <Cell
-                          key={entry.name}
-                          fill={statusColors[entry.name.toLowerCase()] || COLORS.categories[i % COLORS.categories.length]}
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      formatter={(value, name) => {
-                        const percent = statusTotal ? Math.round((Number(value) / statusTotal) * 100) : 0;
-                        return [`${value} (${percent}%)`, name];
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
+    if (showCharts.includes('revenue')) {
+      return (
+        <div className="charts-4box-card">
+          <h3 className="charts-4box-title">Revenue Over Time</h3>
+          <div className="charts-4box-body">
+            {pendingState || (revenueData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%" className="charts-4box-responsive">
+                <LineChart data={revenueData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+                  <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `R${v}`} />
+                  <Tooltip formatter={(v) => formatCurrency(v)} />
+                  <Line
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke={COLORS.revenue}
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="charts-empty charts-empty-compact">
+                No revenue data available
               </div>
-              <ul className="charts-pie-legend">
-                {orderStatusData.map((entry, i) => {
-                  const color = statusColors[entry.name.toLowerCase()] || COLORS.categories[i % COLORS.categories.length];
-                  const percent = statusTotal ? Math.round((Number(entry.value) / statusTotal) * 100) : 0;
-                  return (
-                    <li key={entry.name} className="charts-pie-legend-item">
-                      <span className="charts-pie-legend-swatch" style={{ backgroundColor: color }} />
-                      <span>{entry.name} {percent}%</span>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ) : (
-            <div className="charts-empty charts-empty-compact">
-              No order data available
-            </div>
-          )}
+            ))}
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
+
+    if (showCharts.includes('orders')) {
+      return (
+        <div className="charts-4box-card">
+          <h3 className="charts-4box-title">Orders Over Time</h3>
+          <div className="charts-4box-body">
+            {pendingState || (ordersData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%" className="charts-4box-responsive">
+                <LineChart data={ordersData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+                  <YAxis tick={{ fontSize: 10 }} />
+                  <Tooltip />
+                  <Line
+                    type="monotone"
+                    dataKey="orders"
+                    stroke={COLORS.orders}
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="charts-empty charts-empty-compact">
+                No orders data available
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (showCharts.includes('category')) {
+      return (
+        <div className="charts-4box-card">
+          <h3 className="charts-4box-title">Products by Category</h3>
+          <div className="charts-4box-body">
+            {pendingState || (categoryData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%" className="charts-4box-responsive">
+                <BarChart data={categoryData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="category" tick={{ fontSize: 10 }} />
+                  <YAxis tick={{ fontSize: 10 }} />
+                  <Tooltip />
+                  <Bar dataKey="count" fill={COLORS.categories[0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="charts-empty charts-empty-compact">
+                No category data available
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (showCharts.includes('status')) {
+      return (
+        <div className="charts-4box-card">
+          <h3 className="charts-4box-title">Order Status</h3>
+          <div className="charts-4box-body">
+            {pendingState || (orderStatusData.length > 0 ? (
+              <div className="charts-pie-layout">
+                <div className="charts-pie-plot">
+                  <ResponsiveContainer width="100%" height="100%" className="charts-4box-responsive">
+                    <PieChart margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
+                      <Pie
+                        data={orderStatusData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={22}
+                        outerRadius={52}
+                        paddingAngle={2}
+                        dataKey="value"
+                        nameKey="name"
+                        label={false}
+                        labelLine={false}
+                      >
+                        {orderStatusData.map((entry, i) => (
+                          <Cell
+                            key={entry.name}
+                            fill={statusColors[entry.name.toLowerCase()] || COLORS.categories[i % COLORS.categories.length]}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        formatter={(value, name) => {
+                          const percent = statusTotal ? Math.round((Number(value) / statusTotal) * 100) : 0;
+                          return [`${value} (${percent}%)`, name];
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <ul className="charts-pie-legend">
+                  {orderStatusData.map((entry, i) => {
+                    const color = statusColors[entry.name.toLowerCase()] || COLORS.categories[i % COLORS.categories.length];
+                    const percent = statusTotal ? Math.round((Number(entry.value) / statusTotal) * 100) : 0;
+                    return (
+                      <li key={entry.name} className="charts-pie-legend-item">
+                        <span className="charts-pie-legend-swatch" style={{ backgroundColor: color }} />
+                        <span>{entry.name} {percent}%</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ) : (
+              <div className="charts-empty charts-empty-compact">
+                No order data available
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    return null;
   }
 
-  // Fallback: return null if no matching chart type
-  return null;
-  }
-
-  // If showing all charts (not implemented in 4-box layout)
   return null;
 }

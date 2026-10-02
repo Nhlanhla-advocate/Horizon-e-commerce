@@ -16,33 +16,11 @@ import {
 import '../../../assets/css/charts.css';
 import '../../../assets/css/salesTrends.css';
 
-const BASE_URL = 'http://localhost:5000';
+const getBaseUrl = () => (typeof window !== 'undefined' ? '' : 'http://localhost:5000');
 
 const COLORS = {
     revenue: '#3b82f6',
     orders: '#9333ea'
-};
-
-//Generate placeholder data for sales trends
-const generatePlaceholderData = (days = 30) => {
-    const data = [];
-    const today = new Date();
-
-    for (let i = days - 1; i >= 0; i--) {
-        const date = new Date(today);
-        date.setDate(date.getDate() - i);
-
-        const baseRevenue = 5000 + Math.random() * 3000;
-        const baseOrders = 10 + Math.floor(Math.random() * 15);
-
-        data.push({
-            date: date.toISOString().split('T')[0],
-            revenue: Math.round(baseRevenue + Math.sin(i / 5) * 1000),
-            orders: baseOrders
-        });
-    }
-
-    return data;
 };
 
 export default function SalesTrends() {
@@ -51,15 +29,13 @@ export default function SalesTrends() {
     const [error, setError] = useState(null);
     const [period, setPeriod] = useState('30');
 
-    const placeholderData = generatePlaceholderData(parseInt(period));
-
     const fetchChartData = async () => {
         try {
             setLoading(true);
             setError(null);
 
             const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
-            const response = await fetch(`${BASE_URL}/dashboard/charts?period=${period}`, {
+            const response = await fetch(`${getBaseUrl()}/dashboard/charts?period=${period}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -102,9 +78,11 @@ export default function SalesTrends() {
         return date.toLocaleDateString('en-ZA', { month: 'short', day: 'numeric' });
     };
 
-    const revenueData = chartData?.revenueOverTime?.length > 0
+    const revenueData = (chartData?.revenueOverTime || []).some(
+        (item) => Number(item.revenue) > 0 || Number(item.orders) > 0
+    )
         ? chartData.revenueOverTime
-        : placeholderData;
+        : [];
 
     if (loading) {
         return (
